@@ -48,7 +48,7 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 		0,
 		ClassName,
 		L"Just a window",
-		WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU,
+		WS_CAPTION | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_SYSMENU | WS_VISIBLE,
 		200,
 		200,
 		640,
@@ -58,12 +58,6 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 		hInstance,
 		NULL
 	);
-
-	//	Show window
-	//	https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-showwindow
-	//
-
-	ShowWindow(hWnd, SW_SHOW);
 
 	//	Message pump
 	//	https://learn.microsoft.com/es-es/windows/win32/api/winuser/nf-winuser-getmessage
@@ -75,5 +69,5 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 		DispatchMessageW(&msg);
 	}
 
-	return msg.wParam;
+	return (int)msg.wParam;
 }
