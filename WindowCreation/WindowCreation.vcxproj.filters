@@ -21,5 +21,35 @@
     <ClCompile Include="SourceFiles\WinMain.cpp">
       <Filter>Sources\Private</Filter>
     </ClCompile>
+    <ClCompile Include="SourceFiles\Window.cpp">
+      <Filter>Sources\Private</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceFiles\Exception.cpp">
+      <Filter>Sources\Private</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="HeaderFiles\Header.h">
+      <Filter>Sources\Public</Filter>
+    </ClInclude>
+    <ClInclude Include="HeaderFiles\Window.h">
+      <Filter>Sources\Public</Filter>
+    </ClInclude>
+    <ClInclude Include="HeaderFiles\Exception.h">
+      <Filter>Sources\Public</Filter>
+    </ClInclude>
+    <ClInclude Include="Resources\ResourceFiles\resource.h">
+      <Filter>Sources\Public</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="Resources\Icon.ico">
+      <Filter>Resources</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Resources\ResourceFiles\WindowCreation.rc">
+      <Filter>Resources</Filter>
+    </ResourceCompile>
   </ItemGroup>
 </Project>

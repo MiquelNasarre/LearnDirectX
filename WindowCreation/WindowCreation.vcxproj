@@ -93,7 +93,7 @@
       <PreprocessorDefinitions>_CRT_NO_WARNINGS;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir)HeaderFiles/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)HeaderFiles/;$(ProjectDir);$(ProjectDir)Resources/ResourceFiles</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
     </ClCompile>
@@ -111,7 +111,7 @@
       <PreprocessorDefinitions>_CRT_NO_WARNINGS;NDEBUG;WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir)HeaderFiles/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)HeaderFiles/;$(ProjectDir);$(ProjectDir)Resources/ResourceFiles</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
     </ClCompile>
@@ -129,7 +129,7 @@
       <PreprocessorDefinitions>_CRT_NO_WARNINGS;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir)HeaderFiles/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)HeaderFiles/;$(ProjectDir);$(ProjectDir)Resources/ResourceFiles</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
     </ClCompile>
@@ -147,7 +147,7 @@
       <PreprocessorDefinitions>_CRT_NO_WARNINGS;NDEBUG;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir)HeaderFiles/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)HeaderFiles/;$(ProjectDir);$(ProjectDir)Resources/ResourceFiles</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
     </ClCompile>
@@ -159,7 +159,21 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="SourceFiles\Exception.cpp" />
+    <ClCompile Include="SourceFiles\Window.cpp" />
     <ClCompile Include="SourceFiles\WinMain.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="HeaderFiles\Exception.h" />
+    <ClInclude Include="HeaderFiles\Header.h" />
+    <ClInclude Include="HeaderFiles\Window.h" />
+    <ClInclude Include="Resources\ResourceFiles\resource.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="Resources\Icon.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Resources\ResourceFiles\WindowCreation.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
