@@ -1,25 +1,21 @@
-#include "Header.h"
-#include "Window.h"
+#include "Application.h"
+#include "atlstr.h"
 
 int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
-	// Create a window
+	try {
 
-	Window window(640, 480, L"Hello World");
+		return App().Run();
 
-	//	Message pump
-	
-	MSG msg;
-	BOOL gResult;
-	while ((gResult = GetMessage(&msg, nullptr, 0, 0)) > 0) {
-		TranslateMessage(&msg);
-		DispatchMessage(&msg);
 	}
-
-	//	Check if GetMessage call itself borked
-
-	if (gResult == -1)
-		return -1;
-
-	return (int)msg.wParam;
+	catch (const ExceptionClass& e) {
+		MessageBox(nullptr, CA2W(e.what()), CA2W(e.GetType()), MB_OK | MB_ICONEXCLAMATION);
+	}
+	catch (const std::exception& e) {
+		MessageBox(nullptr, CA2W(e.what()), L"Standard Exception", MB_OK | MB_ICONEXCLAMATION);
+	}
+	catch (...) {
+		MessageBox(nullptr, L"No details available", L"Unknown Exception", MB_OK | MB_ICONEXCLAMATION);
+	}
+	return -1;
 }

@@ -27,6 +27,15 @@
     <ClCompile Include="SourceFiles\Exception.cpp">
       <Filter>Sources\Private</Filter>
     </ClCompile>
+    <ClCompile Include="SourceFiles\Keyboard.cpp">
+      <Filter>Sources\Private</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceFiles\Mouse.cpp">
+      <Filter>Sources\Private</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceFiles\Application.cpp">
+      <Filter>Sources\Private</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="HeaderFiles\Header.h">
@@ -39,6 +48,15 @@
       <Filter>Sources\Public</Filter>
     </ClInclude>
     <ClInclude Include="Resources\ResourceFiles\resource.h">
+      <Filter>Sources\Public</Filter>
+    </ClInclude>
+    <ClInclude Include="HeaderFiles\Keyboard.h">
+      <Filter>Sources\Public</Filter>
+    </ClInclude>
+    <ClInclude Include="HeaderFiles\Mouse.h">
+      <Filter>Sources\Public</Filter>
+    </ClInclude>
+    <ClInclude Include="HeaderFiles\Application.h">
       <Filter>Sources\Public</Filter>
     </ClInclude>
   </ItemGroup>

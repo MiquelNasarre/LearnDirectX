@@ -3,6 +3,8 @@
 #include "Header.h"
 #include "resource.h"
 #include "Exception.h"
+#include "Keyboard.h"
+#include "Mouse.h"
 
 class Window
 {
@@ -19,8 +21,8 @@ public:
 	private:
 		HRESULT hr;
 	};
+
 private:
-	// singleton manages registration/cleanup of window class
 	class WindowClass
 	{
 	public:
@@ -31,23 +33,42 @@ private:
 		~WindowClass();
 		WindowClass(const WindowClass&) = delete;
 		WindowClass& operator=(const WindowClass&) = delete;
-		static constexpr LPCWSTR wndClassName = L"Learn DirectX Engine Window";
+		static constexpr LPCWSTR wndClassName = L"Learn DirectX Window";
 		static WindowClass wndClass;
 		HINSTANCE hInst;
 	};
+
+private:
+	static LRESULT CALLBACK HandleMsgSetup(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noexcept;
+	static LRESULT CALLBACK HandleMsgThunk(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noexcept;
+	LRESULT HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noexcept;
+
+	Vector2i Dimensions;
+	Vector2i Position;
+	std::string Name;
+	HWND hWnd;
+	MSG msg;
+	BOOL gResult;
+
 public:
 	Window(int width, int height, LPCWSTR name);
 	~Window();
 	Window(const Window&) = delete;
 	Window& operator=(const Window&) = delete;
-private:
-	static LRESULT CALLBACK HandleMsgSetup(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noexcept;
-	static LRESULT CALLBACK HandleMsgThunk(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noexcept;
-	LRESULT HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noexcept;
-private:
-	int width;
-	int height;
-	HWND hWnd;
+
+	//	Client Functions
+
+	void setTitle(std::string name);
+	void setDimensions(int width, int height);
+	void setDimensions(Vector2i Dim);
+	void setPosition(int X, int Y);
+	void setPosition(Vector2i Pos);
+
+	std::string getTitle();
+	Vector2i getDimensions();
+	Vector2i getPosition();
+
+	bool pollEvent();
 };
 
 // error exception helper macros

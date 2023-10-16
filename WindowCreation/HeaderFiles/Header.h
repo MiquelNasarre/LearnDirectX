@@ -43,10 +43,12 @@
 //#define NOPROXYSTUB
 //#define NOIMAGE
 //#define NOTAPE
+//#define STRICT
 #pragma endregion
-
-#define STRICT
 
 #include <Windows.h>
 #include <WinUser.h>
 #include <iostream>
+#include <queue>
+#include <bitset>
+#include "Math/Vectors.h"
