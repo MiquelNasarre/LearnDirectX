@@ -16,6 +16,9 @@
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
       <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
+    <Filter Include="Shaders">
+      <UniqueIdentifier>{b9029ffe-7524-4f80-9bd1-904a7f56f36d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="SourceFiles\WinMain.cpp">
@@ -34,6 +37,12 @@
       <Filter>Sources\Private</Filter>
     </ClCompile>
     <ClCompile Include="SourceFiles\Application.cpp">
+      <Filter>Sources\Private</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceFiles\Timer.cpp">
+      <Filter>Sources\Private</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceFiles\Graphics.cpp">
       <Filter>Sources\Private</Filter>
     </ClCompile>
   </ItemGroup>
@@ -59,6 +68,12 @@
     <ClInclude Include="HeaderFiles\Application.h">
       <Filter>Sources\Public</Filter>
     </ClInclude>
+    <ClInclude Include="HeaderFiles\Timer.h">
+      <Filter>Sources\Public</Filter>
+    </ClInclude>
+    <ClInclude Include="HeaderFiles\Graphics.h">
+      <Filter>Sources\Public</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="Resources\Icon.ico">
@@ -69,5 +84,13 @@
     <ResourceCompile Include="Resources\ResourceFiles\WindowCreation.rc">
       <Filter>Resources</Filter>
     </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="Shaders\VertexShader.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\PixelShader.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

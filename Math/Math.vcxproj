@@ -19,10 +19,12 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\Math\Color.h" />
     <ClInclude Include="include\Math\Complex.h" />
     <ClInclude Include="include\Math\Vectors.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="source\Color.cpp" />
     <ClCompile Include="source\Complex.cpp" />
     <ClCompile Include="source\Vectors.cpp" />
   </ItemGroup>

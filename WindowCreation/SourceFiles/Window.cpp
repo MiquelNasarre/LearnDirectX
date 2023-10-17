@@ -1,10 +1,11 @@
 #include "Window.h"
 
+#include "resource.h"
+#include "Keyboard.h"
+#include "Mouse.h"
 #include "atlstr.h"
 #include <windowsx.h>
 #include <chrono>
-
-int t = 0;
 
 // Window Exception Stuff
 
@@ -70,8 +71,6 @@ Window::WindowClass::WindowClass() noexcept
 	:hInst{ GetModuleHandle(nullptr) }
 {
 	//	Register Window class
-	//	https://learn.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-wndclassexa
-	//
 
 	WNDCLASSEX wc = { 0 };
 	wc.cbSize = sizeof(wc);
@@ -106,11 +105,32 @@ HINSTANCE Window::WindowClass::GetInstance() noexcept
 
 // Window Stuff
 
+void Window::pushMessage()
+{
+	msgQueue.push(msg);
+	if (msgQueue.size() > maxMessages)
+		msgQueue.pop();
+}
+
+void Window::handleFramerate()
+{
+	if (noFrameUpdate) {
+		noFrameUpdate = false;
+		frame = timer.skip();
+		return;
+	}
+
+	if (timer.check() < Frametime)
+		std::this_thread::sleep_for(std::chrono::milliseconds(int(1000 * (Frametime - timer.check()))));
+	frame = timer.mark();
+}
+
 Window::Window(int width, int height, LPCWSTR name)
-	: Dimensions{ Vector2i(width,height) }
+	: Dimensions{ Vector2i(width,height) }, timer(true)
 {
 	Name = CW2A(name);
-	// calculate window size based on desired client region size
+
+	//	Calculate window size based on desired client region size
 
 	RECT wr;
 	wr.left = 100;
@@ -121,8 +141,6 @@ Window::Window(int width, int height, LPCWSTR name)
 		throw CHWND_LAST_EXCEPT();
 
 	//	Create Window & get hWnd
-	//	https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexa
-	//
 
 	hWnd = CreateWindow(
 		WindowClass::GetName(), 
@@ -147,6 +165,12 @@ Window::Window(int width, int height, LPCWSTR name)
 
 	Keyboard::init();
 	Mouse::init();
+	timer.reset();
+
+	//	Create graphics object
+
+	graphics.create(hWnd);
+	graphics.setWindowDimensions(Dimensions);
 
 }
 
@@ -248,9 +272,11 @@ LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noe
 	case WM_SIZE:
 		Dimensions.x = LOWORD(lParam);
 		Dimensions.y = HIWORD(lParam);
+		graphics.setWindowDimensions(Dimensions);
 		break;
 
 	case WM_MOVE:
+		noFrameUpdate = true;
 		Position.x = LOWORD(lParam);
 		Position.y = HIWORD(lParam);
 		break;
@@ -290,7 +316,8 @@ void Window::setDimensions(int width, int height)
 	if (!AdjustWindowRect(&wr, WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU, FALSE))
 		throw CHWND_LAST_EXCEPT();
 
-	SetWindowPos(hWnd, hWnd, 0, 0, wr.right - wr.left, wr.bottom - wr.top, SWP_NOMOVE | SWP_NOZORDER);
+	if (!SetWindowPos(hWnd, hWnd, 0, 0, wr.right - wr.left, wr.bottom - wr.top, SWP_NOMOVE | SWP_NOZORDER))
+		throw CHWND_LAST_EXCEPT();
 }
 
 void Window::setDimensions(Vector2i Dim)
@@ -305,12 +332,19 @@ void Window::setPosition(int X, int Y)
 	X += eX;
 	Y += eY;
 
-	SetWindowPos(hWnd, hWnd, X, Y, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+	if (!SetWindowPos(hWnd, hWnd, X, Y, 0, 0, SWP_NOSIZE | SWP_NOZORDER))
+		throw CHWND_LAST_EXCEPT();
 }
 
 void Window::setPosition(Vector2i Pos)
 {
 	setPosition(Pos.x, Pos.y);
+}
+
+void Window::setFramerateLimit(int fps)
+{
+	Frametime = 1.f / float(fps);
+	timer.setMax(fps);
 }
 
 std::string Window::getTitle()
@@ -328,21 +362,43 @@ Vector2i Window::getPosition()
 	return Position;
 }
 
-bool Window::pollEvent()
+float Window::getFramerate()
+{
+	return 1.f / timer.average();
+}
+
+float Window::getFrameTime()
+{
+	return frame;
+}
+
+bool Window::popMessage(MSG& clientMsg)
+{
+	if (!msgQueue.size())
+		return false;
+	clientMsg = msgQueue.front();
+	msgQueue.pop();
+	return true;
+}
+
+bool Window::processEvents()
 {
 	//	Message Pump
 
-	gResult = GetMessage(&msg, NULL, 0, 0);
+	while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
+		if (msg.message == WM_QUIT)
+			return false;
 
-	if (gResult == -1)
-		throw CHWND_LAST_EXCEPT();
+		pushMessage();
+		TranslateMessage(&msg);
+		DispatchMessage(&msg);
+	}
 
-	TranslateMessage(&msg);
-	DispatchMessage(&msg);
+	handleFramerate();
+	return true;
+}
 
-	std::this_thread::sleep_for(std::chrono::milliseconds(20));
-
-	if (gResult > 0)
-		return true;
-	return false;
+void Window::close()
+{
+	PostQuitMessage(0);
 }

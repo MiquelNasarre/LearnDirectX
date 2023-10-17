@@ -1,10 +1,9 @@
 #pragma once
 
 #include "Header.h"
-#include "resource.h"
 #include "Exception.h"
-#include "Keyboard.h"
-#include "Mouse.h"
+#include "Timer.h"
+#include "Graphics.h"
 
 class Window
 {
@@ -47,8 +46,18 @@ private:
 	Vector2i Position;
 	std::string Name;
 	HWND hWnd;
+
 	MSG msg;
 	BOOL gResult;
+	static constexpr unsigned int maxMessages = 60u;
+	std::queue<MSG> msgQueue;
+	void pushMessage();
+
+	void handleFramerate();
+	bool noFrameUpdate = false;
+	float frame = 0;
+	float Frametime = 0;
+	Timer timer;
 
 public:
 	Window(int width, int height, LPCWSTR name);
@@ -58,17 +67,24 @@ public:
 
 	//	Client Functions
 
+	Graphics graphics;
+
 	void setTitle(std::string name);
 	void setDimensions(int width, int height);
 	void setDimensions(Vector2i Dim);
 	void setPosition(int X, int Y);
 	void setPosition(Vector2i Pos);
+	void setFramerateLimit(int fps);
 
 	std::string getTitle();
 	Vector2i getDimensions();
 	Vector2i getPosition();
+	float getFramerate();
+	float getFrameTime();
+	bool popMessage(MSG& clientMsg);
 
-	bool pollEvent();
+	bool processEvents();
+	void close();
 };
 
 // error exception helper macros

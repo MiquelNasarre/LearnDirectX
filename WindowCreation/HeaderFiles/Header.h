@@ -2,7 +2,6 @@
 
 // target Windows 7 or later
 #define _WIN32_WINNT 0x0601
-#include <sdkddkver.h>
 
 #pragma region Some defines you might wanna use
 // The following #defines disable a bunch of unused windows stuff. If you 
@@ -46,9 +45,12 @@
 //#define STRICT
 #pragma endregion
 
+#include <sdkddkver.h>
 #include <Windows.h>
 #include <WinUser.h>
+#include <timeapi.h>
 #include <iostream>
 #include <queue>
 #include <bitset>
 #include "Math/Vectors.h"
+#include "Math/Color.h"
