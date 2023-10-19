@@ -1,13 +1,23 @@
 
 struct VSOut {
 	float4 color : Color;
-	float4 position : SV_Position;
+    float4 R3pos : PointPos;
+	float4 SCpos : SV_Position;
 };
 
-VSOut main(float2 pos : Position, float4 col : Color)
+cbuffer Cbuff
+{
+    matrix movement;
+    matrix perspective;
+};
+
+VSOut main(float3 pos : Position, float4 col : Color)
 {
 	VSOut vso;
-	vso.position = float4(pos.x, pos.y, 0.f, 1.f);
+    vso.R3pos = mul(float4(pos, 1.f), movement);
+    float4 test = mul(vso.R3pos, perspective);
+    vso.SCpos = float4(test.x, test.y, 0.f, 1.f);
 	vso.color = col;
+    
 	return vso;
 }

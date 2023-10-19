@@ -6,6 +6,7 @@ class App {
 
 private:
 	Window window;
+	Timer timer;
 
 public:
 	App();

@@ -37,9 +37,36 @@ public:
 
 	void pushFrame();
 	void clearBuffer(float R = 1.f, float G = 1.f, float B = 1.f, float A = 1.f) noexcept;
+	void clearBuffer(Color color) noexcept;
 
+	Vector2f PixeltoR2(Vector2i MousePos);
 	void setWindowDimensions(Vector2i& Dim);
-	void drawTestTriangle();
+	void initSettings();
+	void initTestTriangle();
+	void drawTestTriangle(float angle, Vector2i MousePos);
+
+private:
+	struct Vertex {
+		Vector3f vector;
+		Color color;
+	};
+
+	struct indexedStructure {
+		pCom<ID3D11Buffer>			pVertexBuffer;
+		pCom<ID3D11Buffer>			pIndexBuffer;
+		pCom<ID3D11PixelShader>		pPixelShader;
+		pCom<ID3D11VertexShader>	pVertexShader;
+		pCom<ID3D11InputLayout>		pInputLayout;
+		pCom<ID3D11Buffer>			pPSConstantBuffer;
+		unsigned int				NumIndexes;
+
+		std::vector<Vertex> vertexs;
+		std::vector<unsigned short> Indexs;
+		std::vector<Vector3f> norms;
+	};
+
+	indexedStructure TestTriangle;
+
 
 private:
 	pCom<ID3D11Device>				pDevice;

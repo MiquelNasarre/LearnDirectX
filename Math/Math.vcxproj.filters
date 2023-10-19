@@ -23,6 +23,9 @@
     <ClInclude Include="include\Math\Color.h">
       <Filter>Sources\Public</Filter>
     </ClInclude>
+    <ClInclude Include="include\Math\Matrix.h">
+      <Filter>Sources\Public</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\Vectors.cpp">
@@ -32,6 +35,9 @@
       <Filter>Sources\Private</Filter>
     </ClCompile>
     <ClCompile Include="source\Color.cpp">
+      <Filter>Sources\Private</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Matrix.cpp">
       <Filter>Sources\Private</Filter>
     </ClCompile>
   </ItemGroup>
