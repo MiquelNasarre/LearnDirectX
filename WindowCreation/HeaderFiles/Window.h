@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Header.h"
 #include "Exception.h"
 #include "Timer.h"
 #include "Graphics.h"

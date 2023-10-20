@@ -7,6 +7,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WindowCreation", "WindowCre
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Math", "Math\Math.vcxproj", "{E819D583-6D5E-4091-B719-CB557324CC13}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dxerr", "dxerr\dxerr.vcxproj", "{F1C146DD-125D-4D9A-840C-1BD478497821}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -31,6 +33,14 @@ Global
 		{E819D583-6D5E-4091-B719-CB557324CC13}.Release|x64.Build.0 = Release|x64
 		{E819D583-6D5E-4091-B719-CB557324CC13}.Release|x86.ActiveCfg = Release|Win32
 		{E819D583-6D5E-4091-B719-CB557324CC13}.Release|x86.Build.0 = Release|Win32
+		{F1C146DD-125D-4D9A-840C-1BD478497821}.Debug|x64.ActiveCfg = Debug|x64
+		{F1C146DD-125D-4D9A-840C-1BD478497821}.Debug|x64.Build.0 = Debug|x64
+		{F1C146DD-125D-4D9A-840C-1BD478497821}.Debug|x86.ActiveCfg = Debug|Win32
+		{F1C146DD-125D-4D9A-840C-1BD478497821}.Debug|x86.Build.0 = Debug|Win32
+		{F1C146DD-125D-4D9A-840C-1BD478497821}.Release|x64.ActiveCfg = Release|x64
+		{F1C146DD-125D-4D9A-840C-1BD478497821}.Release|x64.Build.0 = Release|x64
+		{F1C146DD-125D-4D9A-840C-1BD478497821}.Release|x86.ActiveCfg = Release|Win32
+		{F1C146DD-125D-4D9A-840C-1BD478497821}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

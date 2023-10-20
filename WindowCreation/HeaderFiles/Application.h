@@ -8,6 +8,7 @@ private:
 	Window window;
 	Timer timer;
 
+	float scale = 480.f;
 public:
 	App();
 

@@ -533,7 +533,7 @@ Vector3d::Vector3d(const Vector3i& other)
 {
 	x = (double)other.x;
 	y = (double)other.y;
-	y = (double)other.z;
+	z = (double)other.z;
 }
 
 Vector3d::Vector3d(const Vector3f& other)

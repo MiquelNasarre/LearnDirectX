@@ -2,7 +2,7 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="Sources">
-      <UniqueIdentifier>{b078a8b1-f669-4cba-b11a-d5e9546799bb}</UniqueIdentifier>
+      <UniqueIdentifier>{666c59c1-d6bc-4e7a-9257-4ab10fac5587}</UniqueIdentifier>
     </Filter>
     <Filter Include="Sources\Public">
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
@@ -14,34 +14,24 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\Math\Vectors.h">
-      <Filter>Sources\Public</Filter>
-    </ClInclude>
-    <ClInclude Include="include\Math\Complex.h">
-      <Filter>Sources\Public</Filter>
-    </ClInclude>
-    <ClInclude Include="include\Math\Color.h">
-      <Filter>Sources\Public</Filter>
-    </ClInclude>
-    <ClInclude Include="include\Math\Matrix.h">
-      <Filter>Sources\Public</Filter>
-    </ClInclude>
-    <ClInclude Include="include\Math\constants.h">
+    <ClInclude Include="include\dxerr.h">
       <Filter>Sources\Public</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="source\Vectors.cpp">
+    <ClCompile Include="src\dxerr.cpp">
       <Filter>Sources\Private</Filter>
     </ClCompile>
-    <ClCompile Include="source\Complex.cpp">
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="src\DXGetErrorDescription.inl">
       <Filter>Sources\Private</Filter>
-    </ClCompile>
-    <ClCompile Include="source\Color.cpp">
+    </None>
+    <None Include="src\DXGetErrorString.inl">
       <Filter>Sources\Private</Filter>
-    </ClCompile>
-    <ClCompile Include="source\Matrix.cpp">
+    </None>
+    <None Include="src\DXTrace.inl">
       <Filter>Sources\Private</Filter>
-    </ClCompile>
+    </None>
   </ItemGroup>
 </Project>

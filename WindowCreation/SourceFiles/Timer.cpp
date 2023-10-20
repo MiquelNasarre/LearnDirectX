@@ -1,5 +1,7 @@
+
+#include <Windows.h>
+#include <timeapi.h>
 #include "Timer.h"
-#include "Header.h"
 
 using namespace std::chrono;
 

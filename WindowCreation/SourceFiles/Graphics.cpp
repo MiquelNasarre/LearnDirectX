@@ -2,59 +2,22 @@
 #include <sstream>
 #include <d3dcompiler.h>
 
-#include "Math/Vectors.h"
-#include "Math/Matrix.h"
+//	Graphics exception macros
 
-// Graphics exception stuff
+#define GFX_EXCEPT_NOINFO(hr) Graphics::HrException( __LINE__,__FILE__,(hr) )
+#define GFX_THROW_NOINFO(hrcall) if( FAILED( hr = (hrcall) ) ) throw Graphics::HrException( __LINE__,__FILE__,hr )
 
-#define GFX_THROW_NOINFO(hrcall)		if( FAILED( hr = (hrcall) ) ) throw Graphics::HrException( __LINE__,__FILE__,hr )
-#define GFX_EXCEPT(hr)					Graphics::HrException( __LINE__,__FILE__,hr )
-#define GFX_DEVICE_REMOVED_EXCEPT(hr)	Graphics::DeviceRemovedException( __LINE__,__FILE__,hr )
-#define GFX_THROW_INFO_ONLY(call)		(call)
-
-Graphics::HrException::HrException(int line, const char* file, HRESULT hr, std::vector<std::string> infoMsgs) noexcept
-	:ExceptionClass(line, file),
-	hr(hr)
-{
-	// join all info messages with newlines into single string
-	for (const auto& m : infoMsgs)
-	{
-		info += m;
-		info.push_back('\n');
-	}
-	// remove final newline if exists
-	if (!info.empty())
-	{
-		info.pop_back();
-	}
-}
-
-const char* Graphics::HrException::what() const noexcept
-{
-	std::ostringstream oss;
-	oss << GetType() << std::endl
-		<< "[Error Code] 0x" << std::hex << std::uppercase << hr
-		<< std::dec << " (" << (unsigned long)hr << ")" << std::endl
-		<< "[Error String] " << "Jaja jodete" << std::endl
-		<< "[Description] " << "No vas trobar el header tonto" << std::endl;
-	if (!info.empty())
-	{
-		oss << "\n[Error Info]\n" << info << std::endl << std::endl;
-	}
-	oss << GetOriginString();
-	whatBuffer = oss.str();
-	return whatBuffer.c_str();
-}
-
-const char* Graphics::HrException::GetType() const noexcept
-{
-	return "Graphics Exception";
-}
-
-const char* Graphics::DeviceRemovedException::GetType() const noexcept
-{
-	return "Graphics Exception [Device Removed] (DXGI_ERROR_DEVICE_REMOVED)";
-}
+#ifndef NDEBUG
+#define GFX_EXCEPT(hr) Graphics::HrException( __LINE__,__FILE__,(hr),infoManager.GetMessages() )
+#define GFX_THROW_INFO(hrcall) infoManager.Set(); if( FAILED( hr = (hrcall) ) ) throw GFX_EXCEPT(hr)
+#define GFX_DEVICE_REMOVED_EXCEPT(hr) Graphics::DeviceRemovedException( __LINE__,__FILE__,(hr),infoManager.GetMessages() )
+#define GFX_THROW_INFO_ONLY(call) infoManager.Set(); (call); {auto v = infoManager.GetMessages(); if(!v.empty()) {throw Graphics::InfoException( __LINE__,__FILE__,v);}}
+#else
+#define GFX_EXCEPT(hr) Graphics::HrException( __LINE__,__FILE__,(hr) )
+#define GFX_THROW_INFO(hrcall) GFX_THROW_NOINFO(hrcall)
+#define GFX_DEVICE_REMOVED_EXCEPT(hr) Graphics::DeviceRemovedException( __LINE__,__FILE__,(hr) )
+#define GFX_THROW_INFO_ONLY(call) (call)
+#endif
 
 //	Graphics stuff
 
@@ -90,7 +53,7 @@ void Graphics::create(HWND hWnd)
 	//	Create device & front/back buffers & swap chain & rendering context
 
 	HRESULT hr;
-	GFX_THROW_NOINFO(D3D11CreateDeviceAndSwapChain(
+	GFX_THROW_INFO(D3D11CreateDeviceAndSwapChain(
 		nullptr,
 		D3D_DRIVER_TYPE_HARDWARE,
 		nullptr,
@@ -108,8 +71,8 @@ void Graphics::create(HWND hWnd)
 	//	Gain access to render target through shinnanigins
 
 	pCom<ID3D11Resource> pBackBuffer;
-	GFX_THROW_NOINFO(pSwap->GetBuffer(0, __uuidof(ID3D11Resource), &pBackBuffer));
-	GFX_THROW_NOINFO(pDevice->CreateRenderTargetView(pBackBuffer.Get(), nullptr, &pTarget));
+	GFX_THROW_INFO(pSwap->GetBuffer(0, __uuidof(ID3D11Resource), &pBackBuffer));
+	GFX_THROW_INFO(pDevice->CreateRenderTargetView(pBackBuffer.Get(), nullptr, &pTarget));
 
 }
 
@@ -125,33 +88,33 @@ void Graphics::pushFrame()
 	}
 }
 
-void Graphics::clearBuffer(float R, float G, float B, float A) noexcept
+void Graphics::clearBuffer(float R, float G, float B, float A)
 {
 	const float color[] = { R,G,B,A };
-	pContext->ClearRenderTargetView(pTarget.Get(), color);
+	GFX_THROW_INFO_ONLY(pContext->ClearRenderTargetView(pTarget.Get(), color));
 }
 
-void Graphics::clearBuffer(Color color) noexcept
+void Graphics::clearBuffer(Color color)
 {
 	const float col[] = { color.R / 255.f,color.G / 255.f,color.B / 255.f,color.A / 255.f };
-	pContext->ClearRenderTargetView(pTarget.Get(), col);
+	GFX_THROW_INFO_ONLY(pContext->ClearRenderTargetView(pTarget.Get(), col));
 }
 
 Vector2f Graphics::PixeltoR2(Vector2i MousePos)
 {
-	return Vector2f(2.f * MousePos.x / WindowDimensions.x - 1.f, -2.f * MousePos.y / WindowDimensions.y + 1.f);
+	return Vector2f(2.f * MousePos.x / WindowDim.x - 1.f, -2.f * MousePos.y / WindowDim.y + 1.f);
 }
 
 void Graphics::setWindowDimensions(Vector2i& Dim)
 {
-	WindowDimensions = Dim;
+	WindowDim = Dim;
 }
 
 void Graphics::initSettings()
 {
 	//	Bind render target
 
-	pContext->OMSetRenderTargets(1u, pTarget.GetAddressOf(), NULL);
+	GFX_THROW_INFO_ONLY(pContext->OMSetRenderTargets(1u, pTarget.GetAddressOf(), NULL));
 
 	//	Configure viewport
 
@@ -171,37 +134,37 @@ void Graphics::initTestTriangle()
 
 	//	Create vertex buffer
 
-	TestTriangle.vertexs.push_back({Vector3f(0.f,0.f,0.5f),Color::White});
-	TestTriangle.vertexs.push_back({ 0.5f * Vector3f(cosf(2 * 3.14159f * 0 / 6) ,-sinf(2 * 3.14159f * 0 / 6), 0.f) , Color::Red		});
-	TestTriangle.vertexs.push_back({ 0.5f * Vector3f(cosf(2 * 3.14159f * 1 / 6) ,-sinf(2 * 3.14159f * 1 / 6), 0.f) , Color::Yellow	});
-	TestTriangle.vertexs.push_back({ 0.5f * Vector3f(cosf(2 * 3.14159f * 2 / 6) ,-sinf(2 * 3.14159f * 2 / 6), 0.f) , Color::Green	});
-	TestTriangle.vertexs.push_back({ 0.5f * Vector3f(cosf(2 * 3.14159f * 3 / 6) ,-sinf(2 * 3.14159f * 3 / 6), 0.f) , Color::Cyan	});
-	TestTriangle.vertexs.push_back({ 0.5f * Vector3f(cosf(2 * 3.14159f * 4 / 6) ,-sinf(2 * 3.14159f * 4 / 6), 0.f) , Color::Blue	});
-	TestTriangle.vertexs.push_back({ 0.5f * Vector3f(cosf(2 * 3.14159f * 5 / 6) ,-sinf(2 * 3.14159f * 5 / 6), 0.f) , Color::Purple	});
-	TestTriangle.vertexs.push_back({ Vector3f(0.f,0.f,-0.5f),Color::Black });
+	Triangle.vertexs.push_back({ Vector3f(0.f, 0.f, 0.5f), Color(90,90,90,255) });
+	Triangle.vertexs.push_back({ 0.5f * Vector3f(cosf(2 * 3.14159f * 0 / 6) ,-sinf(2 * 3.14159f * 0 / 6), 0.f) , Color(90,90,90,255) });
+	Triangle.vertexs.push_back({ 0.5f * Vector3f(cosf(2 * 3.14159f * 1 / 6) ,-sinf(2 * 3.14159f * 1 / 6), 0.f) , Color(90,90,90,255) });
+	Triangle.vertexs.push_back({ 0.5f * Vector3f(cosf(2 * 3.14159f * 2 / 6) ,-sinf(2 * 3.14159f * 2 / 6), 0.f) , Color(90,90,90,255) });
+	Triangle.vertexs.push_back({ 0.5f * Vector3f(cosf(2 * 3.14159f * 3 / 6) ,-sinf(2 * 3.14159f * 3 / 6), 0.f) , Color(90,90,90,255) });
+	Triangle.vertexs.push_back({ 0.5f * Vector3f(cosf(2 * 3.14159f * 4 / 6) ,-sinf(2 * 3.14159f * 4 / 6), 0.f) , Color(90,90,90,255) });
+	Triangle.vertexs.push_back({ 0.5f * Vector3f(cosf(2 * 3.14159f * 5 / 6) ,-sinf(2 * 3.14159f * 5 / 6), 0.f) , Color(90,90,90,255) });
+	Triangle.vertexs.push_back({ Vector3f(0.f, 0.f,-0.5f), Color(90,90,90,255) });
 
 	D3D11_BUFFER_DESC bd = {};
 	bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	bd.Usage = D3D11_USAGE_DEFAULT;
 	bd.CPUAccessFlags = 0u;
 	bd.MiscFlags = 0u;
-	bd.ByteWidth = (UINT)TestTriangle.vertexs.size()*sizeof(Vertex);
+	bd.ByteWidth = (UINT)Triangle.vertexs.size()*sizeof(Vertex);
 	bd.StructureByteStride = sizeof(Vertex);
 	D3D11_SUBRESOURCE_DATA sd = {};
-	sd.pSysMem = &TestTriangle.vertexs[0];
-	GFX_THROW_NOINFO(pDevice->CreateBuffer(&bd, &sd, &TestTriangle.pVertexBuffer));
+	sd.pSysMem = &Triangle.vertexs[0];
+	GFX_THROW_INFO(pDevice->CreateBuffer(&bd, &sd, &Triangle.pVertexBuffer));
 
 	//	Create index buffer
 
 	for (int i = 0; i < 6; i++) {
-		TestTriangle.Indexs.push_back(0);
-		TestTriangle.Indexs.push_back(i + 1);
-		TestTriangle.Indexs.push_back((i + 1) % 6 + 1);
+		Triangle.Indexs.push_back(0);
+		Triangle.Indexs.push_back(i + 1);
+		Triangle.Indexs.push_back((i + 1) % 6 + 1);
 	}
 	for (int i = 0; i < 6; i++) {
-		TestTriangle.Indexs.push_back(7);
-		TestTriangle.Indexs.push_back((i + 1) % 6 + 1);
-		TestTriangle.Indexs.push_back(i + 1);
+		Triangle.Indexs.push_back(7);
+		Triangle.Indexs.push_back((i + 1) % 6 + 1);
+		Triangle.Indexs.push_back(i + 1);
 	}
 
 	D3D11_BUFFER_DESC ibd = {};
@@ -209,30 +172,56 @@ void Graphics::initTestTriangle()
 	ibd.Usage = D3D11_USAGE_DEFAULT;
 	ibd.CPUAccessFlags = 0u;
 	ibd.MiscFlags = 0u;
-	ibd.ByteWidth = (UINT)TestTriangle.Indexs.size() * sizeof(unsigned short);
+	ibd.ByteWidth = (UINT)Triangle.Indexs.size() * sizeof(unsigned short);
 	ibd.StructureByteStride = sizeof(unsigned short);
 	D3D11_SUBRESOURCE_DATA isd = {};
-	isd.pSysMem = &TestTriangle.Indexs[0];
-	GFX_THROW_NOINFO(pDevice->CreateBuffer(&ibd, &isd, &TestTriangle.pIndexBuffer));
-	TestTriangle.NumIndexes = (UINT)TestTriangle.Indexs.size();
+	isd.pSysMem = &Triangle.Indexs[0];
+	GFX_THROW_INFO(pDevice->CreateBuffer(&ibd, &isd, &Triangle.pIndexBuffer));
+	Triangle.NumIndexes = (UINT)Triangle.Indexs.size();
 
 	//	Save the normal vector of the triangles for pixel shaders
 
-	for (UINT i = 0; i < TestTriangle.NumIndexes / 3; i++)
-		TestTriangle.norms.push_back(
-			((TestTriangle.vertexs[TestTriangle.Indexs[3 * i + 1]].vector - TestTriangle.vertexs[TestTriangle.Indexs[3 * i]].vector) *
-			(TestTriangle.vertexs[TestTriangle.Indexs[3 * i + 2]].vector - TestTriangle.vertexs[TestTriangle.Indexs[3 * i]].vector)).normalize());
+	for (UINT i = 0; i < Triangle.NumIndexes / 3; i++)
+		Triangle.norms.push_back(
+			((Triangle.vertexs[Triangle.Indexs[3 * i + 1]].vector - Triangle.vertexs[Triangle.Indexs[3 * i]].vector) *
+			(Triangle.vertexs[Triangle.Indexs[3 * i + 2]].vector - Triangle.vertexs[Triangle.Indexs[3 * i]].vector)).normalize());
+
+	//	(Matrix transformations) Vertex shader constant buffer
+
+	D3D11_BUFFER_DESC vscbd = {};
+	vscbd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	vscbd.Usage = D3D11_USAGE_DEFAULT;
+	vscbd.CPUAccessFlags = 0u;
+	vscbd.MiscFlags = 0u;
+	vscbd.ByteWidth = sizeof(Triangle.vscBuff);
+	vscbd.StructureByteStride = 0u;
+	D3D11_SUBRESOURCE_DATA vscsd = {};
+	vscsd.pSysMem = &Triangle.vscBuff;
+	GFX_THROW_INFO(pDevice->CreateBuffer(&vscbd, &vscsd, &Triangle.pVSconstBuffer));
+
+	//	(light management) Pixel shader constant buffer
+
+	D3D11_BUFFER_DESC pscbd = {};
+	pscbd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	pscbd.Usage = D3D11_USAGE_DEFAULT;
+	pscbd.CPUAccessFlags = 0u;
+	pscbd.MiscFlags = 0u;
+	pscbd.ByteWidth = sizeof(Triangle.pscBuff);
+	pscbd.StructureByteStride = 0u;
+	D3D11_SUBRESOURCE_DATA pscsd = {};
+	pscsd.pSysMem = &Triangle.pscBuff;
+	GFX_THROW_INFO(pDevice->CreateBuffer(&pscbd, &pscsd, &Triangle.pPSconstBuffer));
 
 	//	Create pixel shader
 
 	pCom<ID3DBlob> pBlob;
-	GFX_THROW_NOINFO(D3DReadFileToBlob(L"Shaders/PixelShader.cso", &pBlob));
-	GFX_THROW_NOINFO(pDevice->CreatePixelShader(pBlob->GetBufferPointer(), pBlob->GetBufferSize(), nullptr, &TestTriangle.pPixelShader));
+	GFX_THROW_INFO(D3DReadFileToBlob(L"Shaders/PixelShader.cso", &pBlob));
+	GFX_THROW_INFO(pDevice->CreatePixelShader(pBlob->GetBufferPointer(), pBlob->GetBufferSize(), nullptr, &Triangle.pPixelShader));
 
-	//	Create vertex shader & bind
+	//	Create vertex shader
 
-	GFX_THROW_NOINFO(D3DReadFileToBlob(L"Shaders/VertexShader.cso", &pBlob));
-	GFX_THROW_NOINFO(pDevice->CreateVertexShader(pBlob->GetBufferPointer(), pBlob->GetBufferSize(), nullptr, &TestTriangle.pVertexShader));
+	GFX_THROW_INFO(D3DReadFileToBlob(L"Shaders/VertexShader.cso", &pBlob));
+	GFX_THROW_INFO(pDevice->CreateVertexShader(pBlob->GetBufferPointer(), pBlob->GetBufferSize(), nullptr, &Triangle.pVertexShader));
 
 	//	 Create input (vertex) layout (2d position only)
 
@@ -241,98 +230,72 @@ void Graphics::initTestTriangle()
 		{ "Position",0,DXGI_FORMAT_R32G32B32_FLOAT,0,0,D3D11_INPUT_PER_VERTEX_DATA,0},
 		{ "Color",0,DXGI_FORMAT_R8G8B8A8_UNORM,0,D3D11_APPEND_ALIGNED_ELEMENT,D3D11_INPUT_PER_VERTEX_DATA,0},
 	};
-	GFX_THROW_NOINFO(pDevice->CreateInputLayout(
+	GFX_THROW_INFO(pDevice->CreateInputLayout(
 		ied, (UINT)std::size(ied),
 		pBlob->GetBufferPointer(),
 		pBlob->GetBufferSize(),
-		&TestTriangle.pInputLayout
+		&Triangle.pInputLayout
 	));
 }
 
-void Graphics::drawTestTriangle(float angle, Vector2i MousePos)
+void Graphics::bindTestTrinagle()
 {
-	HRESULT hr;
-
-	//	(Matrix transformations) Vertex shader constant buffer
-
-	struct VSconstBuffer{
-		_float4matrix movement;
-		_float4matrix perspective;
-	};
+	//	Bind vertex shader constant buffer
 	
+	GFX_THROW_INFO_ONLY(pContext->VSSetConstantBuffers(0u, 1u, Triangle.pVSconstBuffer.GetAddressOf()));
+
+	//	Bind pixel shader constant buffer
+
+	GFX_THROW_INFO_ONLY(pContext->PSSetConstantBuffers(0u, 1u, Triangle.pPSconstBuffer.GetAddressOf()));
+
+	//	Bind vertex buffer
+
+	GFX_THROW_INFO_ONLY(pContext->IASetVertexBuffers(0u, 1u, Triangle.pVertexBuffer.GetAddressOf(), &Vertex::stride, &Vertex::offset));
+
+	//	Bind index buffer
+
+	GFX_THROW_INFO_ONLY(pContext->IASetIndexBuffer(Triangle.pIndexBuffer.Get(), DXGI_FORMAT_R16_UINT, 0u));
+
+	//	Bind pixel shader
+
+	GFX_THROW_INFO_ONLY(pContext->PSSetShader(Triangle.pPixelShader.Get(), nullptr, 0u));
+
+	//	Bind vertex shader
+
+	GFX_THROW_INFO_ONLY(pContext->VSSetShader(Triangle.pVertexShader.Get(), nullptr, 0u));
+
+	//	Bind input layout
+
+	GFX_THROW_INFO_ONLY(pContext->IASetInputLayout(Triangle.pInputLayout.Get()));
+
+	//	Set primitive topology
+
+	GFX_THROW_INFO_ONLY(pContext->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST));
+}
+
+void Graphics::drawTestTriangle(float angle, Vector2i MousePos, float scale)
+{
+	//	Update vertex shader constant buffer
+
 	Vector2f pos = PixeltoR2(MousePos);
 	Matrix Rotations = ZRotationMatrix(-pos.x * 3.14159f) * XRotationMatrix(-pos.y * 3.14159f / 2.f);
-	Matrix Projections = ProjectionMatrix(Vector3f(-1.f, 0.f, 0.f)) * ScalingMatrix((float)WindowDimensions.y / (float)WindowDimensions.x, 1.f, 1.f);
-	const VSconstBuffer cBuff = {
+	Matrix Projections = ProjectionMatrix(Vector3f(-1.f, 0.f, 0.f)) * ScalingMatrix(1.f / WindowDim.x, 1.f / WindowDim.y, 1.f) * scale;
+
+	Triangle.vscBuff = {
 		Rotations.transpose().getMatrix4(),
 		Projections.transpose().getMatrix4()
 	};
 
-	pCom<ID3D11Buffer> pConstBuffer;
+	GFX_THROW_INFO_ONLY(pContext->UpdateSubresource(Triangle.pVSconstBuffer.Get(), 0u, nullptr, &Triangle.vscBuff, 0u, 0u));
 
-	D3D11_BUFFER_DESC cbd = {};
-	cbd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	cbd.Usage = D3D11_USAGE_DYNAMIC;
-	cbd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-	cbd.MiscFlags = 0u;
-	cbd.ByteWidth = sizeof(cBuff);
-	cbd.StructureByteStride = 0u;
-	D3D11_SUBRESOURCE_DATA csd = {};
-	csd.pSysMem = &cBuff;
-	GFX_THROW_NOINFO(pDevice->CreateBuffer(&cbd, &csd, &pConstBuffer));
+	//	Update pixel shader constant buffer
 
-	pContext->VSSetConstantBuffers(0u, 1u, pConstBuffer.GetAddressOf());
-
-	//	(light management) Pixel shader constant buffer
-
-	struct PSconstBuffer {
-		_float4vector norm4[12];
-	};
-
-	PSconstBuffer pscBuff;
 	for (UINT i = 0; i < 12u; i++)
-		pscBuff.norm4[i] = { 1.f,0.f,0.f,0.f };//(Rotations * TestTriangle.norms[i]).getVector4();
+		Triangle.pscBuff.norm4[i] = (Rotations * Triangle.norms[i]).getVector4();
 
-	D3D11_BUFFER_DESC pscbd = {};
-	pscbd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	pscbd.Usage = D3D11_USAGE_DYNAMIC;
-	pscbd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-	pscbd.MiscFlags = 0u;
-	pscbd.ByteWidth = sizeof(pscBuff);
-	pscbd.StructureByteStride = 0u;
-	D3D11_SUBRESOURCE_DATA pscsd = {};
-	pscsd.pSysMem = &cBuff;
-	GFX_THROW_NOINFO(pDevice->CreateBuffer(&pscbd, &pscsd, &TestTriangle.pPSConstantBuffer));
-
-	pContext->PSSetConstantBuffers(0u, 1u, TestTriangle.pPSConstantBuffer.GetAddressOf());
-
-	//	Bind vertex buffer
-
-	const UINT stride = sizeof(Vertex);
-	const UINT offset = 0u;
-	pContext->IASetVertexBuffers(0u, 1u, TestTriangle.pVertexBuffer.GetAddressOf(), &stride, &offset);
-
-	//	Bind index buffer
-
-	pContext->IASetIndexBuffer(TestTriangle.pIndexBuffer.Get(), DXGI_FORMAT_R16_UINT, 0u);
-
-	//	Bind pixel shader
-
-	pContext->PSSetShader(TestTriangle.pPixelShader.Get(), nullptr, 0u);
-
-	//	Bind vertex shader
-
-	pContext->VSSetShader(TestTriangle.pVertexShader.Get(), nullptr, 0u);
-
-	//	Bind input layout
-
-	pContext->IASetInputLayout(TestTriangle.pInputLayout.Get());
-
-	//	Set primitive topology
-
-	pContext->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	GFX_THROW_INFO_ONLY(pContext->UpdateSubresource(Triangle.pPSconstBuffer.Get(), 0u, nullptr, &Triangle.pscBuff, 0u, 0u));
 
 	//	Draw test triangle
 
-	GFX_THROW_INFO_ONLY(pContext->DrawIndexed(TestTriangle.NumIndexes,0u, 0u));
+	GFX_THROW_INFO_ONLY(pContext->DrawIndexed(Triangle.NumIndexes,0u, 0u));
 }

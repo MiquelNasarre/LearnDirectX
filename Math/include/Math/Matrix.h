@@ -29,7 +29,8 @@ public:
 	Matrix operator-(const Matrix& other) const;
 	Matrix operator*(const Matrix& other) const;
 	Matrix operator-() const;
-	Vector3f operator*(const Vector3f& other);
+	Vector3f operator*(const Vector3f& other) const;
+	Matrix operator*(const float& other) const;
 
 	Vector3f column(unsigned int n) const;
 	float determinant() const;
@@ -50,3 +51,6 @@ Matrix XRotationMatrix(float angle);
 Matrix YRotationMatrix(float angle);
 Matrix ZRotationMatrix(float angle);
 Matrix ScalingMatrix(float x, float y, float z);
+
+Matrix operator*(const float& x, const Matrix& M);
+Vector3f operator*(const Vector3f& V, const Matrix& M);

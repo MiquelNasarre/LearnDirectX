@@ -93,15 +93,15 @@
       <PreprocessorDefinitions>_CRT_NO_WARNINGS;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir)HeaderFiles/;$(ProjectDir);$(ProjectDir)Resources/ResourceFiles;$(SolutionDir)Math/include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)HeaderFiles/;$(ProjectDir);$(ProjectDir)Resources/ResourceFiles;$(SolutionDir)Math/include/;$(SolutionDir)dxerr/include/;</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)Math\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>Math.lib;winmm.lib;d3d11.lib;D3DCompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)Math\lib;$(SolutionDir)dxerr\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>dxerr_d.lib;Math_d.lib;winmm.lib;d3d11.lib;D3DCompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -113,7 +113,7 @@
       <PreprocessorDefinitions>_CRT_NO_WARNINGS;NDEBUG;WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir)HeaderFiles/;$(ProjectDir);$(ProjectDir)Resources/ResourceFiles;$(SolutionDir)Math/include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)HeaderFiles/;$(ProjectDir);$(ProjectDir)Resources/ResourceFiles;$(SolutionDir)Math/include/;$(SolutionDir)dxerr/include/;</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
     </ClCompile>
@@ -122,8 +122,8 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)Math\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>Math.lib;winmm.lib;d3d11.lib;D3DCompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)Math\lib;$(SolutionDir)dxerr\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>dxerr.lib;Math.lib;winmm.lib;d3d11.lib;D3DCompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -133,15 +133,15 @@
       <PreprocessorDefinitions>_CRT_NO_WARNINGS;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir)HeaderFiles/;$(ProjectDir);$(ProjectDir)Resources/ResourceFiles;$(SolutionDir)Math/include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)HeaderFiles/;$(ProjectDir);$(ProjectDir)Resources/ResourceFiles;$(SolutionDir)Math/include/;$(SolutionDir)dxerr/include/;</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)Math\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>Math.lib;winmm.lib;d3d11.lib;D3DCompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)Math\lib;$(SolutionDir)dxerr\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>dxerr_d.lib;Math_d.lib;winmm.lib;d3d11.lib;D3DCompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -153,7 +153,7 @@
       <PreprocessorDefinitions>_CRT_NO_WARNINGS;NDEBUG;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir)HeaderFiles/;$(ProjectDir);$(ProjectDir)Resources/ResourceFiles;$(SolutionDir)Math/include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)HeaderFiles/;$(ProjectDir);$(ProjectDir)Resources/ResourceFiles;$(SolutionDir)Math/include/;$(SolutionDir)dxerr/include/;</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
     </ClCompile>
@@ -162,13 +162,15 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)Math\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>Math.lib;winmm.lib;d3d11.lib;D3DCompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)Math\lib;$(SolutionDir)dxerr\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>dxerr.lib;Math.lib;winmm.lib;d3d11.lib;D3DCompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="SourceFiles\Application.cpp" />
+    <ClCompile Include="SourceFiles\DxgiInfoManager.cpp" />
     <ClCompile Include="SourceFiles\Exception.cpp" />
+    <ClCompile Include="SourceFiles\_exFunc.cpp" />
     <ClCompile Include="SourceFiles\Graphics.cpp" />
     <ClCompile Include="SourceFiles\Keyboard.cpp" />
     <ClCompile Include="SourceFiles\Mouse.cpp" />
@@ -178,6 +180,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="HeaderFiles\Application.h" />
+    <ClInclude Include="HeaderFiles\DxgiInfoManager.h" />
     <ClInclude Include="HeaderFiles\Exception.h" />
     <ClInclude Include="HeaderFiles\Graphics.h" />
     <ClInclude Include="HeaderFiles\Header.h" />

@@ -19,15 +19,18 @@
     <Filter Include="Shaders">
       <UniqueIdentifier>{b9029ffe-7524-4f80-9bd1-904a7f56f36d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Sources\Public\Exception">
+      <UniqueIdentifier>{d2aa9295-530c-4fd5-8a70-d717d40dc64a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sources\Private\Exception">
+      <UniqueIdentifier>{ba8d36cb-ce1b-414d-8e57-f8fd9563a165}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="SourceFiles\WinMain.cpp">
       <Filter>Sources\Private</Filter>
     </ClCompile>
     <ClCompile Include="SourceFiles\Window.cpp">
-      <Filter>Sources\Private</Filter>
-    </ClCompile>
-    <ClCompile Include="SourceFiles\Exception.cpp">
       <Filter>Sources\Private</Filter>
     </ClCompile>
     <ClCompile Include="SourceFiles\Keyboard.cpp">
@@ -45,15 +48,21 @@
     <ClCompile Include="SourceFiles\Graphics.cpp">
       <Filter>Sources\Private</Filter>
     </ClCompile>
+    <ClCompile Include="SourceFiles\Exception.cpp">
+      <Filter>Sources\Private\Exception</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceFiles\DxgiInfoManager.cpp">
+      <Filter>Sources\Private\Exception</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceFiles\_exFunc.cpp">
+      <Filter>Sources\Private\Exception</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="HeaderFiles\Header.h">
       <Filter>Sources\Public</Filter>
     </ClInclude>
     <ClInclude Include="HeaderFiles\Window.h">
-      <Filter>Sources\Public</Filter>
-    </ClInclude>
-    <ClInclude Include="HeaderFiles\Exception.h">
       <Filter>Sources\Public</Filter>
     </ClInclude>
     <ClInclude Include="Resources\ResourceFiles\resource.h">
@@ -73,6 +82,12 @@
     </ClInclude>
     <ClInclude Include="HeaderFiles\Graphics.h">
       <Filter>Sources\Public</Filter>
+    </ClInclude>
+    <ClInclude Include="HeaderFiles\DxgiInfoManager.h">
+      <Filter>Sources\Public\Exception</Filter>
+    </ClInclude>
+    <ClInclude Include="HeaderFiles\Exception.h">
+      <Filter>Sources\Public\Exception</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

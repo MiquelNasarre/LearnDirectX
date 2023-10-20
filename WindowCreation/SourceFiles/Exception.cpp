@@ -1,4 +1,5 @@
 #include "Exception.h"
+#include <sstream>
 
 ExceptionClass::ExceptionClass( int line,const char* file ) noexcept
 	:line( line ),

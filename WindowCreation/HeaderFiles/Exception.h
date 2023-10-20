@@ -2,7 +2,6 @@
 
 #include <exception>
 #include <string>
-#include <sstream>
 
 class ExceptionClass : public std::exception
 {

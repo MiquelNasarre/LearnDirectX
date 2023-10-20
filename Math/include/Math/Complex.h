@@ -2,8 +2,7 @@
 
 #include <iostream>
 
-#define Pi 3.14159265358979f
-#define e  2.71828182845905f
+#define _COMPLEX_ADDED
 
 struct Complex {
 	static const bool Rectangular	= true;
@@ -33,8 +32,6 @@ struct Complex {
 	float		abs();
 	std::string str();
 };
-
-#define I Complex(0.f,1.f)
 
 Complex operator*(const int& lhs, const Complex& rhs);
 Complex operator*(const float& lhs, const Complex& rhs);

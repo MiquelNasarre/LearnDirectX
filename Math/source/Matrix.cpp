@@ -75,9 +75,14 @@ Matrix Matrix::operator-() const
 	return Matrix(-row[0], -row[1], -row[2]);
 }
 
-Vector3f Matrix::operator*(const Vector3f& other)
+Vector3f Matrix::operator*(const Vector3f& other) const
 {
 	return Vector3f(row[0] ^ other, row[1] ^ other, row[2] ^ other);
+}
+
+Matrix Matrix::operator*(const float& other) const
+{
+	return Matrix(other * row[0], other * row[1], other * row[2]);
 }
 
 Vector3f Matrix::column(unsigned int n) const
@@ -187,6 +192,12 @@ _float4matrix Matrix::getMatrix4() const
 
 Matrix ProjectionMatrix(Vector3f V)
 {
+	if (!V.x && !V.y) {
+		if (V.z > 0)
+			return Matrix::Identity;
+		else return ScalingMatrix(1.f,-1.f,-1.f);
+	}
+
 	Vector2f V2 = { V.x,V.y };
 	float absXY = V2.abs();
 	V2 /= absXY;
@@ -239,4 +250,14 @@ Matrix ScalingMatrix(float x, float y, float z)
 			0.f,y,0.f,
 			0.f,0.f,z
 		});
+}
+
+Matrix operator*(const float& x, const Matrix& M)
+{
+	return M * x;
+}
+
+Vector3f operator*(const Vector3f& V, const Matrix& M)
+{
+	return M.transposed() * V;
 }

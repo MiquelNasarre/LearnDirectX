@@ -1,5 +1,5 @@
 #include "Complex.h"
-
+#include "constants.h"
 #include <string>
 
 Complex::Complex(float x, float y, bool type)
