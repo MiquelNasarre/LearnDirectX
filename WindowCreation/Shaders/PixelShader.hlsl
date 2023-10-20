@@ -23,7 +23,7 @@ float4 main(float4 color : Color, float4 pos : PointPos, uint tid : SV_Primitive
     float3 lightsource = float3(0.f, 1.f, 1.f);
     
     float distance = normfloat3(lightsource - (float3)pos);
-    float exposure = dotprd((float3)norm[tid], lightsource / normfloat3(lightsource));
+    float exposure = dotprd((float3) norm[tid], (lightsource - pos) / normfloat3(lightsource - (float3) pos));
     
     float light = noexposurelightintensity / distance / distance;
     if(exposure > 0)

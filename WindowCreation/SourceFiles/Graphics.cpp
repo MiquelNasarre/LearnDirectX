@@ -4,19 +4,19 @@
 
 //	Graphics exception macros
 
-#define GFX_EXCEPT_NOINFO(hr) Graphics::HrException( __LINE__,__FILE__,(hr) )
-#define GFX_THROW_NOINFO(hrcall) if( FAILED( hr = (hrcall) ) ) throw Graphics::HrException( __LINE__,__FILE__,hr )
+#define GFX_EXCEPT_NOINFO(hr)			Graphics::HrException( __LINE__,__FILE__,(hr) )
+#define GFX_THROW_NOINFO(hrcall)		if( FAILED( hr = (hrcall) ) ) throw Graphics::HrException( __LINE__,__FILE__,hr )
 
 #ifndef NDEBUG
-#define GFX_EXCEPT(hr) Graphics::HrException( __LINE__,__FILE__,(hr),infoManager.GetMessages() )
-#define GFX_THROW_INFO(hrcall) infoManager.Set(); if( FAILED( hr = (hrcall) ) ) throw GFX_EXCEPT(hr)
-#define GFX_DEVICE_REMOVED_EXCEPT(hr) Graphics::DeviceRemovedException( __LINE__,__FILE__,(hr),infoManager.GetMessages() )
-#define GFX_THROW_INFO_ONLY(call) infoManager.Set(); (call); {auto v = infoManager.GetMessages(); if(!v.empty()) {throw Graphics::InfoException( __LINE__,__FILE__,v);}}
+#define GFX_EXCEPT(hr)					Graphics::HrException( __LINE__,__FILE__,(hr),infoManager.GetMessages() )
+#define GFX_THROW_INFO(hrcall)			infoManager.Set(); if( FAILED( hr = (hrcall) ) ) throw GFX_EXCEPT(hr)
+#define GFX_DEVICE_REMOVED_EXCEPT(hr)	Graphics::DeviceRemovedException( __LINE__,__FILE__,(hr),infoManager.GetMessages() )
+#define GFX_THROW_INFO_ONLY(call)		infoManager.Set(); (call); {auto v = infoManager.GetMessages(); if(!v.empty()) {throw Graphics::InfoException( __LINE__,__FILE__,v);}}
 #else
-#define GFX_EXCEPT(hr) Graphics::HrException( __LINE__,__FILE__,(hr) )
-#define GFX_THROW_INFO(hrcall) GFX_THROW_NOINFO(hrcall)
-#define GFX_DEVICE_REMOVED_EXCEPT(hr) Graphics::DeviceRemovedException( __LINE__,__FILE__,(hr) )
-#define GFX_THROW_INFO_ONLY(call) (call)
+#define GFX_EXCEPT(hr)					Graphics::HrException( __LINE__,__FILE__,(hr) )
+#define GFX_THROW_INFO(hrcall)			GFX_THROW_NOINFO(hrcall)
+#define GFX_DEVICE_REMOVED_EXCEPT(hr)	Graphics::DeviceRemovedException( __LINE__,__FILE__,(hr) )
+#define GFX_THROW_INFO_ONLY(call)		(call)
 #endif
 
 //	Graphics stuff
@@ -28,18 +28,19 @@ Graphics::Graphics(HWND hWnd)
 
 void Graphics::create(HWND hWnd)
 {
+	HWnd = hWnd;
 	DXGI_SWAP_CHAIN_DESC sd = {};
-	sd.BufferDesc.Width						= 0;
-	sd.BufferDesc.Height					= 0;
+	sd.BufferDesc.Width						= 0u;
+	sd.BufferDesc.Height					= 0u;
 	sd.BufferDesc.Format					= DXGI_FORMAT_B8G8R8A8_UNORM;
-	sd.BufferDesc.RefreshRate.Numerator		= 0;
-	sd.BufferDesc.RefreshRate.Denominator	= 0;
+	sd.BufferDesc.RefreshRate.Numerator		= 0u;
+	sd.BufferDesc.RefreshRate.Denominator	= 0u;
 	sd.BufferDesc.Scaling					= DXGI_MODE_SCALING_UNSPECIFIED;
 	sd.BufferDesc.ScanlineOrdering			= DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
-	sd.SampleDesc.Count						= 1;
-	sd.SampleDesc.Quality					= 0;
+	sd.SampleDesc.Count						= 1u;
+	sd.SampleDesc.Quality					= 0u;
 	sd.BufferUsage							= DXGI_USAGE_RENDER_TARGET_OUTPUT;
-	sd.BufferCount							= 1;
+	sd.BufferCount							= 1u;
 	sd.OutputWindow							= hWnd;
 	sd.Windowed								= TRUE;
 	sd.SwapEffect							= DXGI_SWAP_EFFECT_DISCARD;
@@ -73,7 +74,13 @@ void Graphics::create(HWND hWnd)
 	pCom<ID3D11Resource> pBackBuffer;
 	GFX_THROW_INFO(pSwap->GetBuffer(0, __uuidof(ID3D11Resource), &pBackBuffer));
 	GFX_THROW_INFO(pDevice->CreateRenderTargetView(pBackBuffer.Get(), nullptr, &pTarget));
+}
 
+bool Graphics::isInitialized()
+{
+	if (pDevice.Get())
+		return true;
+	return false;
 }
 
 void Graphics::pushFrame()
@@ -108,24 +115,65 @@ Vector2f Graphics::PixeltoR2(Vector2i MousePos)
 void Graphics::setWindowDimensions(Vector2i& Dim)
 {
 	WindowDim = Dim;
+
+	create(HWnd);
+	initSettings();
+	initTestTriangle();
+	bindTestTrinagle();
+
+
 }
 
 void Graphics::initSettings()
 {
+	HRESULT hr;
+
+	//	Create and bind depth stencil state
+
+	pCom<ID3D11DepthStencilState> pDSState;
+	D3D11_DEPTH_STENCIL_DESC dsDesc = {};
+	dsDesc.DepthEnable = TRUE;
+	dsDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+	dsDesc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
+	GFX_THROW_INFO(pDevice->CreateDepthStencilState(&dsDesc, &pDSState));
+
+	GFX_THROW_INFO_ONLY(pContext->OMSetDepthStencilState(pDSState.Get(), 1u));
+
+	//	Create and bind depth stencil texture
+
+	pCom<ID3D11Texture2D> pDepthStencil;
+	D3D11_TEXTURE2D_DESC descDepth = {};
+	descDepth.Width = (UINT)WindowDim.x;
+	descDepth.Height = (UINT)WindowDim.y;
+	descDepth.MipLevels = 1u;
+	descDepth.ArraySize = 1u;
+	descDepth.Format = DXGI_FORMAT_D32_FLOAT;
+	descDepth.SampleDesc.Count = 1u;
+	descDepth.SampleDesc.Quality = 0u;
+	descDepth.Usage = D3D11_USAGE_DEFAULT;
+	descDepth.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+	GFX_THROW_INFO(pDevice->CreateTexture2D(&descDepth, NULL, &pDepthStencil));
+
+	D3D11_DEPTH_STENCIL_VIEW_DESC descDSV = {};
+	descDSV.Format = DXGI_FORMAT_D32_FLOAT;
+	descDSV.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+	descDSV.Texture2D.MipSlice = 0u;
+	GFX_THROW_INFO(pDevice->CreateDepthStencilView(pDepthStencil.Get(), &descDSV, &pDSV));
+
 	//	Bind render target
 
-	GFX_THROW_INFO_ONLY(pContext->OMSetRenderTargets(1u, pTarget.GetAddressOf(), NULL));
+	GFX_THROW_INFO_ONLY(pContext->OMSetRenderTargets(1u, pTarget.GetAddressOf(), pDSV.Get()));
 
 	//	Configure viewport
 
 	CD3D11_VIEWPORT vp;
-	vp.Width = 640.f,
-	vp.Height = 480.f,
+	vp.Width = (float)WindowDim.x,
+	vp.Height = (float)WindowDim.y,
 	vp.MinDepth = 0;
 	vp.MaxDepth = 1;
 	vp.TopLeftX = 0;
 	vp.TopLeftY = 0;
-	pContext->RSSetViewports(1u, &vp);
+	GFX_THROW_INFO_ONLY(pContext->RSSetViewports(1u, &vp));
 }
 
 void Graphics::initTestTriangle()
@@ -134,6 +182,7 @@ void Graphics::initTestTriangle()
 
 	//	Create vertex buffer
 
+	Triangle.vertexs.clear();
 	Triangle.vertexs.push_back({ Vector3f(0.f, 0.f, 0.5f), Color(90,90,90,255) });
 	Triangle.vertexs.push_back({ 0.5f * Vector3f(cosf(2 * 3.14159f * 0 / 6) ,-sinf(2 * 3.14159f * 0 / 6), 0.f) , Color(90,90,90,255) });
 	Triangle.vertexs.push_back({ 0.5f * Vector3f(cosf(2 * 3.14159f * 1 / 6) ,-sinf(2 * 3.14159f * 1 / 6), 0.f) , Color(90,90,90,255) });
@@ -156,6 +205,7 @@ void Graphics::initTestTriangle()
 
 	//	Create index buffer
 
+	Triangle.Indexs.clear();
 	for (int i = 0; i < 6; i++) {
 		Triangle.Indexs.push_back(0);
 		Triangle.Indexs.push_back(i + 1);
@@ -278,10 +328,14 @@ void Graphics::drawTestTriangle(float angle, Vector2i MousePos, float scale)
 	//	Update vertex shader constant buffer
 
 	Vector2f pos = PixeltoR2(MousePos);
+	Vector3f Translation = Vector3f();
 	Matrix Rotations = ZRotationMatrix(-pos.x * 3.14159f) * XRotationMatrix(-pos.y * 3.14159f / 2.f);
-	Matrix Projections = ProjectionMatrix(Vector3f(-1.f, 0.f, 0.f)) * ScalingMatrix(1.f / WindowDim.x, 1.f / WindowDim.y, 1.f) * scale;
+
+	Matrix Projections = ProjectionMatrix(Vector3f(0.f,-1.f,0.f)) * ScalingMatrix(1.f / WindowDim.x, 1.f / WindowDim.y, 1.f) * scale;
+		
 
 	Triangle.vscBuff = {
+		Translation.getVector4(),
 		Rotations.transpose().getMatrix4(),
 		Projections.transpose().getMatrix4()
 	};

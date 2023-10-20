@@ -7,7 +7,6 @@ App::App()
 {
 	window.setFramerateLimit(60);
 	window.graphics.initTestTriangle();
-	window.graphics.initSettings();
 	window.graphics.bindTestTrinagle();
 	timer.reset();
 }

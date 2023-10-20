@@ -51,6 +51,7 @@ public:
 	Graphics& operator=(const Graphics&) = delete;
 
 	void create(HWND hWnd);
+	bool isInitialized();
 
 	void pushFrame();
 	void clearBuffer(float R = 1.f, float G = 1.f, float B = 1.f, float A = 1.f);
@@ -75,8 +76,9 @@ private:
 	struct indexedStructure {
 
 		struct VSconstBuffer {
-			_float4matrix movement;
-			_float4matrix perspective;
+			_float4vector translation;
+			_float4matrix rotation;
+			_float4matrix projection;
 		}vscBuff;
 
 		struct PSconstBuffer {
@@ -101,6 +103,8 @@ private:
 
 
 private:
+	HWND HWnd;
+
 #ifndef NDEBUG
 	DxgiInfoManager infoManager;
 #endif
@@ -108,6 +112,7 @@ private:
 	pCom<IDXGISwapChain>			pSwap;
 	pCom<ID3D11DeviceContext>		pContext;
 	pCom<ID3D11RenderTargetView>	pTarget;
+	pCom<ID3D11DepthStencilView>	pDSV;
 
 	Vector2i WindowDim;
 };

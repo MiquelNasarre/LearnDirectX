@@ -202,8 +202,8 @@ Matrix ProjectionMatrix(Vector3f V)
 	float absXY = V2.abs();
 	V2 /= absXY;
 	Matrix rotationZ = {
-		V2.x, V2.y, 0.f,
-		-V2.y,V2.x, 0.f,
+		V2.y, V2.x, 0.f,
+		-V2.x,V2.y, 0.f,
 		0.f ,  0.f, 1.f,
 	};
 	float absV = V.abs();

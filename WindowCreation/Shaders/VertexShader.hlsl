@@ -7,15 +7,16 @@ struct VSOut {
 
 cbuffer Cbuff
 {
-    matrix movement;
-    matrix perspective;
+    float4 translation;
+    matrix rotation;
+    matrix projection;
 };
 
 VSOut main(float3 pos : Position, float4 col : Color)
 {
 	VSOut vso;
-    vso.R3pos = mul(float4(pos, 1.f), movement);
-    float4 test = mul(vso.R3pos, perspective);
+    vso.R3pos = mul(float4(pos, 1.f), rotation) + translation;
+    float4 test = mul(vso.R3pos, projection);
     vso.SCpos = float4(test.x, test.y, 0.f, 1.f);
 	vso.color = col;
     

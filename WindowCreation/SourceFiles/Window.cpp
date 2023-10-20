@@ -216,7 +216,8 @@ LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noe
 	case WM_SIZE:
 		Dimensions.x = LOWORD(lParam);
 		Dimensions.y = HIWORD(lParam);
-		graphics.setWindowDimensions(Dimensions);
+		if(graphics.isInitialized())
+			graphics.setWindowDimensions(Dimensions);
 		break;
 
 	case WM_MOVE:
