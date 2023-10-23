@@ -1,7 +1,7 @@
 
 cbuffer Cbuff
 {
-    float4 norm[24];
+    float4 norm[12];
 };
 
 float normfloat3(float3 v)
@@ -20,7 +20,7 @@ float4 main(float4 color : Color, float4 pos : PointPos, uint tid : SV_Primitive
     float noexposurelightintensity  = 2.f;
     float ambientlight              = 0.0f;
     
-    float3 lightsource = float3(0.f, 2.f, 2.f);
+    float3 lightsource = float3(0.f, 0.f, 0.f);
     
     float distance = normfloat3(lightsource - (float3)pos);
     float exposure = dotprd((float3)norm[tid], (lightsource - (float3)pos) / distance);

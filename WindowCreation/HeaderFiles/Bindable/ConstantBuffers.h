@@ -10,7 +10,12 @@ template<typename C>
 class ConstantBuffer : public Bindable
 {
 public:
-	void Update(Graphics& gfx, const C& consts);
+	void Update(Graphics& gfx, const C& consts)
+	{
+		INFOMAN(gfx);
+		GFX_THROW_INFO_ONLY(GetContext(gfx)->UpdateSubresource(pConstantBuffer.Get(), 0u, NULL, &consts, 0u, 0u));
+	}
+
 	ConstantBuffer(Graphics& gfx, const C& consts, unsigned char type)
 		:Type{ type }
 	{
@@ -46,12 +51,12 @@ public:
 
 	void Bind(Graphics& gfx) override
 	{
-
+		INFOMAN(gfx);
 		if (Type == VERTEX_CONSTANT_BUFFER_TYPE) {
-			GetContext(gfx)->VSSetConstantBuffers(0u, 1u, pConstantBuffer.GetAddressOf());
+			GFX_THROW_INFO_ONLY(GetContext(gfx)->VSSetConstantBuffers(1u, 1u, pConstantBuffer.GetAddressOf()));
 		}
 		else if (Type == PIXEL_CONSTANT_BUFFER_TYPE) {
-			GetContext(gfx)->PSSetConstantBuffers(0u, 1u, pConstantBuffer.GetAddressOf());
+			GFX_THROW_INFO_ONLY(GetContext(gfx)->PSSetConstantBuffers(0u, 1u, pConstantBuffer.GetAddressOf()));
 		}
 	}
 

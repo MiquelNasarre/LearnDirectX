@@ -90,14 +90,20 @@
     <ClCompile Include="SourceFiles\Bindable\ConstantBuffers.cpp">
       <Filter>Sources\Private\Bindable</Filter>
     </ClCompile>
-    <ClCompile Include="SourceFiles\Drawable\Drawable.cpp">
-      <Filter>Sources\Private\Drawable</Filter>
-    </ClCompile>
     <ClCompile Include="SourceFiles\Drawable\Triangle.cpp">
       <Filter>Sources\Private\Drawable</Filter>
     </ClCompile>
     <ClCompile Include="SourceFiles\Bindable\Topology.cpp">
       <Filter>Sources\Private\Bindable</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceFiles\Drawable\Sphere.cpp">
+      <Filter>Sources\Private\Drawable</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceFiles\Drawable\Surface.cpp">
+      <Filter>Sources\Private\Drawable</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceFiles\Drawable.cpp">
+      <Filter>Sources\Private</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -155,9 +161,6 @@
     <ClInclude Include="HeaderFiles\Bindable\VertexShader.h">
       <Filter>Sources\Public\Bindable</Filter>
     </ClInclude>
-    <ClInclude Include="HeaderFiles\Drawable\Drawable.h">
-      <Filter>Sources\Public\Drawable</Filter>
-    </ClInclude>
     <ClInclude Include="HeaderFiles\Drawable\Triangle.h">
       <Filter>Sources\Public\Drawable</Filter>
     </ClInclude>
@@ -166,6 +169,15 @@
     </ClInclude>
     <ClInclude Include="HeaderFiles\Bindable\Topology.h">
       <Filter>Sources\Public\Bindable</Filter>
+    </ClInclude>
+    <ClInclude Include="HeaderFiles\Drawable\Sphere.h">
+      <Filter>Sources\Public\Drawable</Filter>
+    </ClInclude>
+    <ClInclude Include="HeaderFiles\Drawable\Surface.h">
+      <Filter>Sources\Public\Drawable</Filter>
+    </ClInclude>
+    <ClInclude Include="HeaderFiles\Drawable.h">
+      <Filter>Sources\Public</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -183,6 +195,18 @@
       <Filter>Shaders</Filter>
     </FxCompile>
     <FxCompile Include="Shaders\TrianglePS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\SpherePS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\SphereVS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="SourceFiles\Drawable\SurfacePS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="SourceFiles\Drawable\SurfaceVS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
   </ItemGroup>

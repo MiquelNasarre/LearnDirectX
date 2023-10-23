@@ -1,9 +1,9 @@
 
 struct VSOut
 {
-	float4 color : Color;
+    float4 color : Color;
     float4 R3pos : PointPos;
-	float4 SCpos : SV_Position;
+    float4 SCpos : SV_Position;
 };
 
 cbuffer Cbuff0 : register(b0)
@@ -14,16 +14,15 @@ cbuffer Cbuff0 : register(b0)
 cbuffer Cbuff1 : register(b1)
 {
     float4 translation;
-    matrix rotation;
 };
 
 VSOut main(float3 pos : Position, float4 col : Color)
 {
-	VSOut vso;
-    vso.R3pos = mul(float4(pos, 1.f), rotation) + translation;
+    VSOut vso;
+    vso.R3pos = float4(pos, 1.f) + translation;
     float4 test = mul(vso.R3pos, projection);
     vso.SCpos = float4(test.x, test.y, test.z / 1000000.f + 0.5f, 1.f);
-	vso.color = col;
+    vso.color = col;
     
-	return vso;
+    return vso;
 }

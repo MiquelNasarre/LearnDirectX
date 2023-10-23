@@ -1,44 +1,31 @@
 #include "Drawable/Triangle.h"
 #include "Bindable/BindableBase.h"
-#include "ExceptionMacros.h"
 
-
-Triangle::Triangle(Graphics& gfx)
+Triangle::Triangle(Graphics& gfx, Color color)
 {
+	Position = Vector3f(rand() / 4096.f - 4.f, rand() / 4096.f - 4.f, rand() / 4096.f - 4.f);
+	Velocity = Vector3f(rand() / 4096.f - 4.f, rand() / 4096.f - 4.f, rand() / 4096.f - 4.f);
+
 	struct Vertex {
 		Vector3f vector;
 		Color color;
-
-		const UINT stride = sizeof(Vector3f) + sizeof(Color);
-		const UINT offset = 0u;
 	};
 	std::vector<Vertex> model;
 
 	// set vertex colors for mesh
 
-	model.push_back(Vertex{ Vector3f(-1.5f, 0.f, 1.f), Color::Yellow });
-	model.push_back({ Vector3f(-1.5f + cosf(2 * 3.14159f * 0 / 6) ,-sinf(2 * 3.14159f * 0 / 6), 0.f) , Color::Yellow });
-	model.push_back({ Vector3f(-1.5f + cosf(2 * 3.14159f * 1 / 6) ,-sinf(2 * 3.14159f * 1 / 6), 0.f) , Color::Yellow });
-	model.push_back({ Vector3f(-1.5f + cosf(2 * 3.14159f * 2 / 6) ,-sinf(2 * 3.14159f * 2 / 6), 0.f) , Color::Yellow });
-	model.push_back({ Vector3f(-1.5f + cosf(2 * 3.14159f * 3 / 6) ,-sinf(2 * 3.14159f * 3 / 6), 0.f) , Color::Yellow });
-	model.push_back({ Vector3f(-1.5f + cosf(2 * 3.14159f * 4 / 6) ,-sinf(2 * 3.14159f * 4 / 6), 0.f) , Color::Yellow });
-	model.push_back({ Vector3f(-1.5f + cosf(2 * 3.14159f * 5 / 6) ,-sinf(2 * 3.14159f * 5 / 6), 0.f) , Color::Yellow });
-	model.push_back({ Vector3f(-1.5f, 0.f,-1.f), Color::Yellow });
-
-	model.push_back({ Vector3f(1.5f, 0.f, 1.f), Color::Blue });
-	model.push_back({ Vector3f(1.5f + cosf(2 * 3.14159f * 0 / 6) ,-sinf(2 * 3.14159f * 0 / 6), 0.f) , Color::Blue });
-	model.push_back({ Vector3f(1.5f + cosf(2 * 3.14159f * 1 / 6) ,-sinf(2 * 3.14159f * 1 / 6), 0.f) , Color::Blue });
-	model.push_back({ Vector3f(1.5f + cosf(2 * 3.14159f * 2 / 6) ,-sinf(2 * 3.14159f * 2 / 6), 0.f) , Color::Blue });
-	model.push_back({ Vector3f(1.5f + cosf(2 * 3.14159f * 3 / 6) ,-sinf(2 * 3.14159f * 3 / 6), 0.f) , Color::Blue });
-	model.push_back({ Vector3f(1.5f + cosf(2 * 3.14159f * 4 / 6) ,-sinf(2 * 3.14159f * 4 / 6), 0.f) , Color::Blue });
-	model.push_back({ Vector3f(1.5f + cosf(2 * 3.14159f * 5 / 6) ,-sinf(2 * 3.14159f * 5 / 6), 0.f) , Color::Blue });
-	model.push_back({ Vector3f(1.5f, 0.f,-1.f), Color::Blue });
+	model.push_back({ Vector3f(0.f, 0.f, 1.f), color });
+	model.push_back({ Vector3f(cosf(2 * 3.14159f * 0 / 6) ,-sinf(2 * 3.14159f * 0 / 6), 0.f) , color });
+	model.push_back({ Vector3f(cosf(2 * 3.14159f * 1 / 6) ,-sinf(2 * 3.14159f * 1 / 6), 0.f) , color });
+	model.push_back({ Vector3f(cosf(2 * 3.14159f * 2 / 6) ,-sinf(2 * 3.14159f * 2 / 6), 0.f) , color });
+	model.push_back({ Vector3f(cosf(2 * 3.14159f * 3 / 6) ,-sinf(2 * 3.14159f * 3 / 6), 0.f) , color });
+	model.push_back({ Vector3f(cosf(2 * 3.14159f * 4 / 6) ,-sinf(2 * 3.14159f * 4 / 6), 0.f) , color });
+	model.push_back({ Vector3f(cosf(2 * 3.14159f * 5 / 6) ,-sinf(2 * 3.14159f * 5 / 6), 0.f) , color });
+	model.push_back({ Vector3f(0.f, 0.f,-1.f), color });
 
 	AddBind(std::make_unique<VertexBuffer>(gfx, model));
 
-	auto pvs = std::make_unique<VertexShader>(gfx, L"Shaders/TriangleVS.cso");
-	auto pvsbc = pvs->GetBytecode();
-	AddBind(std::move(pvs));
+	auto pvs = (VertexShader*)AddBind(std::move(std::make_unique<VertexShader>(gfx, L"Shaders/TriangleVS.cso")));
 
 	AddBind(std::make_unique<PixelShader>(gfx, L"Shaders/TrianglePS.cso"));
 
@@ -55,16 +42,10 @@ Triangle::Triangle(Graphics& gfx)
 		Indexs.push_back(i + 1);
 	}
 
-	for (int i = 0; i < 6; i++) {
-		Indexs.push_back(8);
-		Indexs.push_back(i + 9);
-		Indexs.push_back((i + 1) % 6 + 9);
-	}
-	for (int i = 0; i < 6; i++) {
-		Indexs.push_back(15);
-		Indexs.push_back((i + 1) % 6 + 9);
-		Indexs.push_back(i + 9);
-	}
+	for (UINT i = 0; i < Indexs.size() / 3; i++)
+		norms.push_back(
+			((model[Indexs[3 * i + 1]].vector - model[Indexs[3 * i]].vector) *
+			(model[Indexs[3 * i + 2]].vector - model[Indexs[3 * i]].vector)).normalize());
 
 	AddBind(std::make_unique<IndexBuffer>(gfx, Indexs));
 
@@ -73,36 +54,53 @@ Triangle::Triangle(Graphics& gfx)
 		{ "Position",0,DXGI_FORMAT_R32G32B32_FLOAT,0,0,D3D11_INPUT_PER_VERTEX_DATA,0 },
 		{ "Color",0,DXGI_FORMAT_R8G8B8A8_UNORM,0,D3D11_APPEND_ALIGNED_ELEMENT,D3D11_INPUT_PER_VERTEX_DATA,0 },
 	};
-	AddBind(std::make_unique<InputLayout>(gfx, ied, pvsbc));
+
+	AddBind(std::make_unique<InputLayout>(gfx, ied, pvs->GetBytecode()));
 
 	AddBind(std::make_unique<Topology>(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST));
 
-	//	(Matrix transformations) Vertex shader constant buffer
+	pVSCB = (ConstantBuffer<VSconstBuffer>*)AddBind(std::make_unique<ConstantBuffer<VSconstBuffer>>(gfx, VERTEX_CONSTANT_BUFFER_TYPE));
+
+	pPSCB = (ConstantBuffer<PSconstBuffer>*)AddBind(std::make_unique<ConstantBuffer<PSconstBuffer>>(gfx, PIXEL_CONSTANT_BUFFER_TYPE));
+}
+
+void Triangle::Update(Graphics& gfx, Vector2f ZXrotation, Vector3f position)
+{
+	Vector3f Translation = position;
+	Matrix Rotations = ZRotationMatrix(ZXrotation.x) * XRotationMatrix(ZXrotation.y);
 	
-	Vector2f pos(0,0);
-	Vector3f Translation = Vector3f();
-	Matrix Rotations = ZRotationMatrix(-pos.x * 3.14159f * 2.f) * XRotationMatrix(-pos.y * 3.14159f);
+	vscBuff = {
+		Translation.getVector4(),
+		Rotations.transpose().getMatrix4(),
+	};
 
-	Matrix Projections = ProjectionMatrix(Vector3f(0, -1, 0)) * ScalingMatrix(1.f / 640, 1.f / 480, 1.f) * 200;
+	pVSCB->Update(gfx, vscBuff);
 
+	for (UINT i = 0; i < norms.size(); i++)
+		pscBuff.norm4[i] = (Rotations * norms[i]).getVector4();
+
+	pPSCB->Update(gfx, pscBuff);
+}
+
+void Triangle::Update(Graphics& gfx, Vector2f ZXrotation, float dt)
+{
+	Position += Velocity * dt;
+	Velocity += Acceleration * dt;
+	Acceleration += dA * dt;
+	dA = -Position - Velocity - Acceleration + Vector3f(rand() / 1024.f - 16.f, rand() / 1024.f - 16.f, rand() / 1024.f - 16.f);
+
+	Vector3f Translation = Position;
+	Matrix Rotations = ZRotationMatrix(ZXrotation.x) * XRotationMatrix(ZXrotation.y);
 
 	vscBuff = {
 		Translation.getVector4(),
 		Rotations.transpose().getMatrix4(),
-		Projections.transpose().getMatrix4()
 	};
 
+	pVSCB->Update(gfx, vscBuff);
 
-	AddBind(std::make_unique<ConstantBuffer<VSconstBuffer>>(gfx, vscBuff, VERTEX_CONSTANT_BUFFER_TYPE));
+	for (UINT i = 0; i < norms.size(); i++)
+		pscBuff.norm4[i] = (Rotations * norms[i]).getVector4();
 
-	//	(light management) Pixel shader constant buffer
-
-
-
-	AddBind(std::make_unique<ConstantBuffer<PSconstBuffer>>(gfx, pscBuff, PIXEL_CONSTANT_BUFFER_TYPE));
-}
-
-void Triangle::Update( float dt ) noexcept
-{
-
+	pPSCB->Update(gfx, pscBuff);
 }

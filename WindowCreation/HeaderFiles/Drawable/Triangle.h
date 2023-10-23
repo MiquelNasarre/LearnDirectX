@@ -1,35 +1,27 @@
 #pragma once
-#include "Drawable/Drawable.h"
-#include <random>
+#include "Drawable.h"
 
 class Triangle : public Drawable
 {
 	struct VSconstBuffer {
 		_float4vector translation;
 		_float4matrix rotation;
-		_float4matrix projection;
 	}vscBuff;
 
 	struct PSconstBuffer {
-		_float4vector norm4[24];
+		_float4vector norm4[12];
 	}pscBuff;
 public:
-	Triangle(Graphics& gfx);
-	void Update(float dt) noexcept;
+	Triangle(Graphics& gfx, Color color);
+	void Update(Graphics& gfx, Vector2f ZXrotation, Vector3f position);
+	void Update(Graphics& gfx, Vector2f ZXrotation, float dt);
 private:
-	// positional
-	float r;
-	float roll = 0.0f;
-	float pitch = 0.0f;
-	float yaw = 0.0f;
-	float theta;
-	float phi;
-	float chi;
-	// speed (delta/s)
-	float droll;
-	float dpitch;
-	float dyaw;
-	float dtheta;
-	float dphi;
-	float dchi;
+	std::vector<Vector3f> norms;
+	ConstantBuffer<VSconstBuffer>* pVSCB;
+	ConstantBuffer<PSconstBuffer>* pPSCB;
+
+	Vector3f Position		= Vector3f();
+	Vector3f Velocity		= Vector3f();
+	Vector3f Acceleration	= Vector3f();
+	Vector3f dA				= Vector3f();
 };

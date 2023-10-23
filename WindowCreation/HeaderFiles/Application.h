@@ -2,6 +2,8 @@
 
 #include "Window.h"
 #include "Drawable/Triangle.h"
+#include "Drawable/Sphere.h"
+#include "Drawable/Surface.h"
 
 class App {
 
@@ -9,7 +11,7 @@ private:
 	Window window;
 	Timer timer;
 
-	Triangle test;
+	Surface surface;
 
 	float scale = 280.f;
 	float theta = 3.14159f / 2.f;
@@ -20,3 +22,7 @@ public:
 	int Run();
 	void doFrame();
 };
+
+//	Surface functions
+
+float SincFunction(float, float);

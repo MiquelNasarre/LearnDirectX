@@ -1,6 +1,5 @@
 #include "Graphics.h"
 #include <sstream>
-#include <d3dcompiler.h>
 
 #include "ExceptionMacros.h"
 
@@ -38,7 +37,6 @@ void Graphics::create(HWND hWnd)
 
 	//	Create device & front/back buffers & swap chain & rendering context
 
-	HRESULT hr;
 	GFX_THROW_INFO(D3D11CreateDeviceAndSwapChain(
 		nullptr,
 		D3D_DRIVER_TYPE_HARDWARE,
@@ -59,6 +57,19 @@ void Graphics::create(HWND hWnd)
 	pCom<ID3D11Resource> pBackBuffer;
 	GFX_THROW_INFO(pSwap->GetBuffer(0, __uuidof(ID3D11Resource), &pBackBuffer));
 	GFX_THROW_INFO(pDevice->CreateRenderTargetView(pBackBuffer.Get(), nullptr, &pTarget));
+
+	//	Create and bind Perspective constant buffer
+
+	D3D11_BUFFER_DESC cbd;
+	cbd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	cbd.Usage = D3D11_USAGE_DEFAULT;
+	cbd.CPUAccessFlags = 0u;
+	cbd.MiscFlags = 0u;
+	cbd.ByteWidth = sizeof(_float4matrix);
+	cbd.StructureByteStride = 0u;
+	GFX_THROW_INFO(pDevice->CreateBuffer(&cbd, NULL, &pPerspective));
+
+	GFX_THROW_INFO_ONLY(pContext->VSSetConstantBuffers(0u, 1u, pPerspective.GetAddressOf()));
 }
 
 bool Graphics::isInitialized()
@@ -106,7 +117,6 @@ void Graphics::setWindowDimensions(Vector2i& Dim)
 
 	pTarget->Release();
 
-	HRESULT hr;
 	// Preserve the existing buffer count and format.
 	// Automatically choose the width and height to match the client rect for HWNDs.
 
@@ -164,202 +174,17 @@ void Graphics::setWindowDimensions(Vector2i& Dim)
 	GFX_THROW_INFO_ONLY(pContext->RSSetViewports(1u, &vp));
 }
 
-void Graphics::initTestTriangle()
+Vector2i Graphics::getWindowDimensions()
 {
-	HRESULT hr;
-
-	//	Create vertex buffer
-
-	Triangle.vertexs.clear();
-	Triangle.vertexs.push_back({ Vector3f(-1.5f, 0.f, 1.f), Color::Yellow });
-	Triangle.vertexs.push_back({ Vector3f(-1.5f + cosf(2 * 3.14159f * 0 / 6) ,-sinf(2 * 3.14159f * 0 / 6), 0.f) , Color::Yellow });
-	Triangle.vertexs.push_back({ Vector3f(-1.5f + cosf(2 * 3.14159f * 1 / 6) ,-sinf(2 * 3.14159f * 1 / 6), 0.f) , Color::Yellow });
-	Triangle.vertexs.push_back({ Vector3f(-1.5f + cosf(2 * 3.14159f * 2 / 6) ,-sinf(2 * 3.14159f * 2 / 6), 0.f) , Color::Yellow });
-	Triangle.vertexs.push_back({ Vector3f(-1.5f + cosf(2 * 3.14159f * 3 / 6) ,-sinf(2 * 3.14159f * 3 / 6), 0.f) , Color::Yellow });
-	Triangle.vertexs.push_back({ Vector3f(-1.5f + cosf(2 * 3.14159f * 4 / 6) ,-sinf(2 * 3.14159f * 4 / 6), 0.f) , Color::Yellow });
-	Triangle.vertexs.push_back({ Vector3f(-1.5f + cosf(2 * 3.14159f * 5 / 6) ,-sinf(2 * 3.14159f * 5 / 6), 0.f) , Color::Yellow });
-	Triangle.vertexs.push_back({ Vector3f(-1.5f, 0.f,-1.f), Color::Yellow });
-
-	Triangle.vertexs.push_back({ Vector3f(1.5f, 0.f, 1.f), Color::Blue });
-	Triangle.vertexs.push_back({ Vector3f(1.5f + cosf(2 * 3.14159f * 0 / 6) ,-sinf(2 * 3.14159f * 0 / 6), 0.f) , Color::Blue });
-	Triangle.vertexs.push_back({ Vector3f(1.5f + cosf(2 * 3.14159f * 1 / 6) ,-sinf(2 * 3.14159f * 1 / 6), 0.f) , Color::Blue });
-	Triangle.vertexs.push_back({ Vector3f(1.5f + cosf(2 * 3.14159f * 2 / 6) ,-sinf(2 * 3.14159f * 2 / 6), 0.f) , Color::Blue });
-	Triangle.vertexs.push_back({ Vector3f(1.5f + cosf(2 * 3.14159f * 3 / 6) ,-sinf(2 * 3.14159f * 3 / 6), 0.f) , Color::Blue });
-	Triangle.vertexs.push_back({ Vector3f(1.5f + cosf(2 * 3.14159f * 4 / 6) ,-sinf(2 * 3.14159f * 4 / 6), 0.f) , Color::Blue });
-	Triangle.vertexs.push_back({ Vector3f(1.5f + cosf(2 * 3.14159f * 5 / 6) ,-sinf(2 * 3.14159f * 5 / 6), 0.f) , Color::Blue });
-	Triangle.vertexs.push_back({ Vector3f(1.5f, 0.f,-1.f), Color::Blue });
-
-	D3D11_BUFFER_DESC bd = {};
-	bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-	bd.Usage = D3D11_USAGE_DEFAULT;
-	bd.CPUAccessFlags = 0u;
-	bd.MiscFlags = 0u;
-	bd.ByteWidth = (UINT)Triangle.vertexs.size()*sizeof(Vertex);
-	bd.StructureByteStride = sizeof(Vertex);
-	D3D11_SUBRESOURCE_DATA sd = {};
-	sd.pSysMem = &Triangle.vertexs[0];
-	GFX_THROW_INFO(pDevice->CreateBuffer(&bd, &sd, &Triangle.pVertexBuffer));
-
-	//	Create index buffer
-
-	Triangle.Indexs.clear();
-	for (int i = 0; i < 6; i++) {
-		Triangle.Indexs.push_back(0);
-		Triangle.Indexs.push_back(i + 1);
-		Triangle.Indexs.push_back((i + 1) % 6 + 1);
-	}
-	for (int i = 0; i < 6; i++) {
-		Triangle.Indexs.push_back(7);
-		Triangle.Indexs.push_back((i + 1) % 6 + 1);
-		Triangle.Indexs.push_back(i + 1);
-	}
-
-	for (int i = 0; i < 6; i++) {
-		Triangle.Indexs.push_back(8);
-		Triangle.Indexs.push_back(i + 9);
-		Triangle.Indexs.push_back((i + 1) % 6 + 9);
-	}
-	for (int i = 0; i < 6; i++) {
-		Triangle.Indexs.push_back(15);
-		Triangle.Indexs.push_back((i + 1) % 6 + 9);
-		Triangle.Indexs.push_back(i + 9);
-	}
-
-	D3D11_BUFFER_DESC ibd = {};
-	ibd.BindFlags = D3D11_BIND_INDEX_BUFFER;
-	ibd.Usage = D3D11_USAGE_DEFAULT;
-	ibd.CPUAccessFlags = 0u;
-	ibd.MiscFlags = 0u;
-	ibd.ByteWidth = (UINT)Triangle.Indexs.size() * sizeof(unsigned short);
-	ibd.StructureByteStride = sizeof(unsigned short);
-	D3D11_SUBRESOURCE_DATA isd = {};
-	isd.pSysMem = &Triangle.Indexs[0];
-	GFX_THROW_INFO(pDevice->CreateBuffer(&ibd, &isd, &Triangle.pIndexBuffer));
-	Triangle.NumIndexes = (UINT)Triangle.Indexs.size();
-
-	//	Save the normal vector of the triangles for pixel shaders
-
-	for (UINT i = 0; i < Triangle.NumIndexes / 3; i++)
-		Triangle.norms.push_back(
-			((Triangle.vertexs[Triangle.Indexs[3 * i + 1]].vector - Triangle.vertexs[Triangle.Indexs[3 * i]].vector) *
-			(Triangle.vertexs[Triangle.Indexs[3 * i + 2]].vector - Triangle.vertexs[Triangle.Indexs[3 * i]].vector)).normalize());
-
-	//	(Matrix transformations) Vertex shader constant buffer
-
-	D3D11_BUFFER_DESC vscbd = {};
-	vscbd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	vscbd.Usage = D3D11_USAGE_DEFAULT;
-	vscbd.CPUAccessFlags = 0u;
-	vscbd.MiscFlags = 0u;
-	vscbd.ByteWidth = sizeof(Triangle.vscBuff);
-	vscbd.StructureByteStride = 0u;
-	D3D11_SUBRESOURCE_DATA vscsd = {};
-	vscsd.pSysMem = &Triangle.vscBuff;
-	GFX_THROW_INFO(pDevice->CreateBuffer(&vscbd, &vscsd, &Triangle.pVSconstBuffer));
-
-	//	(light management) Pixel shader constant buffer
-
-	D3D11_BUFFER_DESC pscbd = {};
-	pscbd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	pscbd.Usage = D3D11_USAGE_DEFAULT;
-	pscbd.CPUAccessFlags = 0u;
-	pscbd.MiscFlags = 0u;
-	pscbd.ByteWidth = sizeof(Triangle.pscBuff);
-	pscbd.StructureByteStride = 0u;
-	D3D11_SUBRESOURCE_DATA pscsd = {};
-	pscsd.pSysMem = &Triangle.pscBuff;
-	GFX_THROW_INFO(pDevice->CreateBuffer(&pscbd, &pscsd, &Triangle.pPSconstBuffer));
-
-	//	Create pixel shader
-
-	pCom<ID3DBlob> pBlob;
-	GFX_THROW_INFO(D3DReadFileToBlob(L"Shaders/TrianglePS.cso", &pBlob));
-	GFX_THROW_INFO(pDevice->CreatePixelShader(pBlob->GetBufferPointer(), pBlob->GetBufferSize(), nullptr, &Triangle.pPixelShader));
-
-	//	Create vertex shader
-
-	GFX_THROW_INFO(D3DReadFileToBlob(L"Shaders/TriangleVS.cso", &pBlob));
-	GFX_THROW_INFO(pDevice->CreateVertexShader(pBlob->GetBufferPointer(), pBlob->GetBufferSize(), nullptr, &Triangle.pVertexShader));
-
-	//	 Create input (vertex) layout (2d position only)
-
-	const D3D11_INPUT_ELEMENT_DESC ied[] =
-	{
-		{ "Position",0,DXGI_FORMAT_R32G32B32_FLOAT,0,0,D3D11_INPUT_PER_VERTEX_DATA,0 },
-		{ "Color",0,DXGI_FORMAT_R8G8B8A8_UNORM,0,D3D11_APPEND_ALIGNED_ELEMENT,D3D11_INPUT_PER_VERTEX_DATA,0 },
-	};
-	GFX_THROW_INFO(pDevice->CreateInputLayout(
-		ied, (UINT)std::size(ied),
-		pBlob->GetBufferPointer(),
-		pBlob->GetBufferSize(),
-		&Triangle.pInputLayout
-	));
+	return WindowDim;
 }
 
-void Graphics::bindTestTrinagle()
+void Graphics::updatePerspective(Vector3f obs, float scale)
 {
-	//	Bind vertex shader constant buffer
-	
-	GFX_THROW_INFO_ONLY(pContext->VSSetConstantBuffers(0u, 1u, Triangle.pVSconstBuffer.GetAddressOf()));
-
-	//	Bind pixel shader constant buffer
-
-	GFX_THROW_INFO_ONLY(pContext->PSSetConstantBuffers(0u, 1u, Triangle.pPSconstBuffer.GetAddressOf()));
-
-	//	Bind vertex buffer
-
-	GFX_THROW_INFO_ONLY(pContext->IASetVertexBuffers(0u, 1u, Triangle.pVertexBuffer.GetAddressOf(), &Vertex::stride, &Vertex::offset));
-
-	//	Bind index buffer
-
-	GFX_THROW_INFO_ONLY(pContext->IASetIndexBuffer(Triangle.pIndexBuffer.Get(), DXGI_FORMAT_R16_UINT, 0u));
-
-	//	Bind pixel shader
-
-	GFX_THROW_INFO_ONLY(pContext->PSSetShader(Triangle.pPixelShader.Get(), nullptr, 0u));
-
-	//	Bind vertex shader
-
-	GFX_THROW_INFO_ONLY(pContext->VSSetShader(Triangle.pVertexShader.Get(), nullptr, 0u));
-
-	//	Bind input layout
-
-	GFX_THROW_INFO_ONLY(pContext->IASetInputLayout(Triangle.pInputLayout.Get()));
-
-	//	Set primitive topology
-
-	GFX_THROW_INFO_ONLY(pContext->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST));
-}
-
-void Graphics::drawTestTriangle(Vector2i MousePos, float scale, Vector3f obs)
-{
-	//	Update vertex shader constant buffer
-
-	Vector2f pos = PixeltoR2(MousePos);
-	Vector3f Translation = Vector3f();
-	Matrix Rotations = ZRotationMatrix(-pos.x * 3.14159f * 2.f) * XRotationMatrix(-pos.y * 3.14159f);
-
 	Matrix Projections = ProjectionMatrix(obs) * ScalingMatrix(1.f / WindowDim.x, 1.f / WindowDim.y, 1.f) * scale;
-		
+	_float4matrix cbuff = Projections.transpose().getMatrix4();
 
-	Triangle.vscBuff = {
-		Translation.getVector4(),
-		Rotations.transpose().getMatrix4(),
-		Projections.transpose().getMatrix4()
-	};
-
-	GFX_THROW_INFO_ONLY(pContext->UpdateSubresource(Triangle.pVSconstBuffer.Get(), 0u, nullptr, &Triangle.vscBuff, 0u, 0u));
-
-	//	Update pixel shader constant buffer
-
-	for (UINT i = 0; i < Triangle.norms.size(); i++)
-		Triangle.pscBuff.norm4[i] = (Rotations * Triangle.norms[i]).getVector4();
-
-	GFX_THROW_INFO_ONLY(pContext->UpdateSubresource(Triangle.pPSconstBuffer.Get(), 0u, nullptr, &Triangle.pscBuff, 0u, 0u));
-
-	//	Draw test triangle
-
-	GFX_THROW_INFO_ONLY(pContext->DrawIndexed(Triangle.NumIndexes,0u, 0u));
+	GFX_THROW_INFO_ONLY(pContext->UpdateSubresource(pPerspective.Get(), 0u, NULL, &cbuff, 0u, 0u));
 }
 
 void Graphics::drawIndexed(UINT IndexCount)

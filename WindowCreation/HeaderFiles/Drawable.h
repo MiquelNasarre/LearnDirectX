@@ -9,10 +9,11 @@ public:
 	Drawable() = default;
 	Drawable(const Drawable&) = delete;
 	void Draw(Graphics& gfx) const;
+	void Bind(Graphics& gfx) const;
 
 protected:
-	void AddBind(std::unique_ptr<Bindable> bind);
+	void* AddBind(std::unique_ptr<Bindable> bind);
 private:
-	const IndexBuffer* pIndexBuffer = NULL;
+	const IndexBuffer* pIndexBuffer;
 	std::vector<std::unique_ptr<Bindable>> binds;
 };
