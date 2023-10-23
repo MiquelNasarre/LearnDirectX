@@ -203,10 +203,10 @@
     <FxCompile Include="Shaders\SphereVS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="SourceFiles\Drawable\SurfacePS.hlsl">
+    <FxCompile Include="Shaders\SurfacePS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="SourceFiles\Drawable\SurfaceVS.hlsl">
+    <FxCompile Include="Shaders\SurfaceVS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
   </ItemGroup>
