@@ -25,6 +25,18 @@
     <Filter Include="Sources\Private\Exception">
       <UniqueIdentifier>{ba8d36cb-ce1b-414d-8e57-f8fd9563a165}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Sources\Private\Bindable">
+      <UniqueIdentifier>{8c825889-6ccb-43a6-a6cf-e6c9e9df4eb6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sources\Public\Bindable">
+      <UniqueIdentifier>{1d8a574a-ada0-43fe-a23c-1ffc715d5c48}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sources\Private\Drawable">
+      <UniqueIdentifier>{7032b8fa-e721-47d3-8ea3-edfc7e4b2181}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sources\Public\Drawable">
+      <UniqueIdentifier>{e78ba6a6-4008-4009-af5f-d33a3c788151}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="SourceFiles\WinMain.cpp">
@@ -56,6 +68,36 @@
     </ClCompile>
     <ClCompile Include="SourceFiles\_exFunc.cpp">
       <Filter>Sources\Private\Exception</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceFiles\Bindable\Bindable.cpp">
+      <Filter>Sources\Private\Bindable</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceFiles\Bindable\IndexBuffer.cpp">
+      <Filter>Sources\Private\Bindable</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceFiles\Bindable\InputLayout.cpp">
+      <Filter>Sources\Private\Bindable</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceFiles\Bindable\PixelShader.cpp">
+      <Filter>Sources\Private\Bindable</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceFiles\Bindable\VertexBuffer.cpp">
+      <Filter>Sources\Private\Bindable</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceFiles\Bindable\VertexShader.cpp">
+      <Filter>Sources\Private\Bindable</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceFiles\Bindable\ConstantBuffers.cpp">
+      <Filter>Sources\Private\Bindable</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceFiles\Drawable\Drawable.cpp">
+      <Filter>Sources\Private\Drawable</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceFiles\Drawable\Triangle.cpp">
+      <Filter>Sources\Private\Drawable</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceFiles\Bindable\Topology.cpp">
+      <Filter>Sources\Private\Bindable</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -89,6 +131,42 @@
     <ClInclude Include="HeaderFiles\Exception.h">
       <Filter>Sources\Public\Exception</Filter>
     </ClInclude>
+    <ClInclude Include="HeaderFiles\ExceptionMacros.h">
+      <Filter>Sources\Public\Exception</Filter>
+    </ClInclude>
+    <ClInclude Include="HeaderFiles\Bindable\Bindable.h">
+      <Filter>Sources\Public\Bindable</Filter>
+    </ClInclude>
+    <ClInclude Include="HeaderFiles\Bindable\ConstantBuffers.h">
+      <Filter>Sources\Public\Bindable</Filter>
+    </ClInclude>
+    <ClInclude Include="HeaderFiles\Bindable\IndexBuffer.h">
+      <Filter>Sources\Public\Bindable</Filter>
+    </ClInclude>
+    <ClInclude Include="HeaderFiles\Bindable\InputLayout.h">
+      <Filter>Sources\Public\Bindable</Filter>
+    </ClInclude>
+    <ClInclude Include="HeaderFiles\Bindable\PixelShader.h">
+      <Filter>Sources\Public\Bindable</Filter>
+    </ClInclude>
+    <ClInclude Include="HeaderFiles\Bindable\VertexBuffer.h">
+      <Filter>Sources\Public\Bindable</Filter>
+    </ClInclude>
+    <ClInclude Include="HeaderFiles\Bindable\VertexShader.h">
+      <Filter>Sources\Public\Bindable</Filter>
+    </ClInclude>
+    <ClInclude Include="HeaderFiles\Drawable\Drawable.h">
+      <Filter>Sources\Public\Drawable</Filter>
+    </ClInclude>
+    <ClInclude Include="HeaderFiles\Drawable\Triangle.h">
+      <Filter>Sources\Public\Drawable</Filter>
+    </ClInclude>
+    <ClInclude Include="HeaderFiles\Bindable\BindableBase.h">
+      <Filter>Sources\Public\Bindable</Filter>
+    </ClInclude>
+    <ClInclude Include="HeaderFiles\Bindable\Topology.h">
+      <Filter>Sources\Public\Bindable</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="Resources\Icon.ico">
@@ -101,10 +179,10 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="Shaders\VertexShader.hlsl">
+    <FxCompile Include="Shaders\TriangleVS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="Shaders\PixelShader.hlsl">
+    <FxCompile Include="Shaders\TrianglePS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
   </ItemGroup>

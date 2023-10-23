@@ -90,7 +90,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_CRT_NO_WARNINGS;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_NO_WARNINGS;IS_DEBUG=true;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalIncludeDirectories>$(ProjectDir)HeaderFiles/;$(ProjectDir);$(ProjectDir)Resources/ResourceFiles;$(SolutionDir)Math/include/;$(SolutionDir)dxerr/include/;</AdditionalIncludeDirectories>
@@ -101,7 +101,7 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(SolutionDir)Math\lib;$(SolutionDir)dxerr\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>dxerr_d.lib;Math_d.lib;winmm.lib;d3d11.lib;D3DCompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>dxguid.lib;dxerr_d.lib;Math_d.lib;winmm.lib;d3d11.lib;D3DCompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -110,7 +110,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_CRT_NO_WARNINGS;NDEBUG;WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_NO_WARNINGS;NDEBUG;IS_DEBUG=false;WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalIncludeDirectories>$(ProjectDir)HeaderFiles/;$(ProjectDir);$(ProjectDir)Resources/ResourceFiles;$(SolutionDir)Math/include/;$(SolutionDir)dxerr/include/;</AdditionalIncludeDirectories>
@@ -123,14 +123,14 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(SolutionDir)Math\lib;$(SolutionDir)dxerr\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>dxerr.lib;Math.lib;winmm.lib;d3d11.lib;D3DCompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>dxguid.lib;dxerr.lib;Math.lib;winmm.lib;d3d11.lib;D3DCompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_CRT_NO_WARNINGS;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_NO_WARNINGS;IS_DEBUG=true;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalIncludeDirectories>$(ProjectDir)HeaderFiles/;$(ProjectDir);$(ProjectDir)Resources/ResourceFiles;$(SolutionDir)Math/include/;$(SolutionDir)dxerr/include/;</AdditionalIncludeDirectories>
@@ -141,7 +141,7 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(SolutionDir)Math\lib;$(SolutionDir)dxerr\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>dxerr_d.lib;Math_d.lib;winmm.lib;d3d11.lib;D3DCompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>dxguid.lib;dxerr_d.lib;Math_d.lib;winmm.lib;d3d11.lib;D3DCompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -150,7 +150,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_CRT_NO_WARNINGS;NDEBUG;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_NO_WARNINGS;NDEBUG;IS_DEBUG=false;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalIncludeDirectories>$(ProjectDir)HeaderFiles/;$(ProjectDir);$(ProjectDir)Resources/ResourceFiles;$(SolutionDir)Math/include/;$(SolutionDir)dxerr/include/;</AdditionalIncludeDirectories>
@@ -163,11 +163,21 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(SolutionDir)Math\lib;$(SolutionDir)dxerr\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>dxerr.lib;Math.lib;winmm.lib;d3d11.lib;D3DCompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>dxguid.lib;dxerr.lib;Math.lib;winmm.lib;d3d11.lib;D3DCompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="SourceFiles\Application.cpp" />
+    <ClCompile Include="SourceFiles\Bindable\Bindable.cpp" />
+    <ClCompile Include="SourceFiles\Bindable\ConstantBuffers.cpp" />
+    <ClCompile Include="SourceFiles\Bindable\IndexBuffer.cpp" />
+    <ClCompile Include="SourceFiles\Bindable\InputLayout.cpp" />
+    <ClCompile Include="SourceFiles\Bindable\PixelShader.cpp" />
+    <ClCompile Include="SourceFiles\Bindable\Topology.cpp" />
+    <ClCompile Include="SourceFiles\Bindable\VertexBuffer.cpp" />
+    <ClCompile Include="SourceFiles\Bindable\VertexShader.cpp" />
+    <ClCompile Include="SourceFiles\Drawable\Drawable.cpp" />
+    <ClCompile Include="SourceFiles\Drawable\Triangle.cpp" />
     <ClCompile Include="SourceFiles\DxgiInfoManager.cpp" />
     <ClCompile Include="SourceFiles\Exception.cpp" />
     <ClCompile Include="SourceFiles\_exFunc.cpp" />
@@ -180,8 +190,20 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="HeaderFiles\Application.h" />
+    <ClInclude Include="HeaderFiles\Bindable\Bindable.h" />
+    <ClInclude Include="HeaderFiles\Bindable\BindableBase.h" />
+    <ClInclude Include="HeaderFiles\Bindable\ConstantBuffers.h" />
+    <ClInclude Include="HeaderFiles\Bindable\IndexBuffer.h" />
+    <ClInclude Include="HeaderFiles\Bindable\InputLayout.h" />
+    <ClInclude Include="HeaderFiles\Bindable\PixelShader.h" />
+    <ClInclude Include="HeaderFiles\Bindable\Topology.h" />
+    <ClInclude Include="HeaderFiles\Bindable\VertexBuffer.h" />
+    <ClInclude Include="HeaderFiles\Bindable\VertexShader.h" />
+    <ClInclude Include="HeaderFiles\Drawable\Drawable.h" />
+    <ClInclude Include="HeaderFiles\Drawable\Triangle.h" />
     <ClInclude Include="HeaderFiles\DxgiInfoManager.h" />
     <ClInclude Include="HeaderFiles\Exception.h" />
+    <ClInclude Include="HeaderFiles\ExceptionMacros.h" />
     <ClInclude Include="HeaderFiles\Graphics.h" />
     <ClInclude Include="HeaderFiles\Header.h" />
     <ClInclude Include="HeaderFiles\Keyboard.h" />
@@ -197,7 +219,7 @@
     <ResourceCompile Include="Resources\ResourceFiles\WindowCreation.rc" />
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="Shaders\PixelShader.hlsl">
+    <FxCompile Include="Shaders\TrianglePS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
@@ -211,7 +233,7 @@
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectDir)Shaders/%(Filename).cso</ObjectFileOutput>
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectDir)Shaders/%(Filename).cso</ObjectFileOutput>
     </FxCompile>
-    <FxCompile Include="Shaders\VertexShader.hlsl">
+    <FxCompile Include="Shaders\TriangleVS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>

@@ -4,9 +4,7 @@
 #include <dxgidebug.h>
 #include <memory>
 
-#pragma comment(lib, "dxguid.lib")
-
-#define GFX_THROW_NOINFO(hrcall) if( FAILED( hr = (hrcall) ) ) throw Graphics::HrException( __LINE__,__FILE__,hr )
+#include "ExceptionMacros.h"
 
 DxgiInfoManager::DxgiInfoManager()
 {
@@ -15,19 +13,15 @@ DxgiInfoManager::DxgiInfoManager()
 
 	// load the dll that contains the function DXGIGetDebugInterface
 	const auto hModDxgiDebug = LoadLibraryEx( L"dxgidebug.dll",nullptr,LOAD_LIBRARY_SEARCH_SYSTEM32 );
-	if( hModDxgiDebug == nullptr )
-	{
+	if(!hModDxgiDebug)
 		throw CHWND_LAST_EXCEPT();
-	}
 
 	// get address of DXGIGetDebugInterface in dll
 	const auto DxgiGetDebugInterface = reinterpret_cast<DXGIGetDebugInterface>(
 		reinterpret_cast<void*>(GetProcAddress( hModDxgiDebug,"DXGIGetDebugInterface" ))
 	);
-	if( DxgiGetDebugInterface == nullptr )
-	{
+	if(!DxgiGetDebugInterface)
 		throw CHWND_LAST_EXCEPT();
-	}
 
 	HRESULT hr;
 	GFX_THROW_NOINFO( DxgiGetDebugInterface( __uuidof(IDXGIInfoQueue),&pDxgiInfoQueue ) );

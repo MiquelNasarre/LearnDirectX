@@ -210,8 +210,8 @@ Matrix ProjectionMatrix(Vector3f V)
 	V /= absV;
 	Matrix rotationX = {
 		1.f, 0.f, 0.f,
-		0.f,-V.z,-absXY/absV,
-		0.f, absXY/absV,-V.z,
+		0.f,-V.z,absXY/absV,
+		0.f,absXY/absV,V.z,
 	};
 	return rotationZ * rotationX;
 }

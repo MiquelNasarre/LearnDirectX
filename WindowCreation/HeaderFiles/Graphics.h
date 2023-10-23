@@ -10,6 +10,7 @@
 
 class Graphics
 {
+	friend class Bindable;
 public:
 	class HrException : public ExceptionClass
 	{
@@ -59,10 +60,10 @@ public:
 
 	Vector2f PixeltoR2(Vector2i MousePos);
 	void setWindowDimensions(Vector2i& Dim);
-	void initSettings();
 	void initTestTriangle();
 	void bindTestTrinagle();
-	void drawTestTriangle(float angle, Vector2i MousePos, float scale);
+	void drawTestTriangle(Vector2i MousePos, float scale, Vector3f obs);
+	void drawIndexed(UINT IndexCount);
 
 private:
 	struct Vertex {
@@ -73,7 +74,7 @@ private:
 		static const UINT offset = 0u;
 	};
 
-	struct indexedStructure {
+	struct {
 
 		struct VSconstBuffer {
 			_float4vector translation;
@@ -82,7 +83,7 @@ private:
 		}vscBuff;
 
 		struct PSconstBuffer {
-			_float4vector norm4[12];
+			_float4vector norm4[24];
 		}pscBuff;
 
 		pCom<ID3D11Buffer>			pVertexBuffer;
@@ -97,10 +98,7 @@ private:
 		std::vector<Vertex> vertexs;
 		std::vector<unsigned short> Indexs;
 		std::vector<Vector3f> norms;
-	};
-
-	indexedStructure Triangle;
-
+	}Triangle;
 
 private:
 	HWND HWnd;

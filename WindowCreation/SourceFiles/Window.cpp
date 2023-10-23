@@ -7,6 +7,8 @@
 #include <windowsx.h>
 #include <chrono>
 
+#include "ExceptionMacros.h"
+
 // Window Class Stuff
 
 Window::WindowClass Window::WindowClass::wndClass;
