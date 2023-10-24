@@ -65,7 +65,7 @@ void Graphics::create(HWND hWnd)
 	cbd.Usage = D3D11_USAGE_DEFAULT;
 	cbd.CPUAccessFlags = 0u;
 	cbd.MiscFlags = 0u;
-	cbd.ByteWidth = sizeof(_float4matrix);
+	cbd.ByteWidth = sizeof(_float4matrix) + sizeof(_float4vector);
 	cbd.StructureByteStride = 0u;
 	GFX_THROW_INFO(pDevice->CreateBuffer(&cbd, NULL, &pPerspective));
 
@@ -95,6 +95,7 @@ void Graphics::clearBuffer(float R, float G, float B, float A)
 {
 	const float color[] = { R,G,B,A };
 	GFX_THROW_INFO_ONLY(pContext->ClearRenderTargetView(pTarget.Get(), color));
+	GFX_THROW_INFO_ONLY(pContext->ClearDepthStencilView(pDSV.Get(), D3D11_CLEAR_DEPTH, 1.f, 0u));
 }
 
 void Graphics::clearBuffer(Color color)
@@ -179,10 +180,16 @@ Vector2i Graphics::getWindowDimensions()
 	return WindowDim;
 }
 
-void Graphics::updatePerspective(Vector3f obs, float scale)
+void Graphics::updatePerspective(Vector3f obs, Vector3f center, float scale)
 {
+	struct {
+		_float4matrix perspective;
+		_float4vector traslation;
+	}cbuff;
+
 	Matrix Projections = ProjectionMatrix(obs) * ScalingMatrix(1.f / WindowDim.x, 1.f / WindowDim.y, 1.f) * scale;
-	_float4matrix cbuff = Projections.transpose().getMatrix4();
+	cbuff.perspective = Projections.transpose().getMatrix4();
+	cbuff.traslation = center.getVector4();
 
 	GFX_THROW_INFO_ONLY(pContext->UpdateSubresource(pPerspective.Get(), 0u, NULL, &cbuff, 0u, 0u));
 }

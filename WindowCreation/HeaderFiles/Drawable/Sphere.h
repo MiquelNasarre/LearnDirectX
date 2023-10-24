@@ -3,14 +3,13 @@
 
 class Sphere : public Drawable
 {
-	struct VSconstBuffer {
-		_float4vector translation;
-	}vscBuff;
-
 public:
 	Sphere(Graphics& gfx, Color color, UINT icosphere_degree);
 	void Update(Graphics& gfx, Vector3f position);
 private:
+	struct VSconstBuffer {
+		_float4vector translation;
+	}vscBuff;
 
 	struct Vertex {
 		Vector3f vector;

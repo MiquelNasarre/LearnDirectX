@@ -61,7 +61,7 @@ public:
 	Vector2f PixeltoR2(Vector2i MousePos);
 	void setWindowDimensions(Vector2i& Dim);
 	Vector2i getWindowDimensions();
-	void updatePerspective(Vector3f obs, float scale);
+	void updatePerspective(Vector3f obs, Vector3f center, float scale);
 	void drawIndexed(UINT IndexCount);
 
 private:

@@ -3,6 +3,11 @@
 
 class Triangle : public Drawable
 {
+public:
+	Triangle(Graphics& gfx, Color color);
+	void Update(Graphics& gfx, Vector2f ZXrotation, Vector3f position);
+	void Update(Graphics& gfx, Vector2f ZXrotation, float dt);
+private:
 	struct VSconstBuffer {
 		_float4vector translation;
 		_float4matrix rotation;
@@ -11,11 +16,7 @@ class Triangle : public Drawable
 	struct PSconstBuffer {
 		_float4vector norm4[12];
 	}pscBuff;
-public:
-	Triangle(Graphics& gfx, Color color);
-	void Update(Graphics& gfx, Vector2f ZXrotation, Vector3f position);
-	void Update(Graphics& gfx, Vector2f ZXrotation, float dt);
-private:
+
 	std::vector<Vector3f> norms;
 	ConstantBuffer<VSconstBuffer>* pVSCB;
 	ConstantBuffer<PSconstBuffer>* pPSCB;
