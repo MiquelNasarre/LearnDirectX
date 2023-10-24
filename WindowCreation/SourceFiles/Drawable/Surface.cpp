@@ -31,6 +31,25 @@ Surface::Surface(Graphics& gfx, Type4 TYPE_FLAG, float theta(float, float), floa
 	addDefaultBinds(gfx);
 }
 
+Surface::Surface(Graphics& gfx, Type5 TYPE_FLAG, float H(float, float, float))
+{
+	generateImplicit(gfx,H);
+	addDefaultBinds(gfx);
+}
+
+Surface::Surface(Graphics& gfx, Type6 TYPE_FLAG, float H(float, float, float))
+{
+	generateImplicitPolar(gfx, H);
+	addDefaultBinds(gfx);
+}
+
+void Surface::updateRotation(Graphics& gfx, float rotationZ, float rotationX)
+{
+	pVSCB->Update(gfx, (ZRotationMatrix(rotationZ) * XRotationMatrix(rotationX)).transpose().getMatrix4());
+}
+
+//	Private
+
 void Surface::generateExplicit(Graphics& gfx, float F(float, float), Vector2f minRect, Vector2f maxRect, UINT numX, UINT numY)
 {
 	float epsilon = error_epsilon;
@@ -110,6 +129,11 @@ void Surface::generatePolarNormal(Graphics& gfx, float r(float, float), Vector2f
 			indexs.push_back((i + 1) * (numY + 1) + j);
 			indexs.push_back((i + 1) * (numY + 1) + j + 1);
 		}
+	}
+
+	for (Vertex& v : vertexs) {
+		if (v.vector.x* v.vector.x<0.0000001f && v.vector.y * v.vector.y < 0.0000001f)
+			v.norm = v.vector / v.vector.abs();
 	}
 
 	AddBind(std::make_unique<VertexBuffer>(gfx, vertexs));
@@ -202,11 +226,15 @@ void Surface::generatePolarIcosphere(Graphics& gfx, float r(float, float), UINT 
 			if (temp.y < 0)
 				theta = 2 * pi - theta;
 		}
-		v.vector *= r(theta, phi);
-		v.norm =
+		if (!v.vector.x && !v.vector.y)
+			v.norm = v.vector;
+		else 
+			v.norm =
 			-((evalPolar(r, theta + epsilon, phi) - evalPolar(r, theta - epsilon, phi)) *
 			((evalPolar(r, theta, phi + epsilon) - evalPolar(r, theta, phi - epsilon))))
 			.normalize();
+
+		v.vector *= r(theta, phi);
 	}
 		
 	AddBind(std::make_unique<VertexBuffer>(gfx, vertexs));
@@ -304,12 +332,21 @@ void Surface::generatePolarParametric(Graphics& gfx, float theta(float, float), 
 	AddBind(std::make_unique<IndexBuffer>(gfx, indexs));
 }
 
+void Surface::generateImplicit(Graphics& gfx, float H(float, float, float))
+{
+	throw std::exception("This surface type hasn't been implemented yet");
+}
+
+void Surface::generateImplicitPolar(Graphics& gfx, float H(float, float, float))
+{
+	throw std::exception("This surface type hasn't been implemented yet");
+}
+
 void Surface::addDefaultBinds(Graphics& gfx)
 {
 	auto pvs = (VertexShader*)AddBind(std::move(std::make_unique<VertexShader>(gfx, L"Shaders/SurfaceVS.cso")));
 
 	AddBind(std::make_unique<PixelShader>(gfx, L"Shaders/SurfacePS.cso"));
-
 
 	std::vector< D3D11_INPUT_ELEMENT_DESC> ied =
 	{
@@ -322,11 +359,6 @@ void Surface::addDefaultBinds(Graphics& gfx)
 	AddBind(std::make_unique<Topology>(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST));
 
 	pVSCB = (ConstantBuffer<_float4matrix>*)AddBind(std::make_unique<ConstantBuffer<_float4matrix>>(gfx, Matrix::Identity.getMatrix4(), VERTEX_CONSTANT_BUFFER_TYPE));
-}
-
-void Surface::updateRotation(Graphics& gfx, float rotationZ, float rotationX)
-{
-	pVSCB->Update(gfx, (ZRotationMatrix(rotationZ) * XRotationMatrix(rotationX)).transpose().getMatrix4());
 }
 
 Vector3f Surface::evalPolar(float r(float, float), float theta, float phi)

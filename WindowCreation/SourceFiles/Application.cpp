@@ -3,11 +3,16 @@
 #include "Mouse.h"
 
 App::App()
-	:window(640, 480, L"Hello World"), surface(window.graphics, _FUNCTION_RADIUS_LAT_LONG, weirdRadius, 200,200)
+	:window(640, 480, L"Hello World"), test(window.graphics)
 {
 
 	window.setFramerateLimit(60);
 	timer.reset();
+
+	//surfaces.push_back(std::make_unique<Surface>(window.graphics, _FUNCTION_RADIUS_LAT_LONG, weirdRadius, 200u, 200u));
+	//surfaces.push_back(std::make_unique<Surface>(window.graphics, _FUNCTION_EXPLICIT, SincFunction, Vector2f(-4.f, -4.f), Vector2f(4.f, 4.f), 200u, 200u));
+	//surfaces.push_back(std::make_unique<Surface>(window.graphics, _FUNCTION_RADIUS_ICOSPHERE, constantRadius, 5u));
+
 
 }
 
@@ -66,7 +71,6 @@ void App::doFrame()
 		theta += velocity;
 	}
 
-	surface.updateRotation(window.graphics, theta, phi);
 	window.graphics.updatePerspective({ 0.f,-1.f,0.f }/*Vector3f(-cosf(phi) * cosf(theta), -cosf(phi) * sinf(theta), -sinf(phi))*/, center, scale);
 
 
@@ -74,7 +78,12 @@ void App::doFrame()
 
 	window.graphics.clearBuffer(Color::Black);
 
-	surface.Draw(window.graphics);
+	for (std::unique_ptr<Surface>& s : surfaces) {
+		s->updateRotation(window.graphics, theta, phi);
+		s->Draw(window.graphics);
+	}
+	test.updateRotation(window.graphics, theta, phi);
+	test.Draw(window.graphics);
 
 	window.graphics.pushFrame();
 
@@ -107,4 +116,9 @@ float returnX(float x, float)
 float returnY(float, float y)
 {
 	return y;
+}
+
+float sphere(float x, float y, float z)
+{
+	return x * x + y * y + z * z - 1;
 }

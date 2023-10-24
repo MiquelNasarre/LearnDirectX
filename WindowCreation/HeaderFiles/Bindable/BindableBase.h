@@ -7,3 +7,5 @@
 #include "Bindable/Topology.h"
 #include "Bindable/VertexBuffer.h"
 #include "Bindable/VertexShader.h"
+#include "Bindable/Texture.h"
+#include "Bindable/Sampler.h"

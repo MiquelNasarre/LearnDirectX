@@ -105,15 +105,21 @@
     <ClCompile Include="SourceFiles\Drawable.cpp">
       <Filter>Sources\Private</Filter>
     </ClCompile>
+    <ClCompile Include="SourceFiles\Bindable\Texture.cpp">
+      <Filter>Sources\Private\Bindable</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceFiles\Bindable\Sampler.cpp">
+      <Filter>Sources\Private\Bindable</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceFiles\Drawable\TexSurface.cpp">
+      <Filter>Sources\Private\Drawable</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="HeaderFiles\Header.h">
       <Filter>Sources\Public</Filter>
     </ClInclude>
     <ClInclude Include="HeaderFiles\Window.h">
-      <Filter>Sources\Public</Filter>
-    </ClInclude>
-    <ClInclude Include="Resources\ResourceFiles\resource.h">
       <Filter>Sources\Public</Filter>
     </ClInclude>
     <ClInclude Include="HeaderFiles\Keyboard.h">
@@ -179,16 +185,18 @@
     <ClInclude Include="HeaderFiles\Drawable.h">
       <Filter>Sources\Public</Filter>
     </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <Image Include="Resources\Icon.ico">
-      <Filter>Resources</Filter>
-    </Image>
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="Resources\ResourceFiles\WindowCreation.rc">
-      <Filter>Resources</Filter>
-    </ResourceCompile>
+    <ClInclude Include="Resources\ResourceFiles\resource.h">
+      <Filter>Sources\Public</Filter>
+    </ClInclude>
+    <ClInclude Include="HeaderFiles\Bindable\Texture.h">
+      <Filter>Sources\Public\Bindable</Filter>
+    </ClInclude>
+    <ClInclude Include="HeaderFiles\Bindable\Sampler.h">
+      <Filter>Sources\Public\Bindable</Filter>
+    </ClInclude>
+    <ClInclude Include="HeaderFiles\Drawable\TexSurface.h">
+      <Filter>Sources\Public\Drawable</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shaders\TriangleVS.hlsl">
@@ -209,5 +217,24 @@
     <FxCompile Include="Shaders\SurfaceVS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
+    <FxCompile Include="Shaders\TexSurfaceVS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\TexSurfacePS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="Resources\Icon.ico">
+      <Filter>Resources</Filter>
+    </Image>
+    <Image Include="Resources\EarthTexture.jpg">
+      <Filter>Resources</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Resources\ResourceFiles\WindowCreation.rc">
+      <Filter>Resources</Filter>
+    </ResourceCompile>
   </ItemGroup>
 </Project>

@@ -26,6 +26,8 @@ public:
 	Surface(Graphics& gfx, Type2 TYPE_FLAG, float rad(float, float), UINT ICOSPHERE_DEPTH);
 	Surface(Graphics& gfx, Type3 TYPE_FLAG, float x(float, float), float y(float, float), float z(float, float), Vector2f minRect, Vector2f maxRect, UINT numU, UINT numV);
 	Surface(Graphics& gfx, Type4 TYPE_FLAG, float theta(float, float), float phi(float, float), float rad(float, float), Vector2f minRect, Vector2f maxRect, UINT numU, UINT numV);
+	Surface(Graphics& gfx, Type5 TYPE_FLAG, float H(float, float, float));
+	Surface(Graphics& gfx, Type6 TYPE_FLAG, float H(float, float, float));
 
 	void updateRotation(Graphics& gfx, float rotationZ, float rotationX);
 private:
@@ -34,6 +36,9 @@ private:
 	void generatePolarIcosphere(Graphics& gfx, float rad(float, float), UINT depth);
 	void generateParametric(Graphics& gfx, float x(float, float), float y(float, float), float z(float, float), Vector2f minRect, Vector2f maxRect, UINT numU, UINT numV);
 	void generatePolarParametric(Graphics& gfx, float theta(float, float), float phi(float, float), float rad(float, float), Vector2f minRect, Vector2f maxRect, UINT numU, UINT numV);
+	void generateImplicit(Graphics& gfx, float H(float, float, float));
+	void generateImplicitPolar(Graphics& gfx, float H(float, float, float));
+
 	void addDefaultBinds(Graphics& gfx);
 
 	ConstantBuffer<_float4matrix>* pVSCB;

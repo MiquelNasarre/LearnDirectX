@@ -96,13 +96,18 @@
       <AdditionalIncludeDirectories>$(ProjectDir)HeaderFiles/;$(ProjectDir);$(ProjectDir)Resources/ResourceFiles;$(SolutionDir)Math/include/;$(SolutionDir)dxerr/include/;</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderFile>CImg.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(SolutionDir)Math\lib;$(SolutionDir)dxerr\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>dxguid.lib;dxerr_d.lib;Math_d.lib;winmm.lib;d3d11.lib;D3DCompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>dxguid.lib;gdiplus.lib;dxerr_d.lib;Math_d.lib;winmm.lib;d3d11.lib;D3DCompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <ResourceCompile>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Resources/ResourceFiles/;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -116,6 +121,8 @@
       <AdditionalIncludeDirectories>$(ProjectDir)HeaderFiles/;$(ProjectDir);$(ProjectDir)Resources/ResourceFiles;$(SolutionDir)Math/include/;$(SolutionDir)dxerr/include/;</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderFile>CImg.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -123,8 +130,11 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(SolutionDir)Math\lib;$(SolutionDir)dxerr\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>dxguid.lib;dxerr.lib;Math.lib;winmm.lib;d3d11.lib;D3DCompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>dxguid.lib;gdiplus.lib;dxerr.lib;Math.lib;winmm.lib;d3d11.lib;D3DCompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <ResourceCompile>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Resources/ResourceFiles/;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -136,13 +146,18 @@
       <AdditionalIncludeDirectories>$(ProjectDir)HeaderFiles/;$(ProjectDir);$(ProjectDir)Resources/ResourceFiles;$(SolutionDir)Math/include/;$(SolutionDir)dxerr/include/;</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderFile>CImg.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(SolutionDir)Math\lib;$(SolutionDir)dxerr\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>dxguid.lib;dxerr_d.lib;Math_d.lib;winmm.lib;d3d11.lib;D3DCompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>dxguid.lib;gdiplus.lib;dxerr_d.lib;Math_d.lib;winmm.lib;d3d11.lib;D3DCompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <ResourceCompile>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Resources/ResourceFiles/;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -156,6 +171,8 @@
       <AdditionalIncludeDirectories>$(ProjectDir)HeaderFiles/;$(ProjectDir);$(ProjectDir)Resources/ResourceFiles;$(SolutionDir)Math/include/;$(SolutionDir)dxerr/include/;</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderFile>CImg.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -163,8 +180,11 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(SolutionDir)Math\lib;$(SolutionDir)dxerr\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>dxguid.lib;dxerr.lib;Math.lib;winmm.lib;d3d11.lib;D3DCompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>dxguid.lib;gdiplus.lib;dxerr.lib;Math.lib;winmm.lib;d3d11.lib;D3DCompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <ResourceCompile>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Resources/ResourceFiles/;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="SourceFiles\Application.cpp" />
@@ -173,12 +193,15 @@
     <ClCompile Include="SourceFiles\Bindable\IndexBuffer.cpp" />
     <ClCompile Include="SourceFiles\Bindable\InputLayout.cpp" />
     <ClCompile Include="SourceFiles\Bindable\PixelShader.cpp" />
+    <ClCompile Include="SourceFiles\Bindable\Sampler.cpp" />
+    <ClCompile Include="SourceFiles\Bindable\Texture.cpp" />
     <ClCompile Include="SourceFiles\Bindable\Topology.cpp" />
     <ClCompile Include="SourceFiles\Bindable\VertexBuffer.cpp" />
     <ClCompile Include="SourceFiles\Bindable\VertexShader.cpp" />
     <ClCompile Include="SourceFiles\Drawable.cpp" />
     <ClCompile Include="SourceFiles\Drawable\Surface.cpp" />
     <ClCompile Include="SourceFiles\Drawable\Sphere.cpp" />
+    <ClCompile Include="SourceFiles\Drawable\TexSurface.cpp" />
     <ClCompile Include="SourceFiles\Drawable\Triangle.cpp" />
     <ClCompile Include="SourceFiles\DxgiInfoManager.cpp" />
     <ClCompile Include="SourceFiles\Exception.cpp" />
@@ -198,12 +221,15 @@
     <ClInclude Include="HeaderFiles\Bindable\IndexBuffer.h" />
     <ClInclude Include="HeaderFiles\Bindable\InputLayout.h" />
     <ClInclude Include="HeaderFiles\Bindable\PixelShader.h" />
+    <ClInclude Include="HeaderFiles\Bindable\Sampler.h" />
+    <ClInclude Include="HeaderFiles\Bindable\Texture.h" />
     <ClInclude Include="HeaderFiles\Bindable\Topology.h" />
     <ClInclude Include="HeaderFiles\Bindable\VertexBuffer.h" />
     <ClInclude Include="HeaderFiles\Bindable\VertexShader.h" />
     <ClInclude Include="HeaderFiles\Drawable.h" />
     <ClInclude Include="HeaderFiles\Drawable\Surface.h" />
     <ClInclude Include="HeaderFiles\Drawable\Sphere.h" />
+    <ClInclude Include="HeaderFiles\Drawable\TexSurface.h" />
     <ClInclude Include="HeaderFiles\Drawable\Triangle.h" />
     <ClInclude Include="HeaderFiles\DxgiInfoManager.h" />
     <ClInclude Include="HeaderFiles\Exception.h" />
@@ -215,12 +241,6 @@
     <ClInclude Include="HeaderFiles\Timer.h" />
     <ClInclude Include="HeaderFiles\Window.h" />
     <ClInclude Include="Resources\ResourceFiles\resource.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <Image Include="Resources\Icon.ico" />
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="Resources\ResourceFiles\WindowCreation.rc" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shaders\SpherePS.hlsl">
@@ -279,6 +299,34 @@
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectDir)Shaders/%(Filename).cso</ObjectFileOutput>
     </FxCompile>
+    <FxCompile Include="Shaders\TexSurfacePS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4.0</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4.0</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectDir)Shaders/%(Filename).cso</ObjectFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProjectDir)Shaders/%(Filename).cso</ObjectFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectDir)Shaders/%(Filename).cso</ObjectFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectDir)Shaders/%(Filename).cso</ObjectFileOutput>
+    </FxCompile>
+    <FxCompile Include="Shaders\TexSurfaceVS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4.0</ShaderModel>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectDir)Shaders/%(Filename).cso</ObjectFileOutput>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4.0</ShaderModel>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProjectDir)Shaders/%(Filename).cso</ObjectFileOutput>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectDir)Shaders/%(Filename).cso</ObjectFileOutput>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectDir)Shaders/%(Filename).cso</ObjectFileOutput>
+    </FxCompile>
     <FxCompile Include="Shaders\TrianglePS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
@@ -311,6 +359,13 @@
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectDir)Shaders/%(Filename).cso</ObjectFileOutput>
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectDir)Shaders/%(Filename).cso</ObjectFileOutput>
     </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="Resources\EarthTexture.jpg" />
+    <Image Include="Resources\Icon.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Resources\ResourceFiles\WindowCreation.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
