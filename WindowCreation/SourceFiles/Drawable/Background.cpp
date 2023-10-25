@@ -55,10 +55,16 @@ void Background::updateTexture(Graphics& gfx, std::string filename)
 
 void Background::updateObserver(Graphics& gfx, Vector3f obs)
 {
+	if (!pscBuff0)
+		throw std::exception("Not possible to call updateObserver() on a non dynamic background!!");
+
 	pscBuff0->Update(gfx, obs.getVector4());
 }
 
 void Background::updateWideness(Graphics& gfx, Vector2f wideness)
 {
+	if (!pscBuff1)
+		throw std::exception("Not possible to call updateWideness() on a non dynamic background!!");
+
 	pscBuff1->Update(gfx, Vector3f(wideness.x, wideness.y, 0.f).getVector4());
 }
