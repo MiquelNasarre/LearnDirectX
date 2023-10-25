@@ -5,4 +5,4 @@
 #endif // _COMPLEX_ADDED
 
 #define pi 3.14159265358979f
-#define e  2.71828182845905f
+#define en 2.71828182845905f

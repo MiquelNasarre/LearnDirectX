@@ -2,6 +2,8 @@
 #include "Keyboard.h"
 #include "Mouse.h"
 
+#include "iGManager.h"
+
 App::App()
 	:window(640, 480, L"Hello World"), test(window.graphics), back(window.graphics, "Resources/Background.jpg")
 {
@@ -12,7 +14,6 @@ App::App()
 	//surfaces.push_back(std::make_unique<Surface>(window.graphics, _FUNCTION_RADIUS_LAT_LONG, weirdRadius, 200u, 200u));
 	//surfaces.push_back(std::make_unique<Surface>(window.graphics, _FUNCTION_EXPLICIT, SincFunction, Vector2f(-4.f, -4.f), Vector2f(4.f, 4.f), 200u, 200u));
 	//surfaces.push_back(std::make_unique<Surface>(window.graphics, _FUNCTION_RADIUS_ICOSPHERE, constantRadius, 5u));
-
 
 }
 
@@ -85,6 +86,12 @@ void App::doFrame()
 	test.updateRotation(window.graphics, theta, phi);
 	test.Draw(window.graphics);
 	back.Draw(window.graphics);
+
+	//	ImGui crap
+
+	iGManager::render();
+
+	//	Push the frame to the scriin
 
 	window.graphics.pushFrame();
 

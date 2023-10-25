@@ -7,6 +7,8 @@
 #include <windowsx.h>
 #include <chrono>
 
+#include "iGManager.h"
+
 #include "ExceptionMacros.h"
 
 // Window Class Stuff
@@ -26,7 +28,7 @@ Window::WindowClass::WindowClass() noexcept
 	wc.cbWndExtra = 0;
 	wc.hInstance = GetInstance();
 	wc.hIcon = static_cast<HICON>(LoadImage(hInst, MAKEINTRESOURCE(IDI_ICON1), IMAGE_ICON, 51, 51, 0));
-	wc.hCursor = nullptr;
+	wc.hCursor = LoadCursor(NULL, IDC_ARROW);
 	wc.hbrBackground = nullptr;
 	wc.lpszMenuName = nullptr;
 	wc.lpszClassName = GetName();
@@ -91,7 +93,7 @@ Window::Window(int width, int height, LPCWSTR name)
 	hWnd = CreateWindow(
 		WindowClass::GetName(), 
 		name,
-		WS_CAPTION | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_SYSMENU | WS_VISIBLE,
+		WS_CAPTION | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_SYSMENU | WS_VISIBLE | WS_OVERLAPPEDWINDOW,
 		CW_USEDEFAULT, 
 		CW_USEDEFAULT, 
 		wr.right - wr.left, 
@@ -112,6 +114,10 @@ Window::Window(int width, int height, LPCWSTR name)
 	Keyboard::init();
 	Mouse::init();
 	timer.reset();
+
+	//	Initialize ImGui
+
+	iGManager::initWin32(hWnd);
 
 	//	Create graphics object
 
@@ -154,6 +160,9 @@ LRESULT CALLBACK Window::HandleMsgThunk(HWND hWnd, UINT msg, WPARAM wParam, LPAR
 
 LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noexcept
 {
+	if (iGManager::WndProcHandler(hWnd, msg, (unsigned int)wParam, (unsigned int)lParam))
+		return DefWindowProc(hWnd, msg, wParam, lParam);
+
 	switch (msg)
 	{
 	case WM_CLOSE:

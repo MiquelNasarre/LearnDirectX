@@ -1,6 +1,8 @@
 #include "Graphics.h"
 #include <sstream>
 
+#include "iGManager.h"
+
 #include "ExceptionMacros.h"
 
 //	Graphics stuff
@@ -70,6 +72,10 @@ void Graphics::create(HWND hWnd)
 	GFX_THROW_INFO(pDevice->CreateBuffer(&cbd, NULL, &pPerspective));
 
 	GFX_THROW_INFO_ONLY(pContext->VSSetConstantBuffers(0u, 1u, pPerspective.GetAddressOf()));
+
+	//	Initialize imGui
+
+	iGManager::initDX11(pDevice.Get(), pContext.Get());
 }
 
 bool Graphics::isInitialized()
@@ -113,6 +119,9 @@ Vector2f Graphics::PixeltoR2(Vector2i MousePos)
 void Graphics::setWindowDimensions(Vector2i& Dim)
 {
 	WindowDim = Dim;
+
+	if (!WindowDim.x && !WindowDim.y)
+		return;
 
 	GFX_THROW_INFO_ONLY(pContext->OMSetRenderTargets(0u, NULL, NULL));
 

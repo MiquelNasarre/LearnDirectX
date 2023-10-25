@@ -93,7 +93,7 @@
       <PreprocessorDefinitions>_CRT_NO_WARNINGS;IS_DEBUG=true;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir)HeaderFiles/;$(ProjectDir);$(ProjectDir)Resources/ResourceFiles;$(SolutionDir)Math/include/;$(SolutionDir)dxerr/include/;$(SolutionDir)FreeImage/include/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)HeaderFiles/;$(ProjectDir);$(ProjectDir)Resources/ResourceFiles/;$(SolutionDir)Math/include/;$(SolutionDir)dxerr/include/;$(SolutionDir)FreeImage/include/;$(SolutionDir)imGui/include/</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
@@ -102,8 +102,8 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)FreeImage\lib;$(SolutionDir)Math\lib;$(SolutionDir)dxerr\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>FreeImage.lib;dxguid.lib;gdiplus.lib;dxerr_d.lib;Math_d.lib;winmm.lib;d3d11.lib;D3DCompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)imGui\lib;$(SolutionDir)FreeImage\lib;$(SolutionDir)Math\lib;$(SolutionDir)dxerr\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>winmm.lib;d3d11.lib;D3DCompiler.lib;FreeImage.lib;dxguid.lib;gdiplus.lib;imGui_d.lib;dxerr_d.lib;Math_d.lib;winmm.lib;d3d11.lib;D3DCompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <ResourceCompile>
       <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Resources/ResourceFiles/;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -118,7 +118,7 @@
       <PreprocessorDefinitions>_CRT_NO_WARNINGS;NDEBUG;IS_DEBUG=false;WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir)HeaderFiles/;$(ProjectDir);$(ProjectDir)Resources/ResourceFiles;$(SolutionDir)Math/include/;$(SolutionDir)dxerr/include/;$(SolutionDir)FreeImage/include/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)HeaderFiles/;$(ProjectDir);$(ProjectDir)Resources/ResourceFiles/;$(SolutionDir)Math/include/;$(SolutionDir)dxerr/include/;$(SolutionDir)FreeImage/include/;$(SolutionDir)imGui/include/</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
@@ -129,8 +129,8 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)FreeImage\lib;$(SolutionDir)Math\lib;$(SolutionDir)dxerr\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>FreeImage.lib;dxguid.lib;gdiplus.lib;dxerr.lib;Math.lib;winmm.lib;d3d11.lib;D3DCompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)imGui\lib;$(SolutionDir)FreeImage\lib;$(SolutionDir)Math\lib;$(SolutionDir)dxerr\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>winmm.lib;d3d11.lib;D3DCompiler.lib;FreeImage.lib;dxguid.lib;gdiplus.lib;imGui.lib;dxerr.lib;Math.lib;</AdditionalDependencies>
     </Link>
     <ResourceCompile>
       <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Resources/ResourceFiles/;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -143,7 +143,7 @@
       <PreprocessorDefinitions>_CRT_NO_WARNINGS;IS_DEBUG=true;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir)HeaderFiles/;$(ProjectDir);$(ProjectDir)Resources/ResourceFiles;$(SolutionDir)Math/include/;$(SolutionDir)dxerr/include/;$(SolutionDir)FreeImage/include/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)HeaderFiles/;$(ProjectDir);$(ProjectDir)Resources/ResourceFiles/;$(SolutionDir)Math/include/;$(SolutionDir)dxerr/include/;$(SolutionDir)FreeImage/include/;$(SolutionDir)imGui/include/</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
@@ -152,8 +152,8 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)FreeImage\lib;$(SolutionDir)Math\lib;$(SolutionDir)dxerr\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>FreeImage.lib;dxguid.lib;gdiplus.lib;dxerr_d.lib;Math_d.lib;winmm.lib;d3d11.lib;D3DCompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)imGui\lib;$(SolutionDir)FreeImage\lib;$(SolutionDir)Math\lib;$(SolutionDir)dxerr\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>winmm.lib;d3d11.lib;D3DCompiler.lib;FreeImage.lib;dxguid.lib;gdiplus.lib;imGui_d.lib;dxerr_d.lib;Math_d.lib;winmm.lib;d3d11.lib;D3DCompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <ResourceCompile>
       <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Resources/ResourceFiles/;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -168,7 +168,7 @@
       <PreprocessorDefinitions>_CRT_NO_WARNINGS;NDEBUG;IS_DEBUG=false;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir)HeaderFiles/;$(ProjectDir);$(ProjectDir)Resources/ResourceFiles;$(SolutionDir)Math/include/;$(SolutionDir)dxerr/include/;$(SolutionDir)FreeImage/include/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)HeaderFiles/;$(ProjectDir);$(ProjectDir)Resources/ResourceFiles/;$(SolutionDir)Math/include/;$(SolutionDir)dxerr/include/;$(SolutionDir)FreeImage/include/;$(SolutionDir)imGui/include/</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
@@ -179,8 +179,8 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)FreeImage\lib;$(SolutionDir)Math\lib;$(SolutionDir)dxerr\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>FreeImage.lib;dxguid.lib;gdiplus.lib;dxerr.lib;Math.lib;winmm.lib;d3d11.lib;D3DCompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)imGui\lib;$(SolutionDir)FreeImage\lib;$(SolutionDir)Math\lib;$(SolutionDir)dxerr\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>winmm.lib;d3d11.lib;D3DCompiler.lib;FreeImage.lib;dxguid.lib;gdiplus.lib;imGui.lib;dxerr.lib;Math.lib;</AdditionalDependencies>
     </Link>
     <ResourceCompile>
       <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Resources/ResourceFiles/;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -206,6 +206,7 @@
     <ClCompile Include="SourceFiles\Drawable\Triangle.cpp" />
     <ClCompile Include="SourceFiles\DxgiInfoManager.cpp" />
     <ClCompile Include="SourceFiles\Exception.cpp" />
+    <ClCompile Include="SourceFiles\iGManager.cpp" />
     <ClCompile Include="SourceFiles\_exFunc.cpp" />
     <ClCompile Include="SourceFiles\Graphics.cpp" />
     <ClCompile Include="SourceFiles\Keyboard.cpp" />
@@ -238,6 +239,7 @@
     <ClInclude Include="HeaderFiles\ExceptionMacros.h" />
     <ClInclude Include="HeaderFiles\Graphics.h" />
     <ClInclude Include="HeaderFiles\Header.h" />
+    <ClInclude Include="HeaderFiles\iGManager.h" />
     <ClInclude Include="HeaderFiles\Keyboard.h" />
     <ClInclude Include="HeaderFiles\Mouse.h" />
     <ClInclude Include="HeaderFiles\Timer.h" />
