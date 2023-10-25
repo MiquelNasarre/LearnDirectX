@@ -7,6 +7,11 @@
 
 //	Graphics stuff
 
+Graphics::~Graphics()
+{
+	iGManager::closeDX11();
+}
+
 Graphics::Graphics(HWND hWnd)
 {
 	create(hWnd);

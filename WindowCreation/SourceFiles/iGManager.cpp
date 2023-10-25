@@ -11,13 +11,22 @@
 
 iGManager iGManager::main;
 
-bool iGManager::show_demo_window = true;
+float* iGManager::data = NULL;
 
 iGManager::iGManager()
 {
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 	ImGui::StyleColorsDark();
+
+	data = (float*)calloc(sizeof(float), __IMGUIDATA_END__);
+}
+
+iGManager::~iGManager()
+{
+	if (data)
+		free(data);
+	data = NULL;
 }
 
 void iGManager::initWin32(void* hWnd)
@@ -30,6 +39,16 @@ void iGManager::initDX11(void* pDevice, void* pContext)
 	ImGui_ImplDX11_Init((ID3D11Device*)pDevice, (ID3D11DeviceContext*)pContext);
 }
 
+void iGManager::closeWin32()
+{
+	ImGui_ImplWin32_Shutdown();
+}
+
+void iGManager::closeDX11()
+{
+	ImGui_ImplDX11_Shutdown();
+}
+
 bool iGManager::WndProcHandler(void* hWnd, unsigned int msg, unsigned int wParam, unsigned int lParam)
 {
 	ImGui_ImplWin32_WndProcHandler((HWND)hWnd, msg, wParam, lParam);
@@ -39,14 +58,53 @@ bool iGManager::WndProcHandler(void* hWnd, unsigned int msg, unsigned int wParam
 	return false;
 }
 
-void iGManager::render()
+float* iGManager::getData()
+{
+	return data;
+}
+
+void iGManager::newFrame()
 {
 	ImGui_ImplDX11_NewFrame();
 	ImGui_ImplWin32_NewFrame();
 	ImGui::NewFrame();
+}
 
-	if (show_demo_window)
-		ImGui::ShowDemoWindow(&show_demo_window);
+void iGManager::drawFrame()
+{
 	ImGui::Render();
 	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+}
+
+void iGManager::render()
+{
+	newFrame();
+
+	//	Add all imGui functionalities here
+
+	if (ImGui::Begin("Settings")) {
+		if (data[IMGUIDATA_EARTH_THETA] > 2.f * 3.141593f)
+			data[IMGUIDATA_EARTH_THETA] -= 4.f * 3.141593f;
+		if (data[IMGUIDATA_EARTH_THETA] < -2.f * 3.141593f)
+			data[IMGUIDATA_EARTH_THETA] += 4.f * 3.141593f;
+		
+
+		ImGui::SliderFloat("Speed", &data[IMGUIDATA_SPEED], -1.5f, 1.5f,"%0.3f");
+		ImGui::SliderAngle("Rotation", &data[IMGUIDATA_EARTH_THETA]);
+		ImGui::SliderAngle("Pitch", &data[IMGUIDATA_EARTH_PHI],-90.f,90.f);
+		ImGui::Text("Observer/Camera position:");
+		ImGui::SliderAngle("Theta", &data[IMGUIDATA_THETA]);
+		ImGui::SliderAngle("Phi", &data[IMGUIDATA_PHI],-90.f,90.f);
+		ImGui::SliderFloat2("Background View", &data[IMGUIDATA_VIEW_HORZ], 0.25f, 5.f);
+
+		if (data[IMGUIDATA_PHI] > 3.141f / 2.f)
+			data[IMGUIDATA_PHI] = 3.141f / 2.f;
+		if (data[IMGUIDATA_PHI] < -3.141f / 2.f)
+			data[IMGUIDATA_PHI] = -3.141f / 2.f;
+	}
+	ImGui::End();
+
+	//	....
+
+	drawFrame();
 }

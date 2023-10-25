@@ -23,19 +23,19 @@ Texture2D tex1 : register(t1);
 
 SamplerState splr;
 
-float4 main(float2 tc : TexCoord, float3 pos : PointPos) : SV_Target
+float4 main(float2 tc : TexCoord, float3 pos : PointPos, float3 center : Center) : SV_Target
 {
     Lightsource sun;
-    sun.intensity = 320.f;
-    sun.NEintensity = 100.f;
+    sun.intensity = 32000.f;
+    sun.NEintensity = 10000.f;
     sun.color = float4(1.f, 1.f, 1.f, 1.f);
-    sun.position = float3(16.f, 0.f, 6.f);
+    sun.position = float3(160.f, 0.f, 60.f);
     
     
     float4 totalLight = float4(0.f, 0.f, 0.f, 0.f);
     
     float distance = normfloat3(sun.position - pos);
-    float exposure = dotprd(pos, (sun.position - pos) / distance);
+    float exposure = dotprd(pos - center, (sun.position - pos) / distance);
     float light = sun.NEintensity / distance / distance;
     if (exposure > 0)
         light += sun.intensity * exposure / distance / distance;

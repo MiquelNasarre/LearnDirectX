@@ -6,6 +6,8 @@
 #define VERTEX_CONSTANT_BUFFER_TYPE 0
 #define PIXEL_CONSTANT_BUFFER_TYPE  1
 
+#define CONSTANT_BUFFER_DEFAULT_SLOT -1
+
 template<typename C>
 class ConstantBuffer : public Bindable
 {
@@ -16,10 +18,19 @@ public:
 		GFX_THROW_INFO_ONLY(GetContext(gfx)->UpdateSubresource(pConstantBuffer.Get(), 0u, NULL, &consts, 0u, 0u));
 	}
 
-	ConstantBuffer(Graphics& gfx, const C& consts, unsigned char type)
+	ConstantBuffer(Graphics& gfx, const C& consts, const unsigned char type, const int slot = CONSTANT_BUFFER_DEFAULT_SLOT)
 		:Type{ type }
 	{
 		INFOMAN(gfx);
+
+		if (slot == CONSTANT_BUFFER_DEFAULT_SLOT) {
+			if (type == VERTEX_CONSTANT_BUFFER_TYPE)
+				Slot = 1u;
+			if (type == PIXEL_CONSTANT_BUFFER_TYPE)
+				Slot = 0u;
+		}
+		else
+			Slot = (UINT)slot;
 
 		D3D11_BUFFER_DESC cbd;
 		cbd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
@@ -34,10 +45,18 @@ public:
 		GFX_THROW_INFO(GetDevice(gfx)->CreateBuffer(&cbd, &csd, &pConstantBuffer));
 	}
 
-	ConstantBuffer(Graphics& gfx, unsigned char type)
+	ConstantBuffer(Graphics& gfx, unsigned char type, const int slot = CONSTANT_BUFFER_DEFAULT_SLOT)
 		:Type{ type }
 	{
 		INFOMAN(gfx);
+		if (slot == CONSTANT_BUFFER_DEFAULT_SLOT) {
+			if (type == VERTEX_CONSTANT_BUFFER_TYPE)
+				Slot = 1u;
+			if (type == PIXEL_CONSTANT_BUFFER_TYPE)
+				Slot = 0u;
+		}
+		else
+			Slot = (UINT)slot;
 
 		D3D11_BUFFER_DESC cbd;
 		cbd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
@@ -53,14 +72,15 @@ public:
 	{
 		INFOMAN(gfx);
 		if (Type == VERTEX_CONSTANT_BUFFER_TYPE) {
-			GFX_THROW_INFO_ONLY(GetContext(gfx)->VSSetConstantBuffers(1u, 1u, pConstantBuffer.GetAddressOf()));
+			GFX_THROW_INFO_ONLY(GetContext(gfx)->VSSetConstantBuffers(Slot, 1u, pConstantBuffer.GetAddressOf()));
 		}
 		else if (Type == PIXEL_CONSTANT_BUFFER_TYPE) {
-			GFX_THROW_INFO_ONLY(GetContext(gfx)->PSSetConstantBuffers(0u, 1u, pConstantBuffer.GetAddressOf()));
+			GFX_THROW_INFO_ONLY(GetContext(gfx)->PSSetConstantBuffers(Slot, 1u, pConstantBuffer.GetAddressOf()));
 		}
 	}
 
 private:
 	pCom<ID3D11Buffer> pConstantBuffer;
 	const unsigned char Type;
+	UINT Slot;
 };

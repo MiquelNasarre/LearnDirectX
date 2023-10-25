@@ -1,6 +1,6 @@
 #include "Drawable/TexSurface.h"
 
-TexSurface::TexSurface(Graphics& gfx)
+TexSurface::TexSurface(Graphics& gfx, std::string filename)
 {
 	UINT depth = 5;
 
@@ -31,14 +31,23 @@ TexSurface::TexSurface(Graphics& gfx)
 			indexs.push_back((i + 1) * (100 + 1) + j);
 		}
 	}
-
+	if (filename.size()) {
+		for (auto& v : vertexs)
+			v.vector *= 0.3f;
+	}
 	AddBind(std::make_unique<VertexBuffer>(gfx, vertexs));
 
 	AddBind(std::make_unique<IndexBuffer>(gfx, indexs));
 
-	AddBind(std::make_unique<Texture>(gfx, "Resources/EarthTexture.jpg"));
-
-	AddBind(std::make_unique<Texture>(gfx, "Resources/nightEarthTexture.jpg", 1u));
+	if (!filename.size()) {
+		AddBind(std::make_unique<Texture>(gfx, "Resources/EarthTexture.jpg"));
+		AddBind(std::make_unique<Texture>(gfx, "Resources/nightEarthTexture.jpg", 1u));
+	}
+	else {
+		AddBind(std::make_unique<Texture>(gfx, filename));
+		AddBind(std::make_unique<Texture>(gfx, filename, 1u));
+	}
+	
 
 	AddBind(std::make_unique<Sampler>(gfx, D3D11_FILTER_MIN_MAG_MIP_LINEAR));
 
@@ -56,10 +65,12 @@ TexSurface::TexSurface(Graphics& gfx)
 
 	AddBind(std::make_unique<Topology>(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST));
 
-	pVSCB = (ConstantBuffer<_float4matrix>*)AddBind(std::make_unique<ConstantBuffer<_float4matrix>>(gfx, Matrix::Identity.getMatrix4(), VERTEX_CONSTANT_BUFFER_TYPE));
+	pVSCB = (ConstantBuffer<VSconstBuffer>*)AddBind(std::make_unique<ConstantBuffer<VSconstBuffer>>(gfx, vscBuff, VERTEX_CONSTANT_BUFFER_TYPE));
 }
 
-void TexSurface::updateRotation(Graphics& gfx, float rotationZ, float rotationX)
+void TexSurface::updateRotation(Graphics& gfx, float rotationZ, float rotationX, Vector3f position)
 {
-	pVSCB->Update(gfx, (ZRotationMatrix(rotationZ) * XRotationMatrix(rotationX)).transpose().getMatrix4());
+	vscBuff.rotattion = (ZRotationMatrix(rotationZ) * XRotationMatrix(rotationX)).transpose().getMatrix4();
+	vscBuff.traslation = position.getVector4();
+	pVSCB->Update(gfx, vscBuff);
 }

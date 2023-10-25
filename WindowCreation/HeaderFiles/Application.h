@@ -14,17 +14,18 @@ private:
 	Timer timer;
 
 	float scale = 280.f;
-	float theta = 0.f;
-	float phi = 0.f;
 	Vector3f center = { 0.f,0.f,0.f };
-	float velocity = 0.f;
+	
+	float* imGuiData;
 
 	bool dragging;
 	Vector2i initialDrag;
 	Vector2f initialDragAngles;
 
 	std::vector<std::unique_ptr<Surface>> surfaces;
-	TexSurface test;
+	TexSurface Earth;
+	TexSurface Moon;
+
 	Background back;
 
 

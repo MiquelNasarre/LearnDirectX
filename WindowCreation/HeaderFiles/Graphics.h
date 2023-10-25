@@ -47,6 +47,7 @@ public:
 
 public:
 	Graphics() {}
+	~Graphics();
 	Graphics(HWND hWnd);
 	Graphics(const Graphics&) = delete;
 	Graphics& operator=(const Graphics&) = delete;

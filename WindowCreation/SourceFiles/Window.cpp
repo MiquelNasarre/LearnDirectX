@@ -128,6 +128,7 @@ Window::Window(int width, int height, LPCWSTR name)
 
 Window::~Window()
 {
+	iGManager::closeWin32();
 	DestroyWindow(hWnd);
 }
 
