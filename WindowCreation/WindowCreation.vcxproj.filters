@@ -114,6 +114,9 @@
     <ClCompile Include="SourceFiles\Drawable\TexSurface.cpp">
       <Filter>Sources\Private\Drawable</Filter>
     </ClCompile>
+    <ClCompile Include="SourceFiles\Drawable\Background.cpp">
+      <Filter>Sources\Private\Drawable</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="HeaderFiles\Header.h">
@@ -197,6 +200,9 @@
     <ClInclude Include="HeaderFiles\Drawable\TexSurface.h">
       <Filter>Sources\Public\Drawable</Filter>
     </ClInclude>
+    <ClInclude Include="HeaderFiles\Drawable\Background.h">
+      <Filter>Sources\Public\Drawable</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shaders\TriangleVS.hlsl">
@@ -221,6 +227,12 @@
       <Filter>Shaders</Filter>
     </FxCompile>
     <FxCompile Include="Shaders\TexSurfacePS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\BackgroundVS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\BackgroundPS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
   </ItemGroup>

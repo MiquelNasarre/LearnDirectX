@@ -5,6 +5,7 @@
 #include "Drawable/Sphere.h"
 #include "Drawable/Surface.h"
 #include "Drawable/TexSurface.h"
+#include "Drawable/Background.h"
 
 class App {
 
@@ -24,6 +25,8 @@ private:
 
 	std::vector<std::unique_ptr<Surface>> surfaces;
 	TexSurface test;
+	Background back;
+
 
 public:
 	App();

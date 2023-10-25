@@ -13,6 +13,7 @@ public:
 
 protected:
 	void* AddBind(std::unique_ptr<Bindable> bind);
+	void* changeBind(std::unique_ptr<Bindable> bind, UINT N);
 private:
 	const IndexBuffer* pIndexBuffer;
 	std::vector<std::unique_ptr<Bindable>> binds;

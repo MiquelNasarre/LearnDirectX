@@ -3,7 +3,7 @@
 #include "Mouse.h"
 
 App::App()
-	:window(640, 480, L"Hello World"), test(window.graphics)
+	:window(640, 480, L"Hello World"), test(window.graphics), back(window.graphics, "Resources/Background.jpg")
 {
 
 	window.setFramerateLimit(60);
@@ -84,6 +84,7 @@ void App::doFrame()
 	}
 	test.updateRotation(window.graphics, theta, phi);
 	test.Draw(window.graphics);
+	back.Draw(window.graphics);
 
 	window.graphics.pushFrame();
 

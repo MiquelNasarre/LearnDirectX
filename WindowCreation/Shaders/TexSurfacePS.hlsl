@@ -17,7 +17,9 @@ struct Lightsource
     float3 position;
 };
 
-Texture2D tex;
+Texture2D tex0 : register(t0);
+
+Texture2D tex1 : register(t1);
 
 SamplerState splr;
 
@@ -25,7 +27,7 @@ float4 main(float2 tc : TexCoord, float3 pos : PointPos) : SV_Target
 {
     Lightsource sun;
     sun.intensity = 320.f;
-    sun.NEintensity = 15.f;
+    sun.NEintensity = 100.f;
     sun.color = float4(1.f, 1.f, 1.f, 1.f);
     sun.position = float3(16.f, 0.f, 6.f);
     
@@ -38,6 +40,11 @@ float4 main(float2 tc : TexCoord, float3 pos : PointPos) : SV_Target
     if (exposure > 0)
         light += sun.intensity * exposure / distance / distance;
     totalLight += light * sun.color;
-    
-    return tex.Sample(splr, tc) * totalLight;
+    if (exposure>0.1)
+        return tex0.Sample(splr, tc) * totalLight;
+    else if (exposure<-0.1)
+        return tex1.Sample(splr, tc) * totalLight;
+    else
+        return totalLight * (tex1.Sample(splr, tc) * (0.1 - exposure) + tex0.Sample(splr, tc) * (0.1 + exposure)) * 5;
+
 }

@@ -36,9 +36,11 @@ TexSurface::TexSurface(Graphics& gfx)
 
 	AddBind(std::make_unique<IndexBuffer>(gfx, indexs));
 
-	AddBind(std::make_unique<Texture>(gfx, "kk"));
+	AddBind(std::make_unique<Texture>(gfx, "Resources/EarthTexture.jpg"));
 
-	AddBind(std::make_unique<Sampler>(gfx));
+	AddBind(std::make_unique<Texture>(gfx, "Resources/nightEarthTexture.jpg", 1u));
+
+	AddBind(std::make_unique<Sampler>(gfx, D3D11_FILTER_MIN_MAG_MIP_LINEAR));
 
 	auto pvs = (VertexShader*)AddBind(std::move(std::make_unique<VertexShader>(gfx, L"Shaders/TexSurfaceVS.cso")));
 

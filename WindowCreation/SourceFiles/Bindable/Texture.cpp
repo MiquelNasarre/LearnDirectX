@@ -1,25 +1,25 @@
 #include "Bindable/Texture.h"
 #include "ExceptionMacros.h"
 #include "resource.h"
+#include "FreeImage.h"
 
-Texture::Texture(Graphics& gfx, std::string filename)
+Texture::Texture(Graphics& gfx, std::string filename, UINT slot) : Slot{ slot }
 {
 	INFOMAN(gfx);
 
-	//	Here you find a fucking way to load your dumb picture into an array of colors, good fucking luck
+	FREE_IMAGE_FORMAT format = FreeImage_GetFileType(filename.c_str());
+	if (format == FIF_UNKNOWN)      format = FreeImage_GetFIFFromFilename(filename.c_str());
+	if (format == FIF_UNKNOWN)      throw(std::runtime_error("File format not supported"));
 
-	UINT width = 5400;
-	UINT height = 2700;
-	Color* pBuffer = (Color*)calloc(sizeof(Color), width * height);
-	srand(1234);
-	for (UINT i = 0; i < height; i++) {
-		for (UINT j = 0; j < width; j++) {
-			pBuffer[i * width + j].R = rand() / 128;
-			pBuffer[i * width + j].G = rand() / 128;
-			pBuffer[i * width + j].B = rand() / 128;
-			pBuffer[i * width + j].A = rand() / 128;
-		}
-	}
+	FIBITMAP* bitmap = FreeImage_Load(format, filename.c_str());
+	FIBITMAP* bitmap2 = FreeImage_ConvertTo32Bits(bitmap);
+	FreeImage_Unload(bitmap);
+
+	UINT width = FreeImage_GetWidth(bitmap2);
+	UINT height = FreeImage_GetHeight(bitmap2);
+	void* pBuffer = calloc(sizeof(Color), width * height);
+	FreeImage_ConvertToRawBits((BYTE*)pBuffer, bitmap2, FreeImage_GetWidth(bitmap2) * 4, 32, FI_RGBA_BLUE_MASK, FI_RGBA_GREEN_MASK, FI_RGBA_RED_MASK);
+	FreeImage_Unload(bitmap2);
 
 	//	Create texture resource
 
@@ -28,7 +28,7 @@ Texture::Texture(Graphics& gfx, std::string filename)
 	textureDesc.Height = height;
 	textureDesc.MipLevels = 1u;
 	textureDesc.ArraySize = 1u;
-	textureDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	textureDesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
 	textureDesc.SampleDesc.Count = 1u;
 	textureDesc.SampleDesc.Quality = 0u;
 	textureDesc.Usage = D3D11_USAGE_DEFAULT;
@@ -37,7 +37,7 @@ Texture::Texture(Graphics& gfx, std::string filename)
 	textureDesc.MiscFlags = 0u;
 	D3D11_SUBRESOURCE_DATA sd = {};
 	sd.pSysMem = pBuffer;
-	sd.SysMemPitch = width * sizeof(Color);
+	sd.SysMemPitch = width * 4;
 
 	pCom<ID3D11Texture2D> pTexture;
 	GFX_THROW_INFO(GetDevice(gfx)->CreateTexture2D(&textureDesc, &sd, &pTexture));
@@ -51,10 +51,11 @@ Texture::Texture(Graphics& gfx, std::string filename)
 	srvDesc.Texture2D.MipLevels = 1u;
 
 	GFX_THROW_INFO(GetDevice(gfx)->CreateShaderResourceView(pTexture.Get(), &srvDesc, &pTextureView));
+	free(pBuffer);
 }
 
 void Texture::Bind(Graphics& gfx)
 {
 	INFOMAN(gfx);
-	GFX_THROW_INFO_ONLY(GetContext(gfx)->PSSetShaderResources(0u, 1u, pTextureView.GetAddressOf()));
+	GFX_THROW_INFO_ONLY(GetContext(gfx)->PSSetShaderResources(Slot, 1u, pTextureView.GetAddressOf()));
 }
