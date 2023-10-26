@@ -116,6 +116,11 @@ void Graphics::clearBuffer(Color color)
 	GFX_THROW_INFO_ONLY(pContext->ClearDepthStencilView(pDSV.Get(),D3D11_CLEAR_DEPTH,1.f,0u));
 }
 
+void Graphics::clearDepthBuffer()
+{
+	GFX_THROW_INFO_ONLY(pContext->ClearDepthStencilView(pDSV.Get(), D3D11_CLEAR_DEPTH, 1.f, 0u));
+}
+
 Vector2f Graphics::PixeltoR2(Vector2i MousePos)
 {
 	return Vector2f(2.f * MousePos.x / WindowDim.x - 1.f, -2.f * MousePos.y / WindowDim.y + 1.f);

@@ -244,7 +244,10 @@
     <FxCompile Include="Shaders\DynamicBgVS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="Shaders\DynamicBgPS.hlsl">
+    <FxCompile Include="Shaders\DyBgAzimuthPS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\DyBgMercatorPS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
   </ItemGroup>

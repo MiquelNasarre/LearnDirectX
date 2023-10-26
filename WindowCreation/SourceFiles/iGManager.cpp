@@ -95,12 +95,12 @@ void iGManager::render()
 		ImGui::Text("Observer/Camera position:");
 		ImGui::SliderAngle("Theta", &data[IMGUIDATA_THETA]);
 		ImGui::SliderAngle("Phi", &data[IMGUIDATA_PHI],-90.f,90.f);
-		ImGui::SliderFloat2("Background View", &data[IMGUIDATA_VIEW_HORZ], 0.25f, 5.f);
+		ImGui::SliderFloat("Background View", &data[IMGUIDATA_FOV], 0.2f, 2.f);
 
-		if (data[IMGUIDATA_PHI] > 3.141f / 2.f)
-			data[IMGUIDATA_PHI] = 3.141f / 2.f;
-		if (data[IMGUIDATA_PHI] < -3.141f / 2.f)
-			data[IMGUIDATA_PHI] = -3.141f / 2.f;
+		if (data[IMGUIDATA_PHI] > 3.140f / 2.f)
+			data[IMGUIDATA_PHI] = 3.140f / 2.f;
+		if (data[IMGUIDATA_PHI] < -3.140f / 2.f)
+			data[IMGUIDATA_PHI] = -3.140f / 2.f;
 	}
 	ImGui::End();
 

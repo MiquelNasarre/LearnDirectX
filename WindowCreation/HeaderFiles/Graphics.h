@@ -58,6 +58,7 @@ public:
 	void pushFrame();
 	void clearBuffer(float R = 1.f, float G = 1.f, float B = 1.f, float A = 1.f);
 	void clearBuffer(Color color);
+	void clearDepthBuffer();
 
 	Vector2f PixeltoR2(Vector2i MousePos);
 	void setWindowDimensions(Vector2i& Dim);

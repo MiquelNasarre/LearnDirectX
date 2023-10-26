@@ -5,12 +5,11 @@
 #include "iGManager.h"
 
 App::App()
-	:window(640, 480, L"Hello World"), Earth(window.graphics), Moon(window.graphics, "Resources/MoonTexture.jpg"), back(window.graphics, "Resources/NightSky.jpg", true)
+	:window(640, 480, L"Hello World"), Earth(window.graphics), Moon(window.graphics, "Resources/MoonTexture.jpg"), back(window.graphics, "Resources/hpfNightSky.jpg", true, PT_AZIMUTHAL)
 {
 	imGuiData = iGManager::getData();
 	imGuiData[IMGUIDATA_THETA] = pi / 2.f;
-	imGuiData[IMGUIDATA_VIEW_HORZ] = 1.5f;
-	imGuiData[IMGUIDATA_VIEW_VERT] = 1.5f;
+	imGuiData[IMGUIDATA_FOV] = 1.f;
 
 	window.setFramerateLimit(60);
 	timer.reset();
@@ -85,19 +84,22 @@ void App::doFrame()
 
 	window.graphics.updatePerspective(Vector3f(-cosf(imGuiData[IMGUIDATA_PHI]) * cosf(imGuiData[IMGUIDATA_THETA]), -cosf(imGuiData[IMGUIDATA_PHI]) * sinf(imGuiData[IMGUIDATA_THETA]), -sinf(imGuiData[IMGUIDATA_PHI])), center, scale);
 	back.updateObserver(window.graphics, Vector3f(-cosf(imGuiData[IMGUIDATA_PHI]) * cosf(imGuiData[IMGUIDATA_THETA]), -cosf(imGuiData[IMGUIDATA_PHI]) * sinf(imGuiData[IMGUIDATA_THETA]), -sinf(imGuiData[IMGUIDATA_PHI])));
-	back.updateWideness(window.graphics, Vector2f(imGuiData[IMGUIDATA_VIEW_HORZ], imGuiData[IMGUIDATA_VIEW_VERT]));
+	back.updateWideness(window.graphics, imGuiData[IMGUIDATA_FOV], (Vector2f)window.getDimensions());
+
+	Earth.updateRotation(window.graphics, imGuiData[IMGUIDATA_EARTH_THETA], imGuiData[IMGUIDATA_EARTH_PHI]);
+	Moon.updateRotation(window.graphics, -timer.check()/5.f, 0.f, Vector3f(10.f * cosf(timer.check() / 5.f), 10.f * sinf(timer.check() / 5.f), 0.f));
 
 	window.setTitle("Hello World  -  " + std::to_string(int(std::round(window.getFramerate()))) + "fps");
 
-	window.graphics.clearBuffer(Color::Black);
+	//window.graphics.clearBuffer(Color::Black);
+	window.graphics.clearDepthBuffer();
 
 	for (std::unique_ptr<Surface>& s : surfaces) {
 		s->updateRotation(window.graphics, imGuiData[IMGUIDATA_EARTH_THETA], imGuiData[IMGUIDATA_EARTH_PHI]);
 		s->Draw(window.graphics);
 	}
-	Earth.updateRotation(window.graphics, imGuiData[IMGUIDATA_EARTH_THETA], imGuiData[IMGUIDATA_EARTH_PHI]);
+
 	Earth.Draw(window.graphics);
-	Moon.updateRotation(window.graphics, -timer.check()/3.f, 0.f, Vector3f(10.f * cosf(timer.check() / 3.f), 10.f * sinf(timer.check() / 3.f), 0.f));
 	Moon.Draw(window.graphics);
 	back.Draw(window.graphics);
 
