@@ -10,7 +10,10 @@ class Background : public Drawable
 {
 public:
 	Background(Graphics& gfx, std::string filename, bool MakeDynamic = false, PROJECTION_TYPES ProjectionType = PT_MERCATOR);
+	Background(Graphics& gfx, Texture texture, bool MakeDynamic = false, PROJECTION_TYPES ProjectionType = PT_MERCATOR);
+
 	void updateTexture(Graphics& gfx, std::string filename);
+	void updateTexture(Graphics& gfx, Texture texture);
 	void updateObserver(Graphics& gfx, Vector3f obs);
 	void updateWideness(Graphics& gfx, float FOV, Vector2f WindowDimensions);
 

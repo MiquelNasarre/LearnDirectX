@@ -94,12 +94,22 @@ void iGManager::render()
 		ImGui::SliderFloat("Speed", &data[IMGUIDATA_SPEED], -1.5f, 1.5f,"%0.3f");
 		ImGui::SliderAngle("Rotation", &data[IMGUIDATA_EARTH_THETA]);
 		ImGui::SliderAngle("Pitch", &data[IMGUIDATA_EARTH_PHI],-90.f,90.f);
+		ImGui::SliderFloat("Moon Speed", &data[IMGUIDATA_MOON_SPEED], -4.f, 4.f, "%0.3f");
+
 		ImGui::Text("Observer/Camera position:");
+
 		ImGui::SliderAngle("Theta", &data[IMGUIDATA_THETA]);
 		ImGui::SliderAngle("Phi", &data[IMGUIDATA_PHI],-90.f,90.f);
 		ImGui::SliderFloat("Background View", &data[IMGUIDATA_FOV], 0.2f, 2.f);
 
-		
+		ImGui::Text("Texture selection:");
+
+		static const char* earthTex[] = { "Default" , "Inverted" , "Chalked" , "Moon"};
+		ImGui::Combo("Earth", (int*)&data[IMGUIDATA_TEXTURE_EARTH], earthTex, IM_ARRAYSIZE(earthTex));
+		static const char* moonTex[] = { "Default" , "Inverted" , "Chalked" , "Earth" };
+		ImGui::Combo("Moon", (int*)&data[IMGUIDATA_TEXTURE_MOON], moonTex, IM_ARRAYSIZE(moonTex));
+		static const char* backTex[] = { "Default" , "inverted" , "Earth" , "Moon"};
+		ImGui::Combo("Background", (int*)&data[IMGUIDATA_TEXTURE_BACKGROUND], backTex, IM_ARRAYSIZE(backTex));
 
 		if (data[IMGUIDATA_PHI] > 3.140f / 2.f)
 			data[IMGUIDATA_PHI] = 3.140f / 2.f;

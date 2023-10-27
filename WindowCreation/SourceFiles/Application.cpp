@@ -5,9 +5,24 @@
 
 App::App()
 	: window(640, 480, L"Hello World"),
-	Earth(window.graphics, _RADIAL_SPHERICAL, weirdRadius, "Resources/EarthTexture.jpg", "Resources/nightEarthTexture.jpg"),
-	Moon(window.graphics, _RADIAL_SPHERICAL, constantRadius03, "Resources/MoonTexture.jpg", ""),
-	back(window.graphics, "Resources/hpfNightSky.jpg", true, PT_AZIMUTHAL)
+
+	TexEarth			(window.graphics, "Resources/earthTextures/default.jpg"),
+	TexNEarth			(window.graphics, "Resources/earthTextures/defaultNight.jpg"),
+	TexEarthInverted	(window.graphics, "Resources/earthTextures/inverted.jpg"),
+	TexNEarthInverted	(window.graphics, "Resources/earthTextures/invertedNight.jpg"),
+	TexEarthChalked		(window.graphics, "Resources/earthTextures/chalked.jpg"),
+	TexNEarthChalked	(window.graphics, "Resources/earthTextures/chalkedNight.jpg"),
+	TexMoon				(window.graphics, "Resources/moonTextures/default.jpg"),
+	TexMoonInverted		(window.graphics, "Resources/moonTextures/inverted.jpg"),
+	TexMoonChalked		(window.graphics, "Resources/moonTextures/chalked.jpg"),
+	TexBack				(window.graphics, "Resources/nightSky/highperformance.jpg"),
+	TexBackInverted		(window.graphics, "Resources/nightSky/inverted.jpg"),
+	TexBackEarth		(window.graphics, "Resources/earthTextures/projected.jpg"),
+	TexBackMoon			(window.graphics, "Resources/moonTextures/projected.jpg"),
+
+	Earth	(window.graphics, _RADIAL_SPHERICAL, constantRadius, TexEarth, TexNEarth),
+	Moon	(window.graphics, _RADIAL_SPHERICAL, constantRadius03, TexMoon, TexMoon),
+	back	(window.graphics, TexBack, true, PT_AZIMUTHAL)
 {
 	imGuiData = iGManager::getData();
 	imGuiData[IMGUIDATA_THETA] = pi / 2.f;
@@ -88,6 +103,42 @@ void App::eventManager()
 			-cosf(imGuiData[IMGUIDATA_PHI]) * sinf(imGuiData[IMGUIDATA_THETA]) , 
 			-sinf(imGuiData[IMGUIDATA_PHI]) 
 	};
+
+	//	Set textures
+
+	if (((int*)imGuiData)[IMGUIDATA_TEXTURE_EARTH] != earthtex) {
+		earthtex = ((int*)imGuiData)[IMGUIDATA_TEXTURE_EARTH];
+		if (earthtex == 0)
+			Earth.updateTextures(window.graphics, TexEarth, TexNEarth);
+		if (earthtex == 1)
+			Earth.updateTextures(window.graphics, TexEarthInverted, TexNEarthInverted);
+		if (earthtex == 2)
+			Earth.updateTextures(window.graphics, TexEarthChalked, TexNEarthChalked);
+		if (earthtex == 3)
+			Earth.updateTextures(window.graphics, TexMoon, TexMoon);
+	}
+	if (((int*)imGuiData)[IMGUIDATA_TEXTURE_MOON] != moontex) {
+		moontex = ((int*)imGuiData)[IMGUIDATA_TEXTURE_MOON];
+		if (moontex == 0)
+			Moon.updateTextures(window.graphics, TexMoon, TexMoon);
+		if (moontex == 1)
+			Moon.updateTextures(window.graphics, TexMoonInverted, TexMoonInverted);
+		if (moontex == 2)
+			Moon.updateTextures(window.graphics, TexMoonChalked, TexMoonChalked);
+		if (moontex == 3)
+			Moon.updateTextures(window.graphics, TexEarth, TexNEarth);
+	}
+	if (((int*)imGuiData)[IMGUIDATA_TEXTURE_BACKGROUND] != backtex) {
+		backtex = ((int*)imGuiData)[IMGUIDATA_TEXTURE_BACKGROUND];
+		if (backtex == 0)
+			back.updateTexture(window.graphics, TexBack);
+		if (backtex == 1)
+			back.updateTexture(window.graphics, TexBackInverted);
+		if (backtex == 2)
+			back.updateTexture(window.graphics, TexBackEarth);
+		if (backtex == 3)
+			back.updateTexture(window.graphics, TexBackMoon);
+	}
 }
 
 void App::doFrame()

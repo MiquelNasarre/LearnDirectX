@@ -63,3 +63,8 @@ void Texture::Bind(Graphics& gfx)
 	INFOMAN(gfx);
 	GFX_THROW_INFO_ONLY(GetContext(gfx)->PSSetShaderResources(Slot, 1u, pTextureView.GetAddressOf()));
 }
+
+void Texture::setSlot(UINT slot)
+{
+	Slot = slot;
+}

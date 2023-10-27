@@ -19,16 +19,19 @@ public:
 
 	Surface(Graphics& gfx, SURFACE_TYPE Type, float F0(float, float), bool defaultValues = true, Vector2f minRect = {}, Vector2f maxRect = {}, UINT numX = 100u, UINT numY = 100u);
 	Surface(Graphics& gfx, SURFACE_TYPE Type, float F0(float, float), std::string Texture0, std::string Texture1, bool defaultValues = true, Vector2f minRect = {}, Vector2f maxRect = {}, UINT numX = 100u, UINT numY = 100u);
+	Surface(Graphics& gfx, SURFACE_TYPE Type, float F0(float, float), Texture texture0, Texture texture1, bool defaultValues = true, Vector2f minRect = {}, Vector2f maxRect = {}, UINT numX = 100u, UINT numY = 100u);
 
 	//	Radial icosphere
 
 	Surface(Graphics& gfx, SURFACE_TYPE Type, float rad(float, float), UINT ICOSPHERE_DEPTH);
 	Surface(Graphics& gfx, SURFACE_TYPE Type, float rad(float, float), UINT ICOSPHERE_DEPTH, std::string Texture0, std::string Texture1);
+	Surface(Graphics& gfx, SURFACE_TYPE Type, float rad(float, float), UINT ICOSPHERE_DEPTH, Texture texture0, Texture texture1);
 
 	//	Parametric & Parametric spherical
 
 	Surface(Graphics& gfx, SURFACE_TYPE Type, float F0(float, float), float F1(float, float), float F2(float, float), bool defaultValues = true, Vector2f minRect = {}, Vector2f maxRect = {}, UINT numU = 100u, UINT numV = 100u);
 	Surface(Graphics& gfx, SURFACE_TYPE Type, float F0(float, float), float F1(float, float), float F2(float, float), std::string Texture0, std::string Texture1, bool defaultValues = true, Vector2f minRect = {}, Vector2f maxRect = {}, UINT numU = 100u, UINT numV = 100u);
+	Surface(Graphics& gfx, SURFACE_TYPE Type, float F0(float, float), float F1(float, float), float F2(float, float), Texture texture0, Texture texture1, bool defaultValues = true, Vector2f minRect = {}, Vector2f maxRect = {}, UINT numU = 100u, UINT numV = 100u);
 
 	//	Implicit & Implicit spherical
 
@@ -39,6 +42,8 @@ public:
 	void updateRotation(Graphics& gfx, float rotationZ, float rotationX, Vector3f position = Vector3f());
 	void updateTexture(Graphics& gfx, UINT id, std::string texture);
 	void updateTexture(Graphics& gfx, UINT id, Texture texture);
+	void updateTextures(Graphics& gfx, Texture texture0, Texture texture1);
+	void updateTextures(Graphics& gfx, std::string texture0, std::string texture1);
 
 private:
 	void generateExplicit(Graphics& gfx, float F(float, float), Vector2f minRect, Vector2f maxRect, UINT numX, UINT numY, bool Textured = false);
@@ -51,6 +56,7 @@ private:
 
 	void addDefaultBinds(Graphics& gfx);
 	void addTexturedBinds(Graphics& gfx, std::string texture0, std::string texture1);
+	void addTexturedBinds(Graphics& gfx, Texture texture0, Texture texture1);
 
 	struct VSconstBuffer {
 		_float4matrix rotattion;

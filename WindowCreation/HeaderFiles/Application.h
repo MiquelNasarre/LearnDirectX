@@ -22,9 +22,30 @@ private:
 	Vector2i initialDrag;
 	Vector2f initialDragAngles;
 
+	Texture TexEarth;
+	Texture TexNEarth;
+	Texture TexEarthInverted;
+	Texture TexNEarthInverted;
+	Texture TexEarthChalked;
+	Texture TexNEarthChalked;
+
+	Texture TexMoon;
+	Texture TexMoonInverted;
+	Texture TexMoonChalked;
+
+	Texture TexBack;
+	Texture TexBackInverted;
+	Texture TexBackEarth;
+	Texture TexBackMoon;
+
 	Surface Earth;
 	Surface Moon;
 	Background back;
+
+	int earthtex = 0;
+	int moontex  = 0;
+	int backtex  = 0;
+
 
 public:
 	App();

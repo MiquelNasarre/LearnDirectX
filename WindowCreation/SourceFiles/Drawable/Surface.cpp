@@ -70,6 +70,40 @@ Surface::Surface(Graphics& gfx, SURFACE_TYPE Type, float F0(float, float), std::
 	addTexturedBinds(gfx, Texture0, Texture1);
 }
 
+Surface::Surface(Graphics& gfx, SURFACE_TYPE Type, float F0(float, float), Texture texture0, Texture texture1, bool defaultValues, Vector2f minRect, Vector2f maxRect, UINT numX, UINT numY)
+{
+	switch (Type)
+	{
+		if (defaultValues) {
+			minRect = { -1.f,-1.f };
+			maxRect = { 1.f, 1.f };
+		}
+	case _EXPLICIT:
+		generateExplicit(gfx, F0, minRect, maxRect, numX, numY, true);
+		break;
+	case _RADIAL_SPHERICAL:
+		if (defaultValues) {
+			minRect = { 0.f, pi / 2.f };
+			maxRect = { 2.f * pi, -pi / 2.f };
+		}
+		generatePolarNormal(gfx, F0, minRect, maxRect, numX, numY, true);
+		break;
+	case _IMPLICIT:
+		throw std::exception("The surface type specified is iconrrect for the given constructor arguments\nTo create an Implicit surface you must provide just one function that takes three arguments");
+	case _PARAMETRIC:
+		throw std::exception("The surface type specified is iconrrect for the given constructor arguments\nTo create a Parametric surface you must provide three functions that take two arguments");
+	case _RADIAL_ICOSPHERE:
+		throw std::exception("The surface type specified is iconrrect for the given constructor arguments\nTo create a Radial Icosphere surface you must specify the depth of the icosphere\n(depth 5 recomended)");
+	case _PARAMETRIC_SPHERICAL:
+		throw std::exception("The surface type specified is iconrrect for the given constructor arguments\nTo create a Parametric Spherical surface you must provide three functions that take two arguments");
+	case _IMPLICIT_SPHERICAL:
+		throw std::exception("The surface type specified is iconrrect for the given constructor arguments\nTo create an Implicit Spherical surface you must provide just one function that takes three arguments");
+	default:
+		throw std::exception("The surface type specified is not supported");
+	}
+	addTexturedBinds(gfx, texture0, texture1);
+}
+
 Surface::Surface(Graphics& gfx, SURFACE_TYPE Type, float rad(float, float), UINT ICOSPHERE_DEPTH)
 {
 	switch (Type)
@@ -118,6 +152,31 @@ Surface::Surface(Graphics& gfx, SURFACE_TYPE Type, float rad(float, float), UINT
 		throw std::exception("The surface type specified is not supported");
 	}
 	addTexturedBinds(gfx, Texture0, Texture1);
+}
+
+Surface::Surface(Graphics& gfx, SURFACE_TYPE Type, float rad(float, float), UINT ICOSPHERE_DEPTH, Texture texture0, Texture texture1)
+{
+	switch (Type)
+	{
+	case _RADIAL_ICOSPHERE:
+		generatePolarIcosphere(gfx, rad, ICOSPHERE_DEPTH, true);
+		break;
+	case _EXPLICIT:
+		throw std::exception("The surface type specified is iconrrect for the given constructor arguments\nTo create an Explicit surface you must remove the last value that provides a depth for the icosphere");
+	case _RADIAL_SPHERICAL:
+		throw std::exception("The surface type specified is iconrrect for the given constructor arguments\nTo create a Radial Spherical surface you must remove the last value that provides a depth for the icosphere");
+	case _IMPLICIT:
+		throw std::exception("The surface type specified is iconrrect for the given constructor arguments\nTo create an Implicit surface you must provide just one function that takes three arguments");
+	case _PARAMETRIC:
+		throw std::exception("The surface type specified is iconrrect for the given constructor arguments\nTo create a Parametric surface you must provide three functions that take two arguments");
+	case _PARAMETRIC_SPHERICAL:
+		throw std::exception("The surface type specified is iconrrect for the given constructor arguments\nTo create a Parametric Spherical surface you must provide three functions that take two arguments");
+	case _IMPLICIT_SPHERICAL:
+		throw std::exception("The surface type specified is iconrrect for the given constructor arguments\nTo create an Implicit Spherical surface you must provide just one function that takes three arguments");
+	default:
+		throw std::exception("The surface type specified is not supported");
+	}
+	addTexturedBinds(gfx, texture0, texture1);
 }
 
 Surface::Surface(Graphics& gfx, SURFACE_TYPE Type, float F0(float, float), float F1(float, float), float F2(float, float), bool defaultValues, Vector2f minRect, Vector2f maxRect, UINT numU, UINT numV)
@@ -188,6 +247,40 @@ Surface::Surface(Graphics& gfx, SURFACE_TYPE Type, float F0(float, float), float
 	addTexturedBinds(gfx, Texture0, Texture1);
 }
 
+Surface::Surface(Graphics& gfx, SURFACE_TYPE Type, float F0(float, float), float F1(float, float), float F2(float, float), Texture texture0, Texture texture1, bool defaultValues, Vector2f minRect, Vector2f maxRect, UINT numU, UINT numV)
+{
+	switch (Type)
+	{
+	case _PARAMETRIC:
+		if (defaultValues) {
+			minRect = { -1.f,-1.f };
+			maxRect = { 1.f, 1.f };
+		}
+		generateParametric(gfx, F0, F1, F2, minRect, maxRect, numU, numV, true);
+		break;
+	case _PARAMETRIC_SPHERICAL:
+		if (defaultValues) {
+			minRect = { 0.f, pi / 2.f };
+			maxRect = { 2.f * pi, -pi / 2.f };
+		}
+		generatePolarParametric(gfx, F0, F1, F2, minRect, maxRect, numU, numV, true);
+		break;
+	case _RADIAL_ICOSPHERE:
+		throw std::exception("The surface type specified is iconrrect for the given constructor arguments\nTo create a Radial Icosphere surface you must provide a single function that take two arguments and a depth value");
+	case _EXPLICIT:
+		throw std::exception("The surface type specified is iconrrect for the given constructor arguments\nTo create an Explicit surface you must provide a single function that take two arguments");
+	case _RADIAL_SPHERICAL:
+		throw std::exception("The surface type specified is iconrrect for the given constructor arguments\nTo create a Radial Spherical surface you must provide a single function that take two arguments");
+	case _IMPLICIT:
+		throw std::exception("The surface type specified is iconrrect for the given constructor arguments\nTo create an Implicit surface you must provide just one function that takes three arguments");
+	case _IMPLICIT_SPHERICAL:
+		throw std::exception("The surface type specified is iconrrect for the given constructor arguments\nTo create an Implicit Spherical surface you must provide just one function that takes three arguments");
+	default:
+		throw std::exception("The surface type specified is not supported");
+	}
+	addTexturedBinds(gfx, texture0, texture1);
+}
+
 Surface::Surface(Graphics& gfx, SURFACE_TYPE Type, float H(float, float, float))
 {
 	switch (Type)
@@ -240,7 +333,25 @@ void Surface::updateTexture(Graphics& gfx, UINT id, Texture texture)
 	if (id > 1u)
 		throw std::exception("ERROR: The given id to update the texture is not valid, id must be 0 or 1");
 
-	changeBind(std::make_unique<Texture>(texture), id + 2);
+	((Texture*)changeBind(std::make_unique<Texture>(texture), id + 2))->setSlot(id);
+}
+
+void Surface::updateTextures(Graphics& gfx, Texture texture0, Texture texture1)
+{
+	if (!textured)
+		throw std::exception("ERROR: You cannot call a texture update in a surface that wasn't initialized as textured");
+
+	((Texture*)changeBind(std::make_unique<Texture>(texture0), 2u))->setSlot(0u);
+	((Texture*)changeBind(std::make_unique<Texture>(texture1), 3u))->setSlot(1u);
+}
+
+void Surface::updateTextures(Graphics& gfx, std::string texture0, std::string texture1)
+{
+	if (!textured)
+		throw std::exception("ERROR: You cannot call a texture update in a surface that wasn't initialized as textured");
+
+	changeBind(std::make_unique<Texture>(gfx, texture0, 0u), 2u);
+	changeBind(std::make_unique<Texture>(gfx, texture1, 1u), 3u);
 }
 
 //	Private
@@ -651,6 +762,31 @@ void Surface::addTexturedBinds(Graphics& gfx, std::string texture0, std::string 
 		AddBind(std::make_unique<Texture>(gfx, texture1, 1u));
 	else
 		AddBind(std::make_unique<Texture>(gfx, texture0, 1u));
+
+	auto pvs = (VertexShader*)AddBind(std::move(std::make_unique<VertexShader>(gfx, L"Shaders/TexSurfaceVS.cso")));
+
+	AddBind(std::make_unique<PixelShader>(gfx, L"Shaders/TexSurfacePS.cso"));
+
+	std::vector< D3D11_INPUT_ELEMENT_DESC> ied =
+	{
+		{ "Position",0,DXGI_FORMAT_R32G32B32_FLOAT,0,0,D3D11_INPUT_PER_VERTEX_DATA,0 },
+		{ "Normal",0,DXGI_FORMAT_R32G32B32_FLOAT,0,D3D11_APPEND_ALIGNED_ELEMENT,D3D11_INPUT_PER_VERTEX_DATA,0 },
+		{ "TexCoord",0,DXGI_FORMAT_R32G32_FLOAT,0,D3D11_APPEND_ALIGNED_ELEMENT,D3D11_INPUT_PER_VERTEX_DATA,0 },
+	};
+
+	AddBind(std::make_unique<InputLayout>(gfx, ied, pvs->GetBytecode()));
+
+	AddBind(std::make_unique<Topology>(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST));
+
+	pVSCB = (ConstantBuffer<VSconstBuffer>*)AddBind(std::make_unique<ConstantBuffer<VSconstBuffer>>(gfx, VSconstBuffer(Matrix::Identity.getMatrix4(), Vector3f().getVector4()), VERTEX_CONSTANT_BUFFER_TYPE));
+}
+
+void Surface::addTexturedBinds(Graphics& gfx, Texture texture0, Texture texture1)
+{
+	textured = true;
+	((Texture*)AddBind(std::make_unique<Texture>(texture0)))->setSlot(0u);
+
+	((Texture*)AddBind(std::make_unique<Texture>(texture1)))->setSlot(1u);
 
 	auto pvs = (VertexShader*)AddBind(std::move(std::make_unique<VertexShader>(gfx, L"Shaders/TexSurfaceVS.cso")));
 

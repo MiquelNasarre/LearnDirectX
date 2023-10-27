@@ -54,9 +54,68 @@ Background::Background(Graphics& gfx, std::string filename, bool MakeDynamic, PR
 	AddBind(std::make_unique<InputLayout>(gfx, ied, pvs->GetBytecode()));
 }
 
+Background::Background(Graphics& gfx, Texture texture, bool MakeDynamic, PROJECTION_TYPES ProjectionType)
+{
+	((Texture*)AddBind(std::make_unique<Texture>(texture)))->setSlot(0u);
+
+	AddBind(std::make_unique<Sampler>(gfx, D3D11_FILTER_MIN_MAG_MIP_LINEAR));
+
+	std::vector<_float4vector> vertexs;
+	vertexs.push_back({ -1.f,-1.f,1.f,1.f });
+	vertexs.push_back({ 1.f,-1.f,1.f,1.f });
+	vertexs.push_back({ -1.f, 1.f,1.f,1.f });
+	vertexs.push_back({ 1.f, 1.f,1.f,1.f });
+
+	AddBind(std::make_unique<VertexBuffer>(gfx, vertexs));
+
+	std::vector<unsigned short> indexs;
+	indexs.push_back(0u);
+	indexs.push_back(2u);
+	indexs.push_back(1u);
+	indexs.push_back(1u);
+	indexs.push_back(2u);
+	indexs.push_back(3u);
+
+	AddBind(std::make_unique<IndexBuffer>(gfx, indexs));
+
+	VertexShader* pvs;
+
+	if (!MakeDynamic) {
+		pvs = (VertexShader*)AddBind(std::move(std::make_unique<VertexShader>(gfx, L"Shaders/BackgroundVS.cso")));
+		AddBind(std::make_unique<PixelShader>(gfx, L"Shaders/BackgroundPS.cso"));
+	}
+	else {
+		pvs = (VertexShader*)AddBind(std::move(std::make_unique<VertexShader>(gfx, L"Shaders/DynamicBgVS.cso")));
+
+		if (ProjectionType == PT_MERCATOR)
+			AddBind(std::make_unique<PixelShader>(gfx, L"Shaders/DyBgMercatorPS.cso"));
+		else if (ProjectionType == PT_AZIMUTHAL)
+			AddBind(std::make_unique<PixelShader>(gfx, L"Shaders/DyBgAzimuthPS.cso"));
+		else
+			throw std::exception("this Projection Type is not suported by the dynamic bacground");
+
+		pscBuff0 = (ConstantBuffer<PSconstBuffer>*)AddBind(std::make_unique<ConstantBuffer<PSconstBuffer>>(gfx, PIXEL_CONSTANT_BUFFER_TYPE));
+		pscBuff1 = (ConstantBuffer<_float4vector>*)AddBind(std::make_unique<ConstantBuffer<_float4vector>>(gfx, PIXEL_CONSTANT_BUFFER_TYPE, 1u));
+	}
+
+	AddBind(std::make_unique<Topology>(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST));
+
+	std::vector< D3D11_INPUT_ELEMENT_DESC> ied =
+	{
+		{ "Position",0,DXGI_FORMAT_R32G32B32A32_FLOAT,0,0,D3D11_INPUT_PER_VERTEX_DATA,0 },
+	};
+
+	AddBind(std::make_unique<InputLayout>(gfx, ied, pvs->GetBytecode()));
+}
+
 void Background::updateTexture(Graphics& gfx, std::string filename)
 {
 	changeBind(std::make_unique<Texture>(gfx, filename), 0u);
+}
+
+void Background::updateTexture(Graphics& gfx, Texture texture)
+{
+	((Texture*)changeBind(std::make_unique<Texture>(texture), 0u))->setSlot(0u);
 }
 
 void Background::updateObserver(Graphics& gfx, Vector3f obs)
