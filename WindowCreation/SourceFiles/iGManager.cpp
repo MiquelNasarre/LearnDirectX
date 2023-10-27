@@ -76,6 +76,8 @@ void iGManager::drawFrame()
 	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 }
 
+//	Application functions
+
 void iGManager::render()
 {
 	newFrame();
@@ -96,6 +98,8 @@ void iGManager::render()
 		ImGui::SliderAngle("Theta", &data[IMGUIDATA_THETA]);
 		ImGui::SliderAngle("Phi", &data[IMGUIDATA_PHI],-90.f,90.f);
 		ImGui::SliderFloat("Background View", &data[IMGUIDATA_FOV], 0.2f, 2.f);
+
+		
 
 		if (data[IMGUIDATA_PHI] > 3.140f / 2.f)
 			data[IMGUIDATA_PHI] = 3.140f / 2.f;

@@ -1,71 +1,285 @@
 #include "Drawable/Surface.h"
 
-Surface::Surface(Graphics& gfx, Type0 type, float F(float, float), Vector2f minRect, Vector2f maxRect, UINT numX, UINT numY)
-{
-	generateExplicit(gfx, F, minRect, maxRect, numX, numY);
-	addDefaultBinds(gfx);
-	
-}
+//	Constructors
 
-Surface::Surface(Graphics& gfx, Type1 TYPE_FLAG, float F(float, float), UINT numX, UINT numY, Vector2f minRect, Vector2f maxRect)
+Surface::Surface(Graphics& gfx, SURFACE_TYPE Type, float F0(float, float), bool defaultValues, Vector2f minRect, Vector2f maxRect, UINT numX, UINT numY)
 {
-	generatePolarNormal(gfx, F, minRect, maxRect, numX, numY);
-	addDefaultBinds(gfx);
-}
-
-Surface::Surface(Graphics& gfx, Type2 TYPE_FLAG, float r(float, float), UINT depth)
-{
-	generatePolarIcosphere(gfx, r, depth);
-	addDefaultBinds(gfx);
-}
-
-Surface::Surface(Graphics& gfx, Type3 TYPE_FLAG, float x(float, float), float y(float, float), float z(float, float), Vector2f minRect, Vector2f maxRect, UINT numU, UINT numV)
-{
-	generateParametric(gfx, x, y, z, minRect, maxRect, numU, numV);
-	addDefaultBinds(gfx);
-}
-
-Surface::Surface(Graphics& gfx, Type4 TYPE_FLAG, float theta(float, float), float phi(float, float), float rad(float, float), Vector2f minRect, Vector2f maxRect, UINT numU, UINT numV)
-{
-	generatePolarParametric(gfx, theta, phi, rad, minRect, maxRect, numU, numV);
-	addDefaultBinds(gfx);
-}
-
-Surface::Surface(Graphics& gfx, Type5 TYPE_FLAG, float H(float, float, float))
-{
-	generateImplicit(gfx,H);
-	addDefaultBinds(gfx);
-}
-
-Surface::Surface(Graphics& gfx, Type6 TYPE_FLAG, float H(float, float, float))
-{
-	generateImplicitPolar(gfx, H);
+	switch (Type)
+	{
+	case _EXPLICIT:
+		if (defaultValues) {
+			minRect = { -1.f,-1.f };
+			maxRect = {  1.f, 1.f };
+		}
+		generateExplicit(gfx, F0, minRect, maxRect, numX, numY);
+		break;
+	case _RADIAL_SPHERICAL:
+		if (defaultValues) {
+			minRect = { 0.f, pi / 2.f };
+			maxRect = { 2.f * pi, -pi / 2.f };
+		}
+		generatePolarNormal(gfx, F0, minRect, maxRect, numX, numY);
+		break;
+	case _IMPLICIT:
+		throw std::exception("The surface type specified is iconrrect for the given constructor arguments\nTo create an Implicit surface you must provide just one function that takes three arguments");
+	case _PARAMETRIC:
+		throw std::exception("The surface type specified is iconrrect for the given constructor arguments\nTo create a Parametric surface you must provide three functions that take two arguments");
+	case _RADIAL_ICOSPHERE:
+		throw std::exception("The surface type specified is iconrrect for the given constructor arguments\nTo create a Radial Icosphere surface you must specify the depth of the icosphere\n(depth 5 recomended)");
+	case _PARAMETRIC_SPHERICAL:
+		throw std::exception("The surface type specified is iconrrect for the given constructor arguments\nTo create a Parametric Spherical surface you must provide three functions that take two arguments");
+	case _IMPLICIT_SPHERICAL:
+		throw std::exception("The surface type specified is iconrrect for the given constructor arguments\nTo create an Implicit Spherical surface you must provide just one function that takes three arguments");
+	default:
+		throw std::exception("The surface type specified is not supported");
+	}
 	addDefaultBinds(gfx);
 }
 
-void Surface::updateRotation(Graphics& gfx, float rotationZ, float rotationX)
+Surface::Surface(Graphics& gfx, SURFACE_TYPE Type, float F0(float, float), std::string Texture0, std::string Texture1, bool defaultValues, Vector2f minRect, Vector2f maxRect, UINT numX, UINT numY)
 {
-	pVSCB->Update(gfx, (ZRotationMatrix(rotationZ) * XRotationMatrix(rotationX)).transpose().getMatrix4());
+	switch (Type)
+	{
+		if (defaultValues) {
+			minRect = { -1.f,-1.f };
+			maxRect = { 1.f, 1.f };
+		}
+	case _EXPLICIT:
+		generateExplicit(gfx, F0, minRect, maxRect, numX, numY, true);
+		break;
+	case _RADIAL_SPHERICAL:
+		if (defaultValues) {
+			minRect = { 0.f, pi / 2.f };
+			maxRect = { 2.f * pi, -pi / 2.f };
+		}
+		generatePolarNormal(gfx, F0, minRect, maxRect, numX, numY, true);
+		break;
+	case _IMPLICIT:
+		throw std::exception("The surface type specified is iconrrect for the given constructor arguments\nTo create an Implicit surface you must provide just one function that takes three arguments");
+	case _PARAMETRIC:
+		throw std::exception("The surface type specified is iconrrect for the given constructor arguments\nTo create a Parametric surface you must provide three functions that take two arguments");
+	case _RADIAL_ICOSPHERE:
+		throw std::exception("The surface type specified is iconrrect for the given constructor arguments\nTo create a Radial Icosphere surface you must specify the depth of the icosphere\n(depth 5 recomended)");
+	case _PARAMETRIC_SPHERICAL:
+		throw std::exception("The surface type specified is iconrrect for the given constructor arguments\nTo create a Parametric Spherical surface you must provide three functions that take two arguments");
+	case _IMPLICIT_SPHERICAL:
+		throw std::exception("The surface type specified is iconrrect for the given constructor arguments\nTo create an Implicit Spherical surface you must provide just one function that takes three arguments");
+	default:
+		throw std::exception("The surface type specified is not supported");
+	}
+	addTexturedBinds(gfx, Texture0, Texture1);
+}
+
+Surface::Surface(Graphics& gfx, SURFACE_TYPE Type, float rad(float, float), UINT ICOSPHERE_DEPTH)
+{
+	switch (Type)
+	{
+	case _RADIAL_ICOSPHERE:
+		generatePolarIcosphere(gfx, rad, ICOSPHERE_DEPTH);
+		break;
+	case _EXPLICIT:
+		throw std::exception("The surface type specified is iconrrect for the given constructor arguments\nTo create an Explicit surface you must remove the last value that provides a depth for the icosphere");
+	case _RADIAL_SPHERICAL:
+		throw std::exception("The surface type specified is iconrrect for the given constructor arguments\nTo create a Radial Spherical surface you must remove the last value that provides a depth for the icosphere");
+	case _IMPLICIT:
+		throw std::exception("The surface type specified is iconrrect for the given constructor arguments\nTo create an Implicit surface you must provide just one function that takes three arguments");
+	case _PARAMETRIC:
+		throw std::exception("The surface type specified is iconrrect for the given constructor arguments\nTo create a Parametric surface you must provide three functions that take two arguments");
+	case _PARAMETRIC_SPHERICAL:
+		throw std::exception("The surface type specified is iconrrect for the given constructor arguments\nTo create a Parametric Spherical surface you must provide three functions that take two arguments");
+	case _IMPLICIT_SPHERICAL:
+		throw std::exception("The surface type specified is iconrrect for the given constructor arguments\nTo create an Implicit Spherical surface you must provide just one function that takes three arguments");
+	default:
+		throw std::exception("The surface type specified is not supported");
+	}
+	addDefaultBinds(gfx);
+}
+
+Surface::Surface(Graphics& gfx, SURFACE_TYPE Type, float rad(float, float), UINT ICOSPHERE_DEPTH, std::string Texture0, std::string Texture1)
+{
+	switch (Type)
+	{
+	case _RADIAL_ICOSPHERE:
+		generatePolarIcosphere(gfx, rad, ICOSPHERE_DEPTH, true);
+		break;
+	case _EXPLICIT:
+		throw std::exception("The surface type specified is iconrrect for the given constructor arguments\nTo create an Explicit surface you must remove the last value that provides a depth for the icosphere");
+	case _RADIAL_SPHERICAL:
+		throw std::exception("The surface type specified is iconrrect for the given constructor arguments\nTo create a Radial Spherical surface you must remove the last value that provides a depth for the icosphere");
+	case _IMPLICIT:
+		throw std::exception("The surface type specified is iconrrect for the given constructor arguments\nTo create an Implicit surface you must provide just one function that takes three arguments");
+	case _PARAMETRIC:
+		throw std::exception("The surface type specified is iconrrect for the given constructor arguments\nTo create a Parametric surface you must provide three functions that take two arguments");
+	case _PARAMETRIC_SPHERICAL:
+		throw std::exception("The surface type specified is iconrrect for the given constructor arguments\nTo create a Parametric Spherical surface you must provide three functions that take two arguments");
+	case _IMPLICIT_SPHERICAL:
+		throw std::exception("The surface type specified is iconrrect for the given constructor arguments\nTo create an Implicit Spherical surface you must provide just one function that takes three arguments");
+	default:
+		throw std::exception("The surface type specified is not supported");
+	}
+	addTexturedBinds(gfx, Texture0, Texture1);
+}
+
+Surface::Surface(Graphics& gfx, SURFACE_TYPE Type, float F0(float, float), float F1(float, float), float F2(float, float), bool defaultValues, Vector2f minRect, Vector2f maxRect, UINT numU, UINT numV)
+{
+	switch (Type)
+	{
+	case _PARAMETRIC:
+		if (defaultValues) {
+			minRect = { -1.f,-1.f };
+			maxRect = { 1.f, 1.f };
+		}
+		generateParametric(gfx, F0, F1, F2, minRect, maxRect, numU, numV);
+		break;
+	case _PARAMETRIC_SPHERICAL:
+		if (defaultValues) {
+			minRect = { 0.f, pi / 2.f };
+			maxRect = { 2.f * pi, -pi / 2.f };
+		}
+		generatePolarParametric(gfx, F0, F1, F2, minRect, maxRect, numU, numV);
+		break;
+	case _RADIAL_ICOSPHERE:
+		throw std::exception("The surface type specified is iconrrect for the given constructor arguments\nTo create a Radial Icosphere surface you must provide a single function that take two arguments and a depth value");
+	case _EXPLICIT:
+		throw std::exception("The surface type specified is iconrrect for the given constructor arguments\nTo create an Explicit surface you must provide a single function that take two arguments");
+	case _RADIAL_SPHERICAL:
+		throw std::exception("The surface type specified is iconrrect for the given constructor arguments\nTo create a Radial Spherical surface you must provide a single function that take two arguments");
+	case _IMPLICIT:
+		throw std::exception("The surface type specified is iconrrect for the given constructor arguments\nTo create an Implicit surface you must provide just one function that takes three arguments");
+	case _IMPLICIT_SPHERICAL:
+		throw std::exception("The surface type specified is iconrrect for the given constructor arguments\nTo create an Implicit Spherical surface you must provide just one function that takes three arguments");
+	default:
+		throw std::exception("The surface type specified is not supported");
+	}
+	addDefaultBinds(gfx);
+}
+
+Surface::Surface(Graphics& gfx, SURFACE_TYPE Type, float F0(float, float), float F1(float, float), float F2(float, float), std::string Texture0, std::string Texture1, bool defaultValues, Vector2f minRect, Vector2f maxRect, UINT numU, UINT numV)
+{
+	switch (Type)
+	{
+	case _PARAMETRIC:
+		if (defaultValues) {
+			minRect = { -1.f,-1.f };
+			maxRect = { 1.f, 1.f };
+		}
+		generateParametric(gfx, F0, F1, F2, minRect, maxRect, numU, numV, true);
+		break;
+	case _PARAMETRIC_SPHERICAL:
+		if (defaultValues) {
+			minRect = { 0.f, pi / 2.f };
+			maxRect = { 2.f * pi, -pi / 2.f };
+		}
+		generatePolarParametric(gfx, F0, F1, F2, minRect, maxRect, numU, numV, true);
+		break;
+	case _RADIAL_ICOSPHERE:
+		throw std::exception("The surface type specified is iconrrect for the given constructor arguments\nTo create a Radial Icosphere surface you must provide a single function that take two arguments and a depth value");
+	case _EXPLICIT:
+		throw std::exception("The surface type specified is iconrrect for the given constructor arguments\nTo create an Explicit surface you must provide a single function that take two arguments");
+	case _RADIAL_SPHERICAL:
+		throw std::exception("The surface type specified is iconrrect for the given constructor arguments\nTo create a Radial Spherical surface you must provide a single function that take two arguments");
+	case _IMPLICIT:
+		throw std::exception("The surface type specified is iconrrect for the given constructor arguments\nTo create an Implicit surface you must provide just one function that takes three arguments");
+	case _IMPLICIT_SPHERICAL:
+		throw std::exception("The surface type specified is iconrrect for the given constructor arguments\nTo create an Implicit Spherical surface you must provide just one function that takes three arguments");
+	default:
+		throw std::exception("The surface type specified is not supported");
+	}
+	addTexturedBinds(gfx, Texture0, Texture1);
+}
+
+Surface::Surface(Graphics& gfx, SURFACE_TYPE Type, float H(float, float, float))
+{
+	switch (Type)
+	{
+	case _IMPLICIT:
+		generateImplicit(gfx, H);
+		break;
+	case _IMPLICIT_SPHERICAL:
+		generateImplicitPolar(gfx, H);
+		break;
+	case _PARAMETRIC:
+		throw std::exception("The surface type specified is iconrrect for the given constructor arguments\nTo create a Parametric surface you must provide three functions that take two arguments");
+	case _PARAMETRIC_SPHERICAL:
+		throw std::exception("The surface type specified is iconrrect for the given constructor arguments\nTo create a Parametric Spherical surface you must provide three functions that take two arguments");
+	case _RADIAL_ICOSPHERE:
+		throw std::exception("The surface type specified is iconrrect for the given constructor arguments\nTo create a Radial Icosphere surface you must provide a single function that take two arguments and a depth value");
+	case _EXPLICIT:
+		throw std::exception("The surface type specified is iconrrect for the given constructor arguments\nTo create an Explicit surface you must provide a single function that take two arguments");
+	case _RADIAL_SPHERICAL:
+		throw std::exception("The surface type specified is iconrrect for the given constructor arguments\nTo create a Radial Spherical surface you must provide a single function that take two arguments");
+	default:
+		throw std::exception("The surface type specified is not supported");
+	}
+	addDefaultBinds(gfx);
+}
+
+//	Public
+
+void Surface::updateRotation(Graphics& gfx, float rotationZ, float rotationX, Vector3f position)
+{
+	vscBuff.rotattion = (ZRotationMatrix(rotationZ) * XRotationMatrix(rotationX)).transpose().getMatrix4();
+	vscBuff.traslation = position.getVector4();
+	pVSCB->Update(gfx, vscBuff);
+}
+
+void Surface::updateTexture(Graphics& gfx, UINT id, std::string texture)
+{
+	if (!textured)
+		throw std::exception(std::string("ERROR: You cannot call a texture update in a surface that wasn't initialized as textured\nREF: [" + texture + "]").c_str());
+	if (id > 1u)
+		throw std::exception("ERROR: The given id to update the texture is not valid, id must be 0 or 1");
+
+	changeBind(std::make_unique<Texture>(gfx, texture, id), id + 2);
+}
+
+void Surface::updateTexture(Graphics& gfx, UINT id, Texture texture)
+{
+	if (!textured)
+		throw std::exception("ERROR: You cannot call a texture update in a surface that wasn't initialized as textured");
+	if (id > 1u)
+		throw std::exception("ERROR: The given id to update the texture is not valid, id must be 0 or 1");
+
+	changeBind(std::make_unique<Texture>(texture), id + 2);
 }
 
 //	Private
 
-void Surface::generateExplicit(Graphics& gfx, float F(float, float), Vector2f minRect, Vector2f maxRect, UINT numX, UINT numY)
+void Surface::generateExplicit(Graphics& gfx, float F(float, float), Vector2f minRect, Vector2f maxRect, UINT numX, UINT numY, bool Textured)
 {
 	float epsilon = error_epsilon;
-
-	std::vector<Vertex> vertexs;
-	std::vector<unsigned short> indexs;
-
-	for (UINT i = 0; i < numX + 1; i++) {
-		for (UINT j = 0; j < numY + 1; j++) {
-			float x = ((numX - i) * minRect.x + i * maxRect.x) / numX;
-			float y = ((numY - j) * minRect.y + j * maxRect.y) / numY;
-			vertexs.push_back({ Vector3f(x, y, F(x,y)) ,
-				-((Vector3f(x + epsilon, y, F(x + epsilon,y)) - Vector3f(x - epsilon, y, F(x - epsilon,y))) * 
-				(Vector3f(x, y + epsilon, F(x,y + epsilon)) - Vector3f(x, y - epsilon, F(x,y - epsilon)))).normalize() });
+	if (!Textured) {
+		std::vector<Vertex> vertexs;
+		
+		for (UINT i = 0; i < numX + 1; i++) {
+			for (UINT j = 0; j < numY + 1; j++) {
+				float x = ((numX - i) * minRect.x + i * maxRect.x) / numX;
+				float y = ((numY - j) * minRect.y + j * maxRect.y) / numY;
+				vertexs.push_back({ Vector3f(x, y, F(x,y)) ,
+					-((Vector3f(x + epsilon, y, F(x + epsilon,y)) - Vector3f(x - epsilon, y, F(x - epsilon,y))) * 
+					(Vector3f(x, y + epsilon, F(x,y + epsilon)) - Vector3f(x, y - epsilon, F(x,y - epsilon)))).normalize() });
+			}
 		}
+		AddBind(std::make_unique<VertexBuffer>(gfx, vertexs));
 	}
+
+	else {
+		std::vector<TexVertex> vertexs;
+
+		for (UINT i = 0; i < numX + 1; i++) {
+			for (UINT j = 0; j < numY + 1; j++) {
+				float x = ((numX - i) * minRect.x + i * maxRect.x) / numX;
+				float y = ((numY - j) * minRect.y + j * maxRect.y) / numY;
+				vertexs.push_back({ Vector3f(x, y, F(x,y)) ,
+					-((Vector3f(x + epsilon, y, F(x + epsilon,y)) - Vector3f(x - epsilon, y, F(x - epsilon,y))) *
+					(Vector3f(x, y + epsilon, F(x,y + epsilon)) - Vector3f(x, y - epsilon, F(x,y - epsilon)))).normalize() ,
+					Vector2f((float)i / numX,(float)j / numY) });
+			}
+		}
+		AddBind(std::make_unique<VertexBuffer>(gfx, vertexs));
+	}
+
+	std::vector<unsigned short> indexs;
 
 	for (UINT i = 0; i < numX; i++) {
 		for (UINT j = 0; j < numY; j++) {
@@ -86,30 +300,51 @@ void Surface::generateExplicit(Graphics& gfx, float F(float, float), Vector2f mi
 			indexs.push_back((i + 1) * (numY + 1) + j + 1);
 		}
 	}
-
-	AddBind(std::make_unique<VertexBuffer>(gfx, vertexs));
 
 	AddBind(std::make_unique<IndexBuffer>(gfx, indexs));
 }
 
-void Surface::generatePolarNormal(Graphics& gfx, float r(float, float), Vector2f minRect, Vector2f maxRect, UINT numX, UINT numY)
+void Surface::generatePolarNormal(Graphics& gfx, float r(float, float), Vector2f minRect, Vector2f maxRect, UINT numX, UINT numY, bool Textured)
 {
 	float epsilon = error_epsilon;
 
-	std::vector<Vertex> vertexs;
-	std::vector<unsigned short> indexs;
+	if (!Textured) {
+		std::vector<Vertex> vertexs;
 
-	for (UINT i = 0; i < numX + 1; i++) {
-		for (UINT j = 0; j < numY + 1; j++) {
-			float theta = ((numX - i) * minRect.x + i * maxRect.x) / numX;
-			float phi = ((numY - j) * minRect.y + j * maxRect.y) / numY;
-			vertexs.push_back({ evalPolar(r,theta,phi) ,
+		for (UINT i = 0; i < numX + 1; i++) {
+			for (UINT j = 0; j < numY + 1; j++) {
+				float theta = ((numX - i) * minRect.x + i * maxRect.x) / numX;
+				float phi = ((numY - j) * minRect.y + j * maxRect.y) / numY;
+				vertexs.push_back({ evalPolar(r,theta,phi) ,
 
-				-((evalPolar(r,theta + epsilon,phi) - evalPolar(r,theta - epsilon,phi)) *
-				((evalPolar(r,theta,phi + epsilon) - evalPolar(r,theta,phi - epsilon))))
-				.normalize() });
+					-((evalPolar(r,theta + epsilon,phi) - evalPolar(r,theta - epsilon,phi)) *
+					((evalPolar(r,theta,phi + epsilon) - evalPolar(r,theta,phi - epsilon))))
+					.normalize() });
+			}
 		}
+		AddBind(std::make_unique<VertexBuffer>(gfx, vertexs));
 	}
+	else {
+		std::vector<TexVertex> vertexs;
+
+		for (UINT i = 0; i < numX + 1; i++) {
+			for (UINT j = 0; j < numY + 1; j++) {
+				float theta = ((numX - i) * minRect.x + i * maxRect.x) / numX;
+				float phi = ((numY - j) * minRect.y + j * maxRect.y) / numY;
+				vertexs.push_back({ evalPolar(r,theta,phi) ,
+
+					-((evalPolar(r,theta + epsilon,phi) - evalPolar(r,theta - epsilon,phi)) *
+					((evalPolar(r,theta,phi + epsilon) - evalPolar(r,theta,phi - epsilon))))
+					.normalize() ,
+
+					Vector2f((float)i / numX,(float)j / numY) });
+			}
+		}
+		AddBind(std::make_unique<VertexBuffer>(gfx, vertexs));
+	}
+	
+
+	std::vector<unsigned short> indexs;
 
 	for (UINT i = 0; i < numX; i++) {
 		for (UINT j = 0; j < numY; j++) {
@@ -130,19 +365,12 @@ void Surface::generatePolarNormal(Graphics& gfx, float r(float, float), Vector2f
 			indexs.push_back((i + 1) * (numY + 1) + j + 1);
 		}
 	}
-
-	for (Vertex& v : vertexs) {
-		if (v.vector.x* v.vector.x<0.0000001f && v.vector.y * v.vector.y < 0.0000001f)
-			v.norm = v.vector / v.vector.abs();
-	}
-
-	AddBind(std::make_unique<VertexBuffer>(gfx, vertexs));
 
 	AddBind(std::make_unique<IndexBuffer>(gfx, indexs));
 	
 }
 
-void Surface::generatePolarIcosphere(Graphics& gfx, float r(float, float), UINT depth)
+void Surface::generatePolarIcosphere(Graphics& gfx, float r(float, float), UINT depth, bool Textured)
 {
 	float epsilon = error_epsilon;
 	std::vector<Vertex> vertexs;
@@ -216,6 +444,7 @@ void Surface::generatePolarIcosphere(Graphics& gfx, float r(float, float), UINT 
 		indexs.push_back(t.v1);
 		indexs.push_back(t.v2);
 	}
+	std::vector<Vector2f> texCoord;
 	for (Vertex& v : vertexs) {
 		v.vector.normalize();
 		float phi = asinf(v.vector.z);
@@ -235,31 +464,60 @@ void Surface::generatePolarIcosphere(Graphics& gfx, float r(float, float), UINT 
 			.normalize();
 
 		v.vector *= r(theta, phi);
+		texCoord.push_back({ theta / 2.f / pi,(pi / 2.f - phi) / pi });
 	}
-		
-	AddBind(std::make_unique<VertexBuffer>(gfx, vertexs));
+
+	if (Textured) {
+		std::vector<TexVertex> texvertexs;
+		for (UINT i = 0; i < vertexs.size(); i++)
+			texvertexs.push_back({ vertexs[i].vector,vertexs[i].norm,texCoord[i] });
+		AddBind(std::make_unique<VertexBuffer>(gfx, texvertexs));
+	}
+	else
+		AddBind(std::make_unique<VertexBuffer>(gfx, vertexs));
 
 	AddBind(std::make_unique<IndexBuffer>(gfx, indexs));
 
 }
 
-void Surface::generateParametric(Graphics& gfx, float x(float, float), float y(float, float), float z(float, float), Vector2f minRect, Vector2f maxRect, UINT numU, UINT numV)
+void Surface::generateParametric(Graphics& gfx, float x(float, float), float y(float, float), float z(float, float), Vector2f minRect, Vector2f maxRect, UINT numU, UINT numV, bool Textured)
 {
 	float epsilon = error_epsilon;
 
-	std::vector<Vertex> vertexs;
-	std::vector<unsigned short> indexs;
+	if (!Textured) {
+		std::vector<Vertex> vertexs;
 
-	for (UINT i = 0; i < numU + 1; i++) {
-		for (UINT j = 0; j < numV + 1; j++) {
-			float u = ((numU - i) * minRect.x + i * maxRect.x) / numU;
-			float v = ((numV - j) * minRect.y + j * maxRect.y) / numV;
-			vertexs.push_back({ Vector3f(x(u,v), y(u,v), z(u,v)) ,
-				-((Vector3f(x(u + epsilon,v), y(u + epsilon,v), z(u + epsilon,v)) - Vector3f(x(u - epsilon,v), y(u - epsilon,v), z(u - epsilon,v))) *
-				(Vector3f(x(u,v + epsilon), y(u,v + epsilon), z(u,v + epsilon)) - Vector3f(x(u,v - epsilon), y(u,v - epsilon), z(u,v - epsilon))))
-				.normalize() });
+		for (UINT i = 0; i < numU + 1; i++) {
+			for (UINT j = 0; j < numV + 1; j++) {
+				float u = ((numU - i) * minRect.x + i * maxRect.x) / numU;
+				float v = ((numV - j) * minRect.y + j * maxRect.y) / numV;
+				vertexs.push_back({ Vector3f(x(u,v), y(u,v), z(u,v)) ,
+					-((Vector3f(x(u + epsilon,v), y(u + epsilon,v), z(u + epsilon,v)) - Vector3f(x(u - epsilon,v), y(u - epsilon,v), z(u - epsilon,v))) *
+					(Vector3f(x(u,v + epsilon), y(u,v + epsilon), z(u,v + epsilon)) - Vector3f(x(u,v - epsilon), y(u,v - epsilon), z(u,v - epsilon))))
+					.normalize() });
+			}
 		}
+		AddBind(std::make_unique<VertexBuffer>(gfx, vertexs));
 	}
+	else {
+		std::vector<TexVertex> vertexs;
+
+		for (UINT i = 0; i < numU + 1; i++) {
+			for (UINT j = 0; j < numV + 1; j++) {
+				float u = ((numU - i) * minRect.x + i * maxRect.x) / numU;
+				float v = ((numV - j) * minRect.y + j * maxRect.y) / numV;
+				vertexs.push_back({ Vector3f(x(u,v), y(u,v), z(u,v)) ,
+					-((Vector3f(x(u + epsilon,v), y(u + epsilon,v), z(u + epsilon,v)) - Vector3f(x(u - epsilon,v), y(u - epsilon,v), z(u - epsilon,v))) *
+					(Vector3f(x(u,v + epsilon), y(u,v + epsilon), z(u,v + epsilon)) - Vector3f(x(u,v - epsilon), y(u,v - epsilon), z(u,v - epsilon))))
+					.normalize(),
+					
+					Vector2f((float)i / numU,(float)j / numV) });
+			}
+		}
+		AddBind(std::make_unique<VertexBuffer>(gfx, vertexs));
+	}
+
+	std::vector<unsigned short> indexs;
 
 	for (UINT i = 0; i < numU; i++) {
 		for (UINT j = 0; j < numV; j++) {
@@ -281,31 +539,54 @@ void Surface::generateParametric(Graphics& gfx, float x(float, float), float y(f
 		}
 	}
 
-	AddBind(std::make_unique<VertexBuffer>(gfx, vertexs));
-
 	AddBind(std::make_unique<IndexBuffer>(gfx, indexs));
 }
 
-void Surface::generatePolarParametric(Graphics& gfx, float theta(float, float), float phi(float, float), float rad(float, float), Vector2f minRect, Vector2f maxRect, UINT numU, UINT numV)
+void Surface::generatePolarParametric(Graphics& gfx, float theta(float, float), float phi(float, float), float rad(float, float), Vector2f minRect, Vector2f maxRect, UINT numU, UINT numV, bool Textured)
 {
 	float epsilon = error_epsilon;
 
-	std::vector<Vertex> vertexs;
-	std::vector<unsigned short> indexs;
+	if (!Textured) {
+		std::vector<Vertex> vertexs;
 
-	for (UINT i = 0; i < numU + 1; i++) {
-		for (UINT j = 0; j < numV + 1; j++) {
-			float u = ((numU - i) * minRect.x + i * maxRect.x) / numU;
-			float v = ((numV - j) * minRect.y + j * maxRect.y) / numV;
-			vertexs.push_back({ rad(u,v) * Vector3f(cosf(theta(u,v)) * cosf(phi(u,v)), sinf(theta(u,v)) * cosf(phi(u,v)), sinf(phi(u,v))) ,
+		for (UINT i = 0; i < numU + 1; i++) {
+			for (UINT j = 0; j < numV + 1; j++) {
+				float u = ((numU - i) * minRect.x + i * maxRect.x) / numU;
+				float v = ((numV - j) * minRect.y + j * maxRect.y) / numV;
+				vertexs.push_back({ rad(u,v) * Vector3f(cosf(theta(u,v)) * cosf(phi(u,v)), sinf(theta(u,v)) * cosf(phi(u,v)), sinf(phi(u,v))) ,
 
-				-((rad(u + epsilon,v) * Vector3f(cosf(theta(u + epsilon,v)) * cosf(phi(u + epsilon,v)), sinf(theta(u + epsilon,v)) * cosf(phi(u + epsilon,v)), sinf(phi(u + epsilon,v))) -
-				rad(u + epsilon,v) * Vector3f(cosf(theta(u - epsilon,v)) * cosf(phi(u - epsilon,v)), sinf(theta(u - epsilon,v)) * cosf(phi(u - epsilon,v)), sinf(phi(u - epsilon,v)))) *
-				((rad(u,v + epsilon) * Vector3f(cosf(theta(u,v + epsilon)) * cosf(phi(u,v + epsilon)), sinf(theta(u,v + epsilon)) * cosf(phi(u,v + epsilon)), sinf(phi(u,v + epsilon))) -
-				rad(u,v + epsilon) * Vector3f(cosf(theta(u,v - epsilon)) * cosf(phi(u,v - epsilon)), sinf(theta(u,v - epsilon)) * cosf(phi(u,v - epsilon)), sinf(phi(u,v - epsilon))))))
-				.normalize() });
+					-((rad(u + epsilon,v) * Vector3f(cosf(theta(u + epsilon,v)) * cosf(phi(u + epsilon,v)), sinf(theta(u + epsilon,v)) * cosf(phi(u + epsilon,v)), sinf(phi(u + epsilon,v))) -
+					rad(u + epsilon,v) * Vector3f(cosf(theta(u - epsilon,v)) * cosf(phi(u - epsilon,v)), sinf(theta(u - epsilon,v)) * cosf(phi(u - epsilon,v)), sinf(phi(u - epsilon,v)))) *
+					((rad(u,v + epsilon) * Vector3f(cosf(theta(u,v + epsilon)) * cosf(phi(u,v + epsilon)), sinf(theta(u,v + epsilon)) * cosf(phi(u,v + epsilon)), sinf(phi(u,v + epsilon))) -
+					rad(u,v + epsilon) * Vector3f(cosf(theta(u,v - epsilon)) * cosf(phi(u,v - epsilon)), sinf(theta(u,v - epsilon)) * cosf(phi(u,v - epsilon)), sinf(phi(u,v - epsilon))))))
+					.normalize() });
+			}
 		}
+		AddBind(std::make_unique<VertexBuffer>(gfx, vertexs));
 	}
+	else {
+		std::vector<TexVertex> vertexs;
+
+		for (UINT i = 0; i < numU + 1; i++) {
+			for (UINT j = 0; j < numV + 1; j++) {
+				float u = ((numU - i) * minRect.x + i * maxRect.x) / numU;
+				float v = ((numV - j) * minRect.y + j * maxRect.y) / numV;
+				vertexs.push_back({ rad(u,v) * Vector3f(cosf(theta(u,v)) * cosf(phi(u,v)), sinf(theta(u,v)) * cosf(phi(u,v)), sinf(phi(u,v))) ,
+
+					-((rad(u + epsilon,v) * Vector3f(cosf(theta(u + epsilon,v)) * cosf(phi(u + epsilon,v)), sinf(theta(u + epsilon,v)) * cosf(phi(u + epsilon,v)), sinf(phi(u + epsilon,v))) -
+					rad(u + epsilon,v) * Vector3f(cosf(theta(u - epsilon,v)) * cosf(phi(u - epsilon,v)), sinf(theta(u - epsilon,v)) * cosf(phi(u - epsilon,v)), sinf(phi(u - epsilon,v)))) *
+					((rad(u,v + epsilon) * Vector3f(cosf(theta(u,v + epsilon)) * cosf(phi(u,v + epsilon)), sinf(theta(u,v + epsilon)) * cosf(phi(u,v + epsilon)), sinf(phi(u,v + epsilon))) -
+					rad(u,v + epsilon) * Vector3f(cosf(theta(u,v - epsilon)) * cosf(phi(u,v - epsilon)), sinf(theta(u,v - epsilon)) * cosf(phi(u,v - epsilon)), sinf(phi(u,v - epsilon))))))
+					.normalize(),
+
+					Vector2f((float)i / numU,(float)j / numV) });
+			}
+		}
+		AddBind(std::make_unique<VertexBuffer>(gfx, vertexs));
+	}
+
+
+	std::vector<unsigned short> indexs;
 
 	for (UINT i = 0; i < numU; i++) {
 		for (UINT j = 0; j < numV; j++) {
@@ -327,7 +608,7 @@ void Surface::generatePolarParametric(Graphics& gfx, float theta(float, float), 
 		}
 	}
 
-	AddBind(std::make_unique<VertexBuffer>(gfx, vertexs));
+
 
 	AddBind(std::make_unique<IndexBuffer>(gfx, indexs));
 }
@@ -348,7 +629,7 @@ void Surface::addDefaultBinds(Graphics& gfx)
 
 	AddBind(std::make_unique<PixelShader>(gfx, L"Shaders/SurfacePS.cso"));
 
-	std::vector< D3D11_INPUT_ELEMENT_DESC> ied =
+	std::vector<D3D11_INPUT_ELEMENT_DESC> ied =
 	{
 		{ "Position",0,DXGI_FORMAT_R32G32B32_FLOAT,0,0,D3D11_INPUT_PER_VERTEX_DATA,0 },
 		{ "Normal",0,DXGI_FORMAT_R32G32B32_FLOAT,0,D3D11_APPEND_ALIGNED_ELEMENT,D3D11_INPUT_PER_VERTEX_DATA,0 },
@@ -358,7 +639,35 @@ void Surface::addDefaultBinds(Graphics& gfx)
 
 	AddBind(std::make_unique<Topology>(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST));
 
-	pVSCB = (ConstantBuffer<_float4matrix>*)AddBind(std::make_unique<ConstantBuffer<_float4matrix>>(gfx, Matrix::Identity.getMatrix4(), VERTEX_CONSTANT_BUFFER_TYPE));
+	pVSCB = (ConstantBuffer<VSconstBuffer>*)AddBind(std::make_unique<ConstantBuffer<VSconstBuffer>>(gfx,VSconstBuffer(Matrix::Identity.getMatrix4(),Vector3f().getVector4()), VERTEX_CONSTANT_BUFFER_TYPE));
+}
+
+void Surface::addTexturedBinds(Graphics& gfx, std::string texture0, std::string texture1)
+{
+	textured = true;
+	AddBind(std::make_unique<Texture>(gfx, texture0));
+
+	if(texture1.size())
+		AddBind(std::make_unique<Texture>(gfx, texture1, 1u));
+	else
+		AddBind(std::make_unique<Texture>(gfx, texture0, 1u));
+
+	auto pvs = (VertexShader*)AddBind(std::move(std::make_unique<VertexShader>(gfx, L"Shaders/TexSurfaceVS.cso")));
+
+	AddBind(std::make_unique<PixelShader>(gfx, L"Shaders/TexSurfacePS.cso"));
+
+	std::vector< D3D11_INPUT_ELEMENT_DESC> ied =
+	{
+		{ "Position",0,DXGI_FORMAT_R32G32B32_FLOAT,0,0,D3D11_INPUT_PER_VERTEX_DATA,0 },
+		{ "Normal",0,DXGI_FORMAT_R32G32B32_FLOAT,0,D3D11_APPEND_ALIGNED_ELEMENT,D3D11_INPUT_PER_VERTEX_DATA,0 },
+		{ "TexCoord",0,DXGI_FORMAT_R32G32_FLOAT,0,D3D11_APPEND_ALIGNED_ELEMENT,D3D11_INPUT_PER_VERTEX_DATA,0 },
+	};
+
+	AddBind(std::make_unique<InputLayout>(gfx, ied, pvs->GetBytecode()));
+
+	AddBind(std::make_unique<Topology>(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST));
+
+	pVSCB = (ConstantBuffer<VSconstBuffer>*)AddBind(std::make_unique<ConstantBuffer<VSconstBuffer>>(gfx, VSconstBuffer(Matrix::Identity.getMatrix4(), Vector3f().getVector4()), VERTEX_CONSTANT_BUFFER_TYPE));
 }
 
 Vector3f Surface::evalPolar(float r(float, float), float theta, float phi)

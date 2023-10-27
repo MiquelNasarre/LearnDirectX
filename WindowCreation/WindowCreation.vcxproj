@@ -202,7 +202,6 @@
     <ClCompile Include="SourceFiles\Drawable\Background.cpp" />
     <ClCompile Include="SourceFiles\Drawable\Surface.cpp" />
     <ClCompile Include="SourceFiles\Drawable\Sphere.cpp" />
-    <ClCompile Include="SourceFiles\Drawable\TexSurface.cpp" />
     <ClCompile Include="SourceFiles\Drawable\Triangle.cpp" />
     <ClCompile Include="SourceFiles\DxgiInfoManager.cpp" />
     <ClCompile Include="SourceFiles\Exception.cpp" />
@@ -232,7 +231,6 @@
     <ClInclude Include="HeaderFiles\Drawable\Background.h" />
     <ClInclude Include="HeaderFiles\Drawable\Surface.h" />
     <ClInclude Include="HeaderFiles\Drawable\Sphere.h" />
-    <ClInclude Include="HeaderFiles\Drawable\TexSurface.h" />
     <ClInclude Include="HeaderFiles\Drawable\Triangle.h" />
     <ClInclude Include="HeaderFiles\DxgiInfoManager.h" />
     <ClInclude Include="HeaderFiles\Exception.h" />

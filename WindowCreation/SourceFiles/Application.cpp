@@ -1,11 +1,13 @@
 #include "Application.h"
 #include "Keyboard.h"
 #include "Mouse.h"
-
 #include "iGManager.h"
 
 App::App()
-	:window(640, 480, L"Hello World"), Earth(window.graphics), Moon(window.graphics, "Resources/MoonTexture.jpg"), back(window.graphics, "Resources/hpfNightSky.jpg", true, PT_AZIMUTHAL)
+	: window(640, 480, L"Hello World"),
+	Earth(window.graphics, _RADIAL_SPHERICAL, weirdRadius, "Resources/EarthTexture.jpg", "Resources/nightEarthTexture.jpg"),
+	Moon(window.graphics, _RADIAL_SPHERICAL, constantRadius03, "Resources/MoonTexture.jpg", ""),
+	back(window.graphics, "Resources/hpfNightSky.jpg", true, PT_AZIMUTHAL)
 {
 	imGuiData = iGManager::getData();
 	imGuiData[IMGUIDATA_THETA] = pi / 2.f;
@@ -13,11 +15,6 @@ App::App()
 
 	window.setFramerateLimit(60);
 	timer.reset();
-
-	//surfaces.push_back(std::make_unique<Surface>(window.graphics, _FUNCTION_RADIUS_LAT_LONG, weirdRadius, 200u, 200u));
-	//surfaces.push_back(std::make_unique<Surface>(window.graphics, _FUNCTION_EXPLICIT, SincFunction, Vector2f(-4.f, -4.f), Vector2f(4.f, 4.f), 200u, 200u));
-	//surfaces.push_back(std::make_unique<Surface>(window.graphics, _FUNCTION_RADIUS_ICOSPHERE, constantRadius, 5u));
-
 }
 
 int App::Run()
@@ -27,8 +24,10 @@ int App::Run()
 	return 0;
 }
 
-void App::doFrame()
+void App::eventManager()
 {
+	//	Keyboard and Mouse events
+
 	scale *= powf(1.1f, Mouse::getWheel() / 120.f);
 
 	if (Keyboard::isKeyPressed('W'))
@@ -82,8 +81,23 @@ void App::doFrame()
 		imGuiData[IMGUIDATA_EARTH_THETA] += -imGuiData[IMGUIDATA_SPEED] / 10.f;
 	}
 
-	window.graphics.updatePerspective(Vector3f(-cosf(imGuiData[IMGUIDATA_PHI]) * cosf(imGuiData[IMGUIDATA_THETA]), -cosf(imGuiData[IMGUIDATA_PHI]) * sinf(imGuiData[IMGUIDATA_THETA]), -sinf(imGuiData[IMGUIDATA_PHI])), center, scale);
-	back.updateObserver(window.graphics, Vector3f(-cosf(imGuiData[IMGUIDATA_PHI]) * cosf(imGuiData[IMGUIDATA_THETA]), -cosf(imGuiData[IMGUIDATA_PHI]) * sinf(imGuiData[IMGUIDATA_THETA]), -sinf(imGuiData[IMGUIDATA_PHI])));
+	//	Calculate observer vector
+
+	observer = { 
+			-cosf(imGuiData[IMGUIDATA_PHI]) * cosf(imGuiData[IMGUIDATA_THETA]) , 
+			-cosf(imGuiData[IMGUIDATA_PHI]) * sinf(imGuiData[IMGUIDATA_THETA]) , 
+			-sinf(imGuiData[IMGUIDATA_PHI]) 
+	};
+}
+
+void App::doFrame()
+{
+	eventManager();
+
+	//	Update objects
+
+	window.graphics.updatePerspective(observer, center, scale);
+	back.updateObserver(window.graphics, observer);
 	back.updateWideness(window.graphics, imGuiData[IMGUIDATA_FOV], (Vector2f)window.getDimensions());
 
 	Earth.updateRotation(window.graphics, imGuiData[IMGUIDATA_EARTH_THETA], imGuiData[IMGUIDATA_EARTH_PHI]);
@@ -91,17 +105,13 @@ void App::doFrame()
 
 	window.setTitle("Hello World  -  " + std::to_string(int(std::round(window.getFramerate()))) + "fps");
 
-	//window.graphics.clearBuffer(Color::Black);
-	window.graphics.clearDepthBuffer();
+	//	Rendering
 
-	for (std::unique_ptr<Surface>& s : surfaces) {
-		s->updateRotation(window.graphics, imGuiData[IMGUIDATA_EARTH_THETA], imGuiData[IMGUIDATA_EARTH_PHI]);
-		s->Draw(window.graphics);
-	}
+	window.graphics.clearDepthBuffer();
+	back.Draw(window.graphics);
 
 	Earth.Draw(window.graphics);
 	Moon.Draw(window.graphics);
-	back.Draw(window.graphics);
 
 	//	ImGui crap
 
@@ -110,7 +120,6 @@ void App::doFrame()
 	//	Push the frame to the scriin
 
 	window.graphics.pushFrame();
-
 }
 
 //	Surface functions
@@ -125,6 +134,11 @@ float SincFunction(float x, float y)
 float constantRadius(float, float)
 {
 	return 1.f;
+}
+
+float constantRadius03(float, float)
+{
+	return 0.3f;
 }
 
 float weirdRadius(float theta, float phi)

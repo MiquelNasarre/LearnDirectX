@@ -17,8 +17,12 @@ Texture::Texture(Graphics& gfx, std::string filename, UINT slot) : Slot{ slot }
 
 	UINT width = FreeImage_GetWidth(bitmap2);
 	UINT height = FreeImage_GetHeight(bitmap2);
+
+	if (!width && !height)
+		throw std::exception(std::string("ERROR: The image file [" + filename + "] could not be correctly loaded or found.").c_str());
+
 	void* pBuffer = calloc(sizeof(Color), width * height);
-	FreeImage_ConvertToRawBits((BYTE*)pBuffer, bitmap2, FreeImage_GetWidth(bitmap2) * 4, 32, FI_RGBA_BLUE_MASK, FI_RGBA_GREEN_MASK, FI_RGBA_RED_MASK);
+	FreeImage_ConvertToRawBits((BYTE*)pBuffer, bitmap2, FreeImage_GetWidth(bitmap2) * 4, 32, FI_RGBA_BLUE_MASK, FI_RGBA_GREEN_MASK, FI_RGBA_RED_MASK, true);
 	FreeImage_Unload(bitmap2);
 
 	//	Create texture resource

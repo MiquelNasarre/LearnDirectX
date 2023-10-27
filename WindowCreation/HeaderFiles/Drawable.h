@@ -9,7 +9,6 @@ public:
 	Drawable() = default;
 	Drawable(const Drawable&) = delete;
 	void Draw(Graphics& gfx) const;
-	void Bind(Graphics& gfx) const;
 
 protected:
 	void* AddBind(std::unique_ptr<Bindable> bind);

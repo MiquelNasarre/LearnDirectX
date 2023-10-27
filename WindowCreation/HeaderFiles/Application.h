@@ -4,7 +4,6 @@
 #include "Drawable/Triangle.h"
 #include "Drawable/Sphere.h"
 #include "Drawable/Surface.h"
-#include "Drawable/TexSurface.h"
 #include "Drawable/Background.h"
 
 class App {
@@ -15,6 +14,7 @@ private:
 
 	float scale = 280.f;
 	Vector3f center = { 0.f,0.f,0.f };
+	Vector3f observer;
 	
 	float* imGuiData;
 
@@ -22,17 +22,17 @@ private:
 	Vector2i initialDrag;
 	Vector2f initialDragAngles;
 
-	std::vector<std::unique_ptr<Surface>> surfaces;
-	TexSurface Earth;
-	TexSurface Moon;
-
+	Surface Earth;
+	Surface Moon;
 	Background back;
-
 
 public:
 	App();
 
 	int Run();
+
+
+	void eventManager();
 	void doFrame();
 };
 
@@ -41,6 +41,8 @@ public:
 float SincFunction(float, float);
 
 float constantRadius(float, float);
+
+float constantRadius03(float, float);
 
 float weirdRadius(float, float);
 

@@ -3,14 +3,10 @@
 
 void Drawable::Draw(Graphics& gfx) const
 {
-	Bind(gfx);
-	gfx.drawIndexed(pIndexBuffer->GetCount());
-}
-
-void Drawable::Bind(Graphics& gfx) const
-{
 	for (auto& b : binds)
 		b->Bind(gfx);
+
+	gfx.drawIndexed(pIndexBuffer->GetCount());
 }
 
 void* Drawable::AddBind(std::unique_ptr<Bindable> bind)

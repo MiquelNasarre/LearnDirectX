@@ -111,9 +111,6 @@
     <ClCompile Include="SourceFiles\Bindable\Sampler.cpp">
       <Filter>Sources\Private\Bindable</Filter>
     </ClCompile>
-    <ClCompile Include="SourceFiles\Drawable\TexSurface.cpp">
-      <Filter>Sources\Private\Drawable</Filter>
-    </ClCompile>
     <ClCompile Include="SourceFiles\Drawable\Background.cpp">
       <Filter>Sources\Private\Drawable</Filter>
     </ClCompile>
@@ -199,9 +196,6 @@
     </ClInclude>
     <ClInclude Include="HeaderFiles\Bindable\Sampler.h">
       <Filter>Sources\Public\Bindable</Filter>
-    </ClInclude>
-    <ClInclude Include="HeaderFiles\Drawable\TexSurface.h">
-      <Filter>Sources\Public\Drawable</Filter>
     </ClInclude>
     <ClInclude Include="HeaderFiles\Drawable\Background.h">
       <Filter>Sources\Public\Drawable</Filter>
