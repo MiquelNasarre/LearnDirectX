@@ -5,7 +5,7 @@
 #include "Mouse.h"
 #include "atlstr.h"
 #include <windowsx.h>
-#include <chrono>
+#include <dwmapi.h>
 
 #include "iGManager.h"
 
@@ -248,7 +248,6 @@ LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noe
 		Mouse::increaseWheel(GET_WHEEL_DELTA_WPARAM(wParam));
 		Mouse::pushEvent(Mouse::event::Type::Wheel, Mouse::None, Mouse::Position);
 		break;
-
 	}
 
 	return DefWindowProc(hWnd, msg, wParam, lParam);
@@ -302,6 +301,13 @@ void Window::setFramerateLimit(int fps)
 {
 	Frametime = 1.f / float(fps);
 	timer.setMax(fps);
+}
+
+void Window::setDarkTheme(BOOL DARK_THEME)
+{
+	CHWND_EXCEPT(DwmSetWindowAttribute(hWnd, DWMWINDOWATTRIBUTE::DWMWA_USE_IMMERSIVE_DARK_MODE, &DARK_THEME, sizeof(BOOL)));
+	setDimensions(Dimensions - Vector2i(1, 1));
+	setDimensions(Dimensions + Vector2i(1, 1));
 }
 
 std::string Window::getTitle()

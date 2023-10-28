@@ -103,7 +103,7 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(SolutionDir)imGui\lib;$(SolutionDir)FreeImage\lib;$(SolutionDir)Math\lib;$(SolutionDir)dxerr\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>winmm.lib;d3d11.lib;D3DCompiler.lib;FreeImage.lib;dxguid.lib;gdiplus.lib;imGui_d.lib;dxerr_d.lib;Math_d.lib;winmm.lib;d3d11.lib;D3DCompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>dwmapi.lib;winmm.lib;d3d11.lib;D3DCompiler.lib;FreeImage.lib;dxguid.lib;gdiplus.lib;imGui_d.lib;dxerr_d.lib;Math_d.lib;winmm.lib;d3d11.lib;D3DCompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <ResourceCompile>
       <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Resources/ResourceFiles/;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -130,7 +130,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(SolutionDir)imGui\lib;$(SolutionDir)FreeImage\lib;$(SolutionDir)Math\lib;$(SolutionDir)dxerr\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>winmm.lib;d3d11.lib;D3DCompiler.lib;FreeImage.lib;dxguid.lib;gdiplus.lib;imGui.lib;dxerr.lib;Math.lib;</AdditionalDependencies>
+      <AdditionalDependencies>dwmapi.lib;winmm.lib;d3d11.lib;D3DCompiler.lib;FreeImage.lib;dxguid.lib;gdiplus.lib;imGui.lib;dxerr.lib;Math.lib;</AdditionalDependencies>
     </Link>
     <ResourceCompile>
       <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Resources/ResourceFiles/;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -153,7 +153,7 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(SolutionDir)imGui\lib;$(SolutionDir)FreeImage\lib;$(SolutionDir)Math\lib;$(SolutionDir)dxerr\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>winmm.lib;d3d11.lib;D3DCompiler.lib;FreeImage.lib;dxguid.lib;gdiplus.lib;imGui_d.lib;dxerr_d.lib;Math_d.lib;winmm.lib;d3d11.lib;D3DCompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>dwmapi.lib;winmm.lib;d3d11.lib;D3DCompiler.lib;FreeImage.lib;dxguid.lib;gdiplus.lib;imGui_d.lib;dxerr_d.lib;Math_d.lib;winmm.lib;d3d11.lib;D3DCompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <ResourceCompile>
       <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Resources/ResourceFiles/;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -180,7 +180,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(SolutionDir)imGui\lib;$(SolutionDir)FreeImage\lib;$(SolutionDir)Math\lib;$(SolutionDir)dxerr\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>winmm.lib;d3d11.lib;D3DCompiler.lib;FreeImage.lib;dxguid.lib;gdiplus.lib;imGui.lib;dxerr.lib;Math.lib;</AdditionalDependencies>
+      <AdditionalDependencies>dwmapi.lib;winmm.lib;d3d11.lib;D3DCompiler.lib;FreeImage.lib;dxguid.lib;gdiplus.lib;imGui.lib;dxerr.lib;Math.lib;</AdditionalDependencies>
     </Link>
     <ResourceCompile>
       <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Resources/ResourceFiles/;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>

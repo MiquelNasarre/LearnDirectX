@@ -29,6 +29,7 @@ App::App()
 	imGuiData[IMGUIDATA_FOV] = 1.f;
 	imGuiData[IMGUIDATA_MOON_SPEED] = 1.f;
 
+	window.setDarkTheme(true);
 	window.setFramerateLimit(60);
 	timer.reset();
 }
