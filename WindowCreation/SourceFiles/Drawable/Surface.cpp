@@ -354,6 +354,18 @@ void Surface::updateTextures(Graphics& gfx, std::string texture0, std::string te
 	changeBind(std::make_unique<Texture>(gfx, texture1, 1u), 3u);
 }
 
+void Surface::updateLight(Graphics& gfx, UINT id, Vector2f intensity, Color color, Vector3f position)
+{
+	pscBuff.lightsource[id] = { intensity.getVector4() , color.getColor4() , position.getVector4() };
+	pPSCB->Update(gfx, pscBuff);
+}
+
+void Surface::updateLight(Graphics& gfx, UINT id, _float4vector intensity, _float4color color, _float4vector position)
+{
+	pscBuff.lightsource[id] = { intensity , color , position };
+	pPSCB->Update(gfx, pscBuff);
+}
+
 //	Private
 
 void Surface::generateExplicit(Graphics& gfx, float F(float, float), Vector2f minRect, Vector2f maxRect, UINT numX, UINT numY, bool Textured)
@@ -754,7 +766,18 @@ void Surface::addDefaultBinds(Graphics& gfx)
 
 	AddBind(std::make_unique<Topology>(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST));
 
-	pVSCB = (ConstantBuffer<VSconstBuffer>*)AddBind(std::make_unique<ConstantBuffer<VSconstBuffer>>(gfx,VSconstBuffer(Matrix::Identity.getMatrix4(),Vector3f().getVector4()), VERTEX_CONSTANT_BUFFER_TYPE));
+
+	float unused = 0.f;
+	vscBuff = { Matrix::Identity.getMatrix4(), Vector3f().getVector4() };
+	pscBuff = { 
+		60.f,0.f,unused,unused,1.0f, 0.2f, 0.2f, 1.f , 0.f, 8.f, 8.f,unused,
+		60.f,0.f,unused,unused,0.0f, 1.0f, 0.0f, 1.f , 0.f,-8.f, 8.f,unused,
+		60.f,0.f,unused,unused,0.5f, 0.0f, 1.0f, 1.f ,-8.f, 0.f,-8.f,unused,
+		60.f,0.f,unused,unused,1.0f, 1.0f, 0.0f, 1.f , 8.f, 0.f, 8.f,unused,
+	};
+
+	pVSCB = (ConstantBuffer<VSconstBuffer>*)AddBind(std::make_unique<ConstantBuffer<VSconstBuffer>>(gfx, vscBuff, VERTEX_CONSTANT_BUFFER_TYPE));
+	pPSCB = (ConstantBuffer<PSconstBuffer>*)AddBind(std::make_unique<ConstantBuffer<PSconstBuffer>>(gfx, pscBuff, PIXEL_CONSTANT_BUFFER_TYPE));
 }
 
 void Surface::addTexturedBinds(Graphics& gfx, std::string texture0, std::string texture1)
@@ -782,7 +805,12 @@ void Surface::addTexturedBinds(Graphics& gfx, std::string texture0, std::string 
 
 	AddBind(std::make_unique<Topology>(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST));
 
-	pVSCB = (ConstantBuffer<VSconstBuffer>*)AddBind(std::make_unique<ConstantBuffer<VSconstBuffer>>(gfx, VSconstBuffer(Matrix::Identity.getMatrix4(), Vector3f().getVector4()), VERTEX_CONSTANT_BUFFER_TYPE));
+	float unused = 0.f;
+	vscBuff = { Matrix::Identity.getMatrix4(), Vector3f().getVector4() };
+	pscBuff = { 32000.f,5000.f,unused,unused,1.f, 1.f, 1.f, 1.f ,160.f, 0.f, 60.f,unused };
+
+	pVSCB = (ConstantBuffer<VSconstBuffer>*)AddBind(std::make_unique<ConstantBuffer<VSconstBuffer>>(gfx, vscBuff, VERTEX_CONSTANT_BUFFER_TYPE));
+	pPSCB = (ConstantBuffer<PSconstBuffer>*)AddBind(std::make_unique<ConstantBuffer<PSconstBuffer>>(gfx, pscBuff, PIXEL_CONSTANT_BUFFER_TYPE));
 }
 
 void Surface::addTexturedBinds(Graphics& gfx, Texture texture0, Texture texture1)
@@ -807,7 +835,12 @@ void Surface::addTexturedBinds(Graphics& gfx, Texture texture0, Texture texture1
 
 	AddBind(std::make_unique<Topology>(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST));
 
-	pVSCB = (ConstantBuffer<VSconstBuffer>*)AddBind(std::make_unique<ConstantBuffer<VSconstBuffer>>(gfx, VSconstBuffer(Matrix::Identity.getMatrix4(), Vector3f().getVector4()), VERTEX_CONSTANT_BUFFER_TYPE));
+	float unused = 0.f;
+	vscBuff = { Matrix::Identity.getMatrix4(), Vector3f().getVector4() };
+	pscBuff = { 32000.f,5000.f,unused,unused,1.f, 1.f, 1.f, 1.f ,160.f, 0.f, 60.f,unused };
+
+	pVSCB = (ConstantBuffer<VSconstBuffer>*)AddBind(std::make_unique<ConstantBuffer<VSconstBuffer>>(gfx, vscBuff, VERTEX_CONSTANT_BUFFER_TYPE));
+	pPSCB = (ConstantBuffer<PSconstBuffer>*)AddBind(std::make_unique<ConstantBuffer<PSconstBuffer>>(gfx, pscBuff, PIXEL_CONSTANT_BUFFER_TYPE));
 }
 
 Vector3f Surface::evalPolar(float r(float, float), float theta, float phi)

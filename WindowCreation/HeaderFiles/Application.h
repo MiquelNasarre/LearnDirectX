@@ -6,6 +6,31 @@
 #include "Drawable/Surface.h"
 #include "Drawable/Background.h"
 
+struct IG_DATA {
+	static float EARTH_THETA;
+	static float EARTH_PHI;
+	static float SPEED;
+	static float MOON_SPEED;
+	static float MOON_POS;
+	static float THETA;
+	static float PHI;
+	static float FOV;
+	static int TEXTURE_EARTH;
+	static int TEXTURE_MOON;
+	static int TEXTURE_BACKGROUND;
+	static int UPDATE_LIGHT;
+
+	struct lightsource {
+		bool is_on;
+		_float4vector intensities;
+		_float4color color;
+		_float4vector position;
+	};
+
+	static lightsource* LIGHTS;
+	
+};
+
 class App {
 
 private:
@@ -15,8 +40,6 @@ private:
 	float scale = 280.f;
 	Vector3f center = { 0.f,0.f,0.f };
 	Vector3f observer;
-	
-	float* imGuiData;
 
 	bool dragging;
 	Vector2i initialDrag;

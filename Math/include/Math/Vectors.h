@@ -85,6 +85,7 @@ struct Vector2f {
 
 	float		abs() const;
 	std::string str() const;
+	_float4vector getVector4() const;
 };
 
 struct Vector2i {

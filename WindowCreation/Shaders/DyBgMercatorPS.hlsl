@@ -18,15 +18,9 @@ cbuffer cBuff : register(b1)
 
 float4 main(float4 svPos : SV_Position) : SV_Target
 {
-    float2 coord = float2((2 * svPos.r / windowDim.r - 1.f) * windowDim.r / windowDim.g, 1.f - 2.f * svPos.g / windowDim.g) * windowDim.g / 1400.f;
+    float2 coord = float2(2.f * svPos.r - windowDim.r, windowDim.g - 2.f * svPos.g) / 1400.f;
     
-    const float4 dir = normalize(wide * coord.r * ei + wide * coord.g * zp);
-    
-    const float angle = sqrt(wide * wide * coord.r * coord.r + wide * wide * coord.g * coord.g);
-    const float test = angle * (40.f - angle) / 40.f;
-    
-    float4 vp = obs * cos(test) + dir * sin(test);
-    
+    float4 vp = normalize(obs * wide + ei * coord.r + zp * coord.g);
 
     float phif = asin(vp.b);
     

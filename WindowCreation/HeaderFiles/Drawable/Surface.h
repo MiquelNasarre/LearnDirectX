@@ -44,6 +44,8 @@ public:
 	void updateTexture(Graphics& gfx, UINT id, Texture texture);
 	void updateTextures(Graphics& gfx, Texture texture0, Texture texture1);
 	void updateTextures(Graphics& gfx, std::string texture0, std::string texture1);
+	void updateLight(Graphics& gfx, UINT id, Vector2f intensity, Color color, Vector3f position);
+	void updateLight(Graphics& gfx, UINT id, _float4vector intensity, _float4color color, _float4vector position);
 
 private:
 	void generateExplicit(Graphics& gfx, float F(float, float), Vector2f minRect, Vector2f maxRect, UINT numX, UINT numY, bool Textured = false);
@@ -63,7 +65,16 @@ private:
 		_float4vector traslation;
 	}vscBuff;
 
+	struct PSconstBuffer {
+		struct {
+			_float4vector intensity;
+			_float4color  color;
+			_float4vector position;
+		}lightsource[8];
+	}pscBuff;
+
 	ConstantBuffer<VSconstBuffer>* pVSCB;
+	ConstantBuffer<PSconstBuffer>* pPSCB;
 	bool textured = false;
 
 	Vector3f evalPolar(float r(float, float), float theta, float phi);

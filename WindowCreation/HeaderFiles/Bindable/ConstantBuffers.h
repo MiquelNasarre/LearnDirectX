@@ -18,6 +18,12 @@ public:
 		GFX_THROW_INFO_ONLY(GetContext(gfx)->UpdateSubresource(pConstantBuffer.Get(), 0u, NULL, &consts, 0u, 0u));
 	}
 
+	void Update(Graphics& gfx, const C* consts)
+	{
+		INFOMAN(gfx);
+		GFX_THROW_INFO_ONLY(GetContext(gfx)->UpdateSubresource(pConstantBuffer.Get(), 0u, NULL, consts, 0u, 0u));
+	}
+
 	ConstantBuffer(Graphics& gfx, const C& consts, const unsigned char type, const int slot = CONSTANT_BUFFER_DEFAULT_SLOT)
 		:Type{ type }
 	{

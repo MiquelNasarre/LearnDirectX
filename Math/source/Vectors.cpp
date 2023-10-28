@@ -325,6 +325,11 @@ std::string Vector2f::str() const
 	return "( " + std::to_string(x) + " , " + std::to_string(y) + " )";
 }
 
+_float4vector Vector2f::getVector4() const
+{
+	return _float4vector(x, y, 0.f, 0.f);
+}
+
 //	Vector2i
 
 Vector2i::Vector2i()

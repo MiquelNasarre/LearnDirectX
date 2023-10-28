@@ -16,7 +16,7 @@ struct VSOut
     float2 tex : TexCoord;
     float4 R3pos : PointPos;
     float4 norm : Norm;
-    float4 Scpos : SV_Position;
+    float4 SCpos : SV_Position;
 };
 
 VSOut main(float3 pos : Position, float3 norm : Normal, float2 tex : TexCoord)
@@ -24,8 +24,8 @@ VSOut main(float3 pos : Position, float3 norm : Normal, float2 tex : TexCoord)
     VSOut vso;
     vso.R3pos = mul(float4(pos, 1.f), rotation) + traslation;
     float4 test = mul(vso.R3pos - center, projection);
-    vso.Scpos = float4(test.x, test.y, test.z / 10000000.f + 0.5f, 1.f);
+    vso.SCpos = float4(test.x, test.y, test.z / 10000000.f + 0.5f, 1.f);
+    vso.norm = mul(float4(norm, 0.f), rotation);    
     vso.tex = tex;
-    vso.norm = mul(float4(norm, 0.f), rotation);
     return vso;
 }
