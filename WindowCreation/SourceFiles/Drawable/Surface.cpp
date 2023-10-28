@@ -431,6 +431,8 @@ void Surface::generatePolarNormal(Graphics& gfx, float r(float, float), Vector2f
 					-((evalPolar(r,theta + epsilon,phi) - evalPolar(r,theta - epsilon,phi)) *
 					((evalPolar(r,theta,phi + epsilon) - evalPolar(r,theta,phi - epsilon))))
 					.normalize() });
+				if (!j || j == numY)
+					vertexs[vertexs.size() - 1].norm = Vector3f(0.f, 0.f, 2.f * phi / pi);
 			}
 		}
 		AddBind(std::make_unique<VertexBuffer>(gfx, vertexs));
@@ -449,6 +451,8 @@ void Surface::generatePolarNormal(Graphics& gfx, float r(float, float), Vector2f
 					.normalize() ,
 
 					Vector2f((float)i / numX,(float)j / numY) });
+				if (!j || j == numY)
+					vertexs[vertexs.size() - 1].norm = Vector3f(0.f, 0.f, 2.f * phi / pi);
 			}
 		}
 		AddBind(std::make_unique<VertexBuffer>(gfx, vertexs));

@@ -27,6 +27,7 @@ App::App()
 	imGuiData = iGManager::getData();
 	imGuiData[IMGUIDATA_THETA] = pi / 2.f;
 	imGuiData[IMGUIDATA_FOV] = 1.f;
+	imGuiData[IMGUIDATA_MOON_SPEED] = 1.f;
 
 	window.setFramerateLimit(60);
 	timer.reset();
@@ -96,6 +97,8 @@ void App::eventManager()
 		imGuiData[IMGUIDATA_EARTH_THETA] += -imGuiData[IMGUIDATA_SPEED] / 10.f;
 	}
 
+	imGuiData[IMGUIDATA_MOON_POS] += imGuiData[IMGUIDATA_MOON_SPEED] / 300.f;
+
 	//	Calculate observer vector
 
 	observer = { 
@@ -152,7 +155,7 @@ void App::doFrame()
 	back.updateWideness(window.graphics, imGuiData[IMGUIDATA_FOV], (Vector2f)window.getDimensions());
 
 	Earth.updateRotation(window.graphics, imGuiData[IMGUIDATA_EARTH_THETA], imGuiData[IMGUIDATA_EARTH_PHI]);
-	Moon.updateRotation(window.graphics, -timer.check()/5.f, 0.f, Vector3f(10.f * cosf(timer.check() / 5.f), 10.f * sinf(timer.check() / 5.f), 0.f));
+	Moon.updateRotation(window.graphics, -imGuiData[IMGUIDATA_MOON_POS], 0.f, Vector3f(10.f * cosf(imGuiData[IMGUIDATA_MOON_POS]), 10.f * sinf(imGuiData[IMGUIDATA_MOON_POS]), 0.f));
 
 	window.setTitle("Hello World  -  " + std::to_string(int(std::round(window.getFramerate()))) + "fps");
 
