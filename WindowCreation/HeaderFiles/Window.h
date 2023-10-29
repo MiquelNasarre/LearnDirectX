@@ -24,14 +24,14 @@ private:
 	class WindowClass
 	{
 	public:
-		static const LPCWSTR GetName() noexcept;
+		static const LPCSTR GetName() noexcept;
 		static HINSTANCE GetInstance() noexcept;
 	private:
 		WindowClass() noexcept;
 		~WindowClass();
 		WindowClass(const WindowClass&) = delete;
 		WindowClass& operator=(const WindowClass&) = delete;
-		static constexpr LPCWSTR wndClassName = L"Learn DirectX Window";
+		static constexpr LPCSTR wndClassName = "Learn DirectX Window";
 		static WindowClass wndClass;
 		HINSTANCE hInst;
 	};
@@ -59,7 +59,7 @@ private:
 	Timer timer;
 
 public:
-	Window(int width, int height, LPCWSTR name);
+	Window(int width, int height, const char* name);
 	~Window();
 	Window(const Window&) = delete;
 	Window& operator=(const Window&) = delete;
@@ -69,6 +69,7 @@ public:
 	Graphics graphics;
 
 	void setTitle(std::string name);
+	void setIcon(std::string filename);
 	void setDimensions(int width, int height);
 	void setDimensions(Vector2i Dim);
 	void setPosition(int X, int Y);

@@ -1,4 +1,5 @@
 #include "Bindable/VertexBuffer.h"
+#include "ExceptionMacros.h"
 
 void VertexBuffer::Bind(Graphics& gfx)
 {

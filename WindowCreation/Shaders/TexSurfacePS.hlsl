@@ -40,7 +40,7 @@ float4 main(float2 tc : TexCoord, float3 pos : PointPos, float3 norm : Norm) : S
             light += lights[i].intensity.r * exposure / dist / dist;
         totalLight += light * lights[i].color, 1.f;
         
-        if (exposure > maxexposure)
+        if (exposure > maxexposure && lights[i].intensity.r)
             maxexposure = exposure;
     }
     

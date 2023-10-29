@@ -37,6 +37,18 @@
     <Filter Include="Sources\Public\Drawable">
       <UniqueIdentifier>{e78ba6a6-4008-4009-af5f-d33a3c788151}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Sources\Private\Apps">
+      <UniqueIdentifier>{56e1fb75-3b47-4c2a-b079-af828c344958}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sources\Public\Apps">
+      <UniqueIdentifier>{30b48e59-6439-46c6-a57b-a46d0bb963fe}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sources\Private\ImGui">
+      <UniqueIdentifier>{8f041303-af78-4413-a97f-060bb12361fe}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sources\Public\ImGui">
+      <UniqueIdentifier>{a52dd742-7360-4dab-af99-89bfdb43580a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="SourceFiles\WinMain.cpp">
@@ -49,9 +61,6 @@
       <Filter>Sources\Private</Filter>
     </ClCompile>
     <ClCompile Include="SourceFiles\Mouse.cpp">
-      <Filter>Sources\Private</Filter>
-    </ClCompile>
-    <ClCompile Include="SourceFiles\Application.cpp">
       <Filter>Sources\Private</Filter>
     </ClCompile>
     <ClCompile Include="SourceFiles\Timer.cpp">
@@ -117,6 +126,18 @@
     <ClCompile Include="SourceFiles\iGManager.cpp">
       <Filter>Sources\Private</Filter>
     </ClCompile>
+    <ClCompile Include="SourceFiles\Apps\EarthDemo.cpp">
+      <Filter>Sources\Private\Apps</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceFiles\ImGui\IG_EarthDemo.cpp">
+      <Filter>Sources\Private\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceFiles\Apps\Fourier.cpp">
+      <Filter>Sources\Private\Apps</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceFiles\ImGui\IG_Fouier.cpp">
+      <Filter>Sources\Private\ImGui</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="HeaderFiles\Header.h">
@@ -129,9 +150,6 @@
       <Filter>Sources\Public</Filter>
     </ClInclude>
     <ClInclude Include="HeaderFiles\Mouse.h">
-      <Filter>Sources\Public</Filter>
-    </ClInclude>
-    <ClInclude Include="HeaderFiles\Application.h">
       <Filter>Sources\Public</Filter>
     </ClInclude>
     <ClInclude Include="HeaderFiles\Timer.h">
@@ -203,6 +221,18 @@
     <ClInclude Include="HeaderFiles\iGManager.h">
       <Filter>Sources\Public</Filter>
     </ClInclude>
+    <ClInclude Include="HeaderFiles\Apps\EarthDemo.h">
+      <Filter>Sources\Public\Apps</Filter>
+    </ClInclude>
+    <ClInclude Include="HeaderFiles\ImGui\IG_EarthDemo.h">
+      <Filter>Sources\Public\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="HeaderFiles\Apps\Fourier.h">
+      <Filter>Sources\Public\Apps</Filter>
+    </ClInclude>
+    <ClInclude Include="HeaderFiles\ImGui\IG_Fourier.h">
+      <Filter>Sources\Public\ImGui</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shaders\TriangleVS.hlsl">
@@ -247,9 +277,6 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="Resources\Icon.ico">
-      <Filter>Resources</Filter>
-    </Image>
-    <Image Include="Resources\EarthTexture.jpg">
       <Filter>Resources</Filter>
     </Image>
   </ItemGroup>

@@ -3,7 +3,6 @@
 #include "resource.h"
 #include "Keyboard.h"
 #include "Mouse.h"
-#include "atlstr.h"
 #include <windowsx.h>
 #include <dwmapi.h>
 
@@ -20,7 +19,7 @@ Window::WindowClass::WindowClass() noexcept
 {
 	//	Register Window class
 
-	WNDCLASSEX wc = { 0 };
+	WNDCLASSEXA wc = { 0 };
 	wc.cbSize = sizeof(wc);
 	wc.style = CS_OWNDC;
 	wc.lpfnWndProc = HandleMsgSetup;
@@ -33,15 +32,15 @@ Window::WindowClass::WindowClass() noexcept
 	wc.lpszMenuName = nullptr;
 	wc.lpszClassName = GetName();
 	wc.hIconSm = nullptr;
-	RegisterClassEx(&wc);
+	RegisterClassExA(&wc);
 }
 
 Window::WindowClass::~WindowClass()
 {
-	UnregisterClass(wndClassName, GetInstance());
+	UnregisterClassA(wndClassName, GetInstance());
 }
 
-const LPCWSTR Window::WindowClass::GetName() noexcept
+const LPCSTR Window::WindowClass::GetName() noexcept
 {
 	return wndClassName;
 }
@@ -73,10 +72,10 @@ void Window::handleFramerate()
 	frame = timer.mark();
 }
 
-Window::Window(int width, int height, LPCWSTR name)
+Window::Window(int width, int height, const char* name)
 	: Dimensions{ Vector2i(width,height) }, timer(true)
 {
-	Name = CW2A(name);
+	Name = name;
 
 	//	Calculate window size based on desired client region size
 
@@ -90,9 +89,10 @@ Window::Window(int width, int height, LPCWSTR name)
 
 	//	Create Window & get hWnd
 
-	hWnd = CreateWindow(
+	hWnd = CreateWindowExA(
+		NULL,
 		WindowClass::GetName(), 
-		name,
+		NULL,
 		WS_CAPTION | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_SYSMENU | WS_VISIBLE | WS_OVERLAPPEDWINDOW,
 		CW_USEDEFAULT, 
 		CW_USEDEFAULT, 
@@ -108,6 +108,10 @@ Window::Window(int width, int height, LPCWSTR name)
 
 	if (!hWnd)
 		throw CHWND_LAST_EXCEPT();
+
+	//	Set title
+
+	setTitle(Name);
 
 	//	Initialize Keyboard & mouse & ...
 
@@ -260,6 +264,21 @@ void Window::setTitle(std::string name)
 	Name = name;
 	if (!SetWindowTextA(hWnd, name.c_str()))
 		throw CHWND_LAST_EXCEPT();
+}
+
+void Window::setIcon(std::string filename)
+{
+	HANDLE hIcon = LoadImageA(0, filename.c_str(), IMAGE_ICON, 0, 0, LR_DEFAULTSIZE | LR_LOADFROMFILE);
+	if (hIcon) {
+		//	Change both icons to the same icon handle
+		SendMessage(hWnd, WM_SETICON, ICON_SMALL, (LPARAM)hIcon);
+		SendMessage(hWnd, WM_SETICON, ICON_BIG, (LPARAM)hIcon);
+
+		//	This will ensure that the application icon gets changed too
+		SendMessage(GetWindow(hWnd, GW_OWNER), WM_SETICON, ICON_SMALL, (LPARAM)hIcon);
+		SendMessage(GetWindow(hWnd, GW_OWNER), WM_SETICON, ICON_BIG, (LPARAM)hIcon);
+	}
+	else throw CHWND_LAST_EXCEPT();
 }
 
 void Window::setDimensions(int width, int height)

@@ -1,43 +1,42 @@
-#include "Application.h"
+#include "Apps/EarthDemo.h"
 #include "Keyboard.h"
 #include "Mouse.h"
-#include "iGManager.h"
+#include "ImGui/IG_EarthDemo.h"
 
-float IG_DATA::EARTH_THETA			= 0.f;
-float IG_DATA::EARTH_PHI			= 0.f;
-float IG_DATA::SPEED				= 0.f;
-float IG_DATA::MOON_SPEED			= 1.f;
-float IG_DATA::MOON_POS				= 0.f;
-float IG_DATA::THETA				= pi / 2.f;
-float IG_DATA::PHI					= 0.f;
-float IG_DATA::FOV					= 1.f;
-int	  IG_DATA::TEXTURE_EARTH		= 0;
-int   IG_DATA::TEXTURE_MOON			= 0;
-int   IG_DATA::TEXTURE_BACKGROUND	= 0;
-int	  IG_DATA::UPDATE_LIGHT			= -1;
+float IG_DATA::EARTH_THETA = 0.f;
+float IG_DATA::EARTH_PHI = 0.f;
+float IG_DATA::SPEED = 0.f;
+float IG_DATA::MOON_SPEED = 1.f;
+float IG_DATA::MOON_POS = 0.f;
+float IG_DATA::THETA = pi / 2.f;
+float IG_DATA::PHI = 0.f;
+float IG_DATA::FOV = 1.f;
+
+int	  IG_DATA::UPDATE_LIGHT = -1;
+Vector2i IG_DATA::UPDATE_TEXTURE = Vector2i(-1, -1);
 
 IG_DATA::lightsource* IG_DATA::LIGHTS = (IG_DATA::lightsource*)calloc(sizeof(IG_DATA::lightsource), 8);
 
-App::App()
-	: window(640, 480, L"Hello World"),
+EarthDemo::EarthDemo()
+	: window(640, 480, "Hello World"),
 
-	TexEarth			(window.graphics, "Resources/earthTextures/default.jpg"),
-	TexNEarth			(window.graphics, "Resources/earthTextures/defaultNight.jpg"),
-	TexEarthInverted	(window.graphics, "Resources/earthTextures/inverted.jpg"),
-	TexNEarthInverted	(window.graphics, "Resources/earthTextures/invertedNight.jpg"),
-	TexEarthChalked		(window.graphics, "Resources/earthTextures/chalked.jpg"),
-	TexNEarthChalked	(window.graphics, "Resources/earthTextures/chalkedNight.jpg"),
-	TexMoon				(window.graphics, "Resources/moonTextures/default.jpg"),
-	TexMoonInverted		(window.graphics, "Resources/moonTextures/inverted.jpg"),
-	TexMoonChalked		(window.graphics, "Resources/moonTextures/chalked.jpg"),
-	TexBack				(window.graphics, "Resources/nightSky/highperformance.jpg"),
-	TexBackInverted		(window.graphics, "Resources/nightSky/inverted.jpg"),
-	TexBackEarth		(window.graphics, "Resources/earthTextures/projected.jpg"),
-	TexBackMoon			(window.graphics, "Resources/moonTextures/projected.jpg"),
+	TexEarth(window.graphics,			"Resources/EarthDemo/earthTextures/default.jpg"),
+	TexNEarth(window.graphics,			"Resources/EarthDemo/earthTextures/defaultNight.jpg"),
+	TexEarthInverted(window.graphics,	"Resources/EarthDemo/earthTextures/inverted.jpg"),
+	TexNEarthInverted(window.graphics,	"Resources/EarthDemo/earthTextures/invertedNight.jpg"),
+	TexEarthChalked(window.graphics,	"Resources/EarthDemo/earthTextures/chalked.jpg"),
+	TexNEarthChalked(window.graphics,	"Resources/EarthDemo/earthTextures/chalkedNight.jpg"),
+	TexMoon(window.graphics,			"Resources/EarthDemo/moonTextures/default.jpg"),
+	TexMoonInverted(window.graphics,	"Resources/EarthDemo/moonTextures/inverted.jpg"),
+	TexMoonChalked(window.graphics,		"Resources/EarthDemo/moonTextures/chalked.jpg"),
+	TexBack(window.graphics,			"Resources/EarthDemo/nightSky/highperformance.jpg"),
+	TexBackInverted(window.graphics,	"Resources/EarthDemo/nightSky/inverted.jpg"),
+	TexBackEarth(window.graphics,		"Resources/EarthDemo/earthTextures/projected.jpg"),
+	TexBackMoon(window.graphics,		"Resources/EarthDemo/moonTextures/projected.jpg"),
 
-	Earth	(window.graphics, _RADIAL_SPHERICAL, constantRadius, TexEarth, TexNEarth),
-	Moon	(window.graphics, _RADIAL_SPHERICAL, constantRadius03, TexMoon, TexMoon),
-	back	(window.graphics, TexBack, true, PT_AZIMUTHAL)
+	Earth(window.graphics, _RADIAL_SPHERICAL, EarthRadius, TexEarth, TexNEarth),
+	Moon(window.graphics, _RADIAL_SPHERICAL, MoonRadius, TexMoon, TexMoon),
+	back(window.graphics, TexBack, true, PT_AZIMUTHAL)
 {
 
 	IG_DATA::LIGHTS[0].is_on = true;
@@ -50,31 +49,31 @@ App::App()
 	timer.reset();
 }
 
-int App::Run()
+int EarthDemo::Run()
 {
 	while (window.processEvents())
 		doFrame();
 	return 0;
 }
 
-void App::eventManager()
+void EarthDemo::eventManager()
 {
 	//	Keyboard and Mouse events
 
 	scale *= powf(1.1f, Mouse::getWheel() / 120.f);
 
 	if (Keyboard::isKeyPressed('W'))
-		center.y += 0.01f;
+		center.y += 0.02f;
 	if (Keyboard::isKeyPressed('S'))
-		center.y -= 0.01f;
+		center.y -= 0.02f;
 	if (Keyboard::isKeyPressed('A'))
-		center.x -= 0.01f;
+		center.x -= 0.02f;
 	if (Keyboard::isKeyPressed('D'))
-		center.x += 0.01f;
+		center.x += 0.02f;
 	if (Keyboard::isKeyPressed('R'))
-		center.z += 0.01f;
+		center.z += 0.02f;
 	if (Keyboard::isKeyPressed('F'))
-		center.z -= 0.01f;
+		center.z -= 0.02f;
 
 	if (Mouse::isButtonPressed(Mouse::Left) && !dragging) {
 		dragging = true;
@@ -118,59 +117,73 @@ void App::eventManager()
 
 	//	Calculate observer vector
 
-	observer = { 
+	observer = {
 			-cosf(IG_DATA::PHI) * cosf(IG_DATA::THETA) ,
 			-cosf(IG_DATA::PHI) * sinf(IG_DATA::THETA) ,
 			-sinf(IG_DATA::PHI)
 	};
 
-	//	Set textures
-
-	if (IG_DATA::TEXTURE_EARTH != earthtex) {
-		earthtex = IG_DATA::TEXTURE_EARTH;
-		if (earthtex == 0)
-			Earth.updateTextures(window.graphics, TexEarth, TexNEarth);
-		if (earthtex == 1)
-			Earth.updateTextures(window.graphics, TexEarthInverted, TexNEarthInverted);
-		if (earthtex == 2)
-			Earth.updateTextures(window.graphics, TexEarthChalked, TexNEarthChalked);
-		if (earthtex == 3)
-			Earth.updateTextures(window.graphics, TexMoon, TexMoon);
-	}
-	if (IG_DATA::TEXTURE_MOON != moontex) {
-		moontex = IG_DATA::TEXTURE_MOON;
-		if (moontex == 0)
-			Moon.updateTextures(window.graphics, TexMoon, TexMoon);
-		if (moontex == 1)
-			Moon.updateTextures(window.graphics, TexMoonInverted, TexMoonInverted);
-		if (moontex == 2)
-			Moon.updateTextures(window.graphics, TexMoonChalked, TexMoonChalked);
-		if (moontex == 3)
-			Moon.updateTextures(window.graphics, TexEarth, TexNEarth);
-	}
-	if (IG_DATA::TEXTURE_BACKGROUND != backtex) {
-		backtex = IG_DATA::TEXTURE_BACKGROUND;
-		if (backtex == 0)
-			back.updateTexture(window.graphics, TexBack);
-		if (backtex == 1)
-			back.updateTexture(window.graphics, TexBackInverted);
-		if (backtex == 2)
-			back.updateTexture(window.graphics, TexBackEarth);
-		if (backtex == 3)
-			back.updateTexture(window.graphics, TexBackMoon);
-	}
-
-	//	Set lights
+	//	Set lights & textures
 
 	int l = IG_DATA::UPDATE_LIGHT;
+	if (l == -2) {
+		for (int i = 0; i < 8; i++) {
+			Earth.updateLight(window.graphics, i, IG_DATA::LIGHTS[i].intensities, IG_DATA::LIGHTS[i].color, IG_DATA::LIGHTS[i].position);
+			Moon.updateLight(window.graphics, i, IG_DATA::LIGHTS[i].intensities, IG_DATA::LIGHTS[i].color, IG_DATA::LIGHTS[i].position);
+		}
+	}
 	if (l > -1) {
 		Earth.updateLight(window.graphics, l, IG_DATA::LIGHTS[l].intensities, IG_DATA::LIGHTS[l].color, IG_DATA::LIGHTS[l].position);
 		Moon.updateLight(window.graphics, l, IG_DATA::LIGHTS[l].intensities, IG_DATA::LIGHTS[l].color, IG_DATA::LIGHTS[l].position);
 		IG_DATA::UPDATE_LIGHT = -1;
 	}
+	Vector2i t = IG_DATA::UPDATE_TEXTURE;
+	if (t.x == 0) {
+		if (t.y == 0)
+			Earth.updateTextures(window.graphics, TexEarth, TexNEarth);
+		if (t.y == 1)
+			Earth.updateTextures(window.graphics, TexEarthInverted, TexNEarthInverted);
+		if (t.y == 2)
+			Earth.updateTextures(window.graphics, TexEarthChalked, TexNEarthChalked);
+		if (t.y == 3)
+			Earth.updateTextures(window.graphics, TexMoon, TexMoon);
+		if (t.y == 4)
+			Earth.updateTextures(window.graphics, TexEarth, TexEarth);
+		if (t.y == 5)
+			Earth.updateTextures(window.graphics, TexNEarth, TexNEarth);
+		t.x = -1;
+	}
+	if (t.x == 1) {
+		if (t.y == 0)
+			Moon.updateTextures(window.graphics, TexMoon, TexMoon);
+		if (t.y == 1)
+			Moon.updateTextures(window.graphics, TexMoonInverted, TexMoonInverted);
+		if (t.y == 2)
+			Moon.updateTextures(window.graphics, TexMoonChalked, TexMoonChalked);
+		if (t.y == 3)
+			Moon.updateTextures(window.graphics, TexEarth, TexNEarth);
+		t.x = -1;
+	}
+	if (t.x == 2) {
+		if (t.y == 0)
+			back.updateTexture(window.graphics, TexBack);
+		if (t.y == 1)
+			back.updateTexture(window.graphics, TexBackInverted);
+		if (t.y == 2)
+			back.updateTexture(window.graphics, TexBackEarth);
+		if (t.y == 3)
+			back.updateTexture(window.graphics, TexBackMoon);
+		t.x = -1;
+	}
+	if (t.x == 3) {
+		Earth.updateTextures(window.graphics, TexEarth, TexNEarth);
+		Moon.updateTextures(window.graphics, TexMoon, TexMoon);
+		back.updateTexture(window.graphics, TexBack);
+		t.x = -1;
+	}
 }
 
-void App::doFrame()
+void EarthDemo::doFrame()
 {
 	eventManager();
 
@@ -195,7 +208,7 @@ void App::doFrame()
 
 	//	ImGui crap
 
-	iGManager::render();
+	IG_EarthDemo::render();
 
 	//	Push the frame to the scriin
 
@@ -204,39 +217,12 @@ void App::doFrame()
 
 //	Surface functions
 
-float SincFunction(float x, float y)
-{
-	if (x == 0.f && y == 0.f)
-		return 3;
-	return sinf(3 * sqrtf(x * x + y * y)) / sqrtf(x * x + y * y);
-}
-
-float constantRadius(float, float)
+float EarthRadius(float, float)
 {
 	return 1.f;
 }
 
-float constantRadius03(float, float)
+float MoonRadius(float, float)
 {
 	return 0.3f;
-}
-
-float weirdRadius(float theta, float phi)
-{
-	return 1.f + (sinf(theta) * sinf(theta) * cosf(phi) + cosf(phi) * cosf(phi) * sinf(phi)) * sinf(5*theta) * cosf(3*phi) / 2.f;
-}
-
-float returnX(float x, float)
-{
-	return x;
-}
-
-float returnY(float, float y)
-{
-	return y;
-}
-
-float sphere(float x, float y, float z)
-{
-	return x * x + y * y + z * z - 1;
 }

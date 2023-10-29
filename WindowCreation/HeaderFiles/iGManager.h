@@ -1,7 +1,7 @@
 #pragma once
 
 class iGManager {
-private:
+protected:
 	static iGManager main;
 
 	iGManager();
@@ -17,6 +17,4 @@ public:
 	static void closeDX11();
 
 	static bool WndProcHandler(void* hWnd, unsigned int msg, unsigned int wParam, unsigned int lParam);
-	static float* getData();
-	static void render();
 };

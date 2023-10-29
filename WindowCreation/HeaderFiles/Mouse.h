@@ -1,6 +1,8 @@
 #pragma once
 
 #include "Header.h"
+#include <bitset>
+#include <queue>
 
 class Mouse {
 	friend class Window;

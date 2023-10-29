@@ -1,6 +1,4 @@
 #pragma once
-#include "Graphics.h"
-
 #include "Bindable/BindableBase.h"
 
 class Drawable

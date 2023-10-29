@@ -187,7 +187,8 @@
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="SourceFiles\Application.cpp" />
+    <ClCompile Include="SourceFiles\Apps\Fourier.cpp" />
+    <ClCompile Include="SourceFiles\Apps\EarthDemo.cpp" />
     <ClCompile Include="SourceFiles\Bindable\Bindable.cpp" />
     <ClCompile Include="SourceFiles\Bindable\ConstantBuffers.cpp" />
     <ClCompile Include="SourceFiles\Bindable\IndexBuffer.cpp" />
@@ -206,6 +207,8 @@
     <ClCompile Include="SourceFiles\DxgiInfoManager.cpp" />
     <ClCompile Include="SourceFiles\Exception.cpp" />
     <ClCompile Include="SourceFiles\iGManager.cpp" />
+    <ClCompile Include="SourceFiles\ImGui\IG_EarthDemo.cpp" />
+    <ClCompile Include="SourceFiles\ImGui\IG_Fouier.cpp" />
     <ClCompile Include="SourceFiles\_exFunc.cpp" />
     <ClCompile Include="SourceFiles\Graphics.cpp" />
     <ClCompile Include="SourceFiles\Keyboard.cpp" />
@@ -215,7 +218,8 @@
     <ClCompile Include="SourceFiles\WinMain.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="HeaderFiles\Application.h" />
+    <ClInclude Include="HeaderFiles\Apps\Fourier.h" />
+    <ClInclude Include="HeaderFiles\Apps\EarthDemo.h" />
     <ClInclude Include="HeaderFiles\Bindable\Bindable.h" />
     <ClInclude Include="HeaderFiles\Bindable\BindableBase.h" />
     <ClInclude Include="HeaderFiles\Bindable\ConstantBuffers.h" />
@@ -238,6 +242,8 @@
     <ClInclude Include="HeaderFiles\Graphics.h" />
     <ClInclude Include="HeaderFiles\Header.h" />
     <ClInclude Include="HeaderFiles\iGManager.h" />
+    <ClInclude Include="HeaderFiles\ImGui\IG_EarthDemo.h" />
+    <ClInclude Include="HeaderFiles\ImGui\IG_Fourier.h" />
     <ClInclude Include="HeaderFiles\Keyboard.h" />
     <ClInclude Include="HeaderFiles\Mouse.h" />
     <ClInclude Include="HeaderFiles\Timer.h" />
@@ -433,7 +439,6 @@
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="Resources\EarthTexture.jpg" />
     <Image Include="Resources\Icon.ico" />
   </ItemGroup>
   <ItemGroup>

@@ -79,5 +79,13 @@ private:
 	pCom<ID3D11DepthStencilView>	pDSV;
 	pCom<ID3D11Buffer>				pPerspective;
 
+	struct {
+		_float4matrix perspective;
+		_float4vector traslation;
+	}cbuff;
+
 	Vector2i WindowDim;
+	Vector3f Observer = { 0.f , -1.f , 0.f };
+	Vector3f Center = { 0.f , 0.f , 0.f };
+	float Scale = 250.f;
 };

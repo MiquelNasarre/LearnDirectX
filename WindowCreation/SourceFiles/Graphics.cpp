@@ -192,6 +192,14 @@ void Graphics::setWindowDimensions(Vector2i& Dim)
 	vp.TopLeftX = 0.f;
 	vp.TopLeftY = 0.f;
 	GFX_THROW_INFO_ONLY(pContext->RSSetViewports(1u, &vp));
+
+	//	Update perspective to match scaling
+
+	Matrix Projections = ProjectionMatrix(Observer) * ScalingMatrix(1.f / WindowDim.x, 1.f / WindowDim.y, 1.f) * Scale;
+	cbuff.perspective = Projections.transpose().getMatrix4();
+	cbuff.traslation = Center.getVector4();
+
+	GFX_THROW_INFO_ONLY(pContext->UpdateSubresource(pPerspective.Get(), 0u, NULL, &cbuff, 0u, 0u));
 }
 
 Vector2i Graphics::getWindowDimensions()
@@ -201,10 +209,9 @@ Vector2i Graphics::getWindowDimensions()
 
 void Graphics::updatePerspective(Vector3f obs, Vector3f center, float scale)
 {
-	struct {
-		_float4matrix perspective;
-		_float4vector traslation;
-	}cbuff;
+	Observer = obs;
+	Center = center;
+	Scale = scale;
 
 	Matrix Projections = ProjectionMatrix(obs) * ScalingMatrix(1.f / WindowDim.x, 1.f / WindowDim.y, 1.f) * scale;
 	cbuff.perspective = Projections.transpose().getMatrix4();

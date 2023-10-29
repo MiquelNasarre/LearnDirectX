@@ -1,8 +1,6 @@
 #pragma once
 
 #include "Window.h"
-#include "Drawable/Triangle.h"
-#include "Drawable/Sphere.h"
 #include "Drawable/Surface.h"
 #include "Drawable/Background.h"
 
@@ -15,10 +13,9 @@ struct IG_DATA {
 	static float THETA;
 	static float PHI;
 	static float FOV;
-	static int TEXTURE_EARTH;
-	static int TEXTURE_MOON;
-	static int TEXTURE_BACKGROUND;
+
 	static int UPDATE_LIGHT;
+	static Vector2i UPDATE_TEXTURE;
 
 	struct lightsource {
 		bool is_on;
@@ -28,10 +25,10 @@ struct IG_DATA {
 	};
 
 	static lightsource* LIGHTS;
-	
+
 };
 
-class App {
+class EarthDemo {
 
 private:
 	Window window;
@@ -65,13 +62,8 @@ private:
 	Surface Moon;
 	Background back;
 
-	int earthtex = 0;
-	int moontex  = 0;
-	int backtex  = 0;
-
-
 public:
-	App();
+	EarthDemo();
 
 	int Run();
 
@@ -82,16 +74,6 @@ public:
 
 //	Surface functions
 
-float SincFunction(float, float);
+float EarthRadius(float, float);
 
-float constantRadius(float, float);
-
-float constantRadius03(float, float);
-
-float weirdRadius(float, float);
-
-float returnX(float, float);
- 
-float returnY(float, float);
-
-float sphere(float, float, float);
+float MoonRadius(float, float);
