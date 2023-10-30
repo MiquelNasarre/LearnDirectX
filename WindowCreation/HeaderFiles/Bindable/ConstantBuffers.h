@@ -1,8 +1,11 @@
 #pragma once
 #include "Bindable.h"
 
-#define VERTEX_CONSTANT_BUFFER_TYPE 0
-#define PIXEL_CONSTANT_BUFFER_TYPE  1
+enum TYPE_ConstBuffer {
+ VERTEX_CONSTANT_BUFFER_TYPE,
+ PIXEL_CONSTANT_BUFFER_TYPE
+};
+
 
 #define CONSTANT_BUFFER_DEFAULT_SLOT -1
 
@@ -12,13 +15,13 @@ class ConstantBuffer : public Bindable
 public:
 	void Update(Graphics& gfx, const C& consts);
 	void Update(Graphics& gfx, const C* consts);
-	ConstantBuffer(Graphics& gfx, const C& consts, const unsigned char type, const int slot = CONSTANT_BUFFER_DEFAULT_SLOT);
-	ConstantBuffer(Graphics& gfx, unsigned char type, const int slot = CONSTANT_BUFFER_DEFAULT_SLOT);
+	ConstantBuffer(Graphics& gfx, const C& consts, TYPE_ConstBuffer type, const int slot = CONSTANT_BUFFER_DEFAULT_SLOT);
+	ConstantBuffer(Graphics& gfx, TYPE_ConstBuffer type, const int slot = CONSTANT_BUFFER_DEFAULT_SLOT);
 	void Bind(Graphics& gfx) override;
 
 private:
 	pCom<ID3D11Buffer> pConstantBuffer;
-	const unsigned char Type;
+	TYPE_ConstBuffer Type;
 	UINT Slot;
 };
 
@@ -41,7 +44,7 @@ void ConstantBuffer<C>::Update(Graphics& gfx, const C* consts)
 }
 
 template<typename C>
-ConstantBuffer<C>::ConstantBuffer(Graphics& gfx, const C& consts, const unsigned char type, const int slot)
+ConstantBuffer<C>::ConstantBuffer(Graphics& gfx, const C& consts, TYPE_ConstBuffer type, const int slot)
 	:Type{ type }
 {
 	//INFOMAN(gfx);
@@ -70,7 +73,7 @@ ConstantBuffer<C>::ConstantBuffer(Graphics& gfx, const C& consts, const unsigned
 }
 
 template<typename C>
-ConstantBuffer<C>::ConstantBuffer(Graphics& gfx, unsigned char type, const int slot)
+ConstantBuffer<C>::ConstantBuffer(Graphics& gfx, TYPE_ConstBuffer type, const int slot)
 	:Type{ type }
 {
 	//INFOMAN(gfx);

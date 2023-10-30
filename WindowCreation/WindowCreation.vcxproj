@@ -189,7 +189,8 @@
   <ItemGroup>
     <ClCompile Include="SourceFiles\Apps\Fourier.cpp" />
     <ClCompile Include="SourceFiles\Apps\EarthDemo.cpp" />
-    <ClCompile Include="SourceFiles\Bindable\Bindable.cpp" />
+    <ClCompile Include="SourceFiles\Apps\Tester.cpp" />
+    <ClCompile Include="SourceFiles\Bindable.cpp" />
     <ClCompile Include="SourceFiles\Bindable\ConstantBuffers.cpp" />
     <ClCompile Include="SourceFiles\Bindable\IndexBuffer.cpp" />
     <ClCompile Include="SourceFiles\Bindable\InputLayout.cpp" />
@@ -201,16 +202,19 @@
     <ClCompile Include="SourceFiles\Bindable\VertexShader.cpp" />
     <ClCompile Include="SourceFiles\Drawable.cpp" />
     <ClCompile Include="SourceFiles\Drawable\Background.cpp" />
+    <ClCompile Include="SourceFiles\Drawable\Curve.cpp" />
+    <ClCompile Include="SourceFiles\Drawable\PointLight.cpp" />
     <ClCompile Include="SourceFiles\Drawable\Surface.cpp" />
     <ClCompile Include="SourceFiles\Drawable\Sphere.cpp" />
     <ClCompile Include="SourceFiles\Drawable\Triangle.cpp" />
-    <ClCompile Include="SourceFiles\DxgiInfoManager.cpp" />
-    <ClCompile Include="SourceFiles\Exception.cpp" />
+    <ClCompile Include="SourceFiles\Exception\DxgiInfoManager.cpp" />
+    <ClCompile Include="SourceFiles\Exception\Exception.cpp" />
+    <ClCompile Include="SourceFiles\Exception\_exFunc.cpp" />
     <ClCompile Include="SourceFiles\iGManager.cpp" />
     <ClCompile Include="SourceFiles\ImGui\IG_EarthDemo.cpp" />
     <ClCompile Include="SourceFiles\ImGui\IG_Fouier.cpp" />
-    <ClCompile Include="SourceFiles\_exFunc.cpp" />
     <ClCompile Include="SourceFiles\Graphics.cpp" />
+    <ClCompile Include="SourceFiles\ImGui\IG_Tester.cpp" />
     <ClCompile Include="SourceFiles\Keyboard.cpp" />
     <ClCompile Include="SourceFiles\Mouse.cpp" />
     <ClCompile Include="SourceFiles\Timer.cpp" />
@@ -220,7 +224,8 @@
   <ItemGroup>
     <ClInclude Include="HeaderFiles\Apps\Fourier.h" />
     <ClInclude Include="HeaderFiles\Apps\EarthDemo.h" />
-    <ClInclude Include="HeaderFiles\Bindable\Bindable.h" />
+    <ClInclude Include="HeaderFiles\Apps\Tester.h" />
+    <ClInclude Include="HeaderFiles\Bindable.h" />
     <ClInclude Include="HeaderFiles\Bindable\BindableBase.h" />
     <ClInclude Include="HeaderFiles\Bindable\ConstantBuffers.h" />
     <ClInclude Include="HeaderFiles\Bindable\IndexBuffer.h" />
@@ -233,17 +238,20 @@
     <ClInclude Include="HeaderFiles\Bindable\VertexShader.h" />
     <ClInclude Include="HeaderFiles\Drawable.h" />
     <ClInclude Include="HeaderFiles\Drawable\Background.h" />
+    <ClInclude Include="HeaderFiles\Drawable\Curve.h" />
+    <ClInclude Include="HeaderFiles\Drawable\PointLight.h" />
     <ClInclude Include="HeaderFiles\Drawable\Surface.h" />
     <ClInclude Include="HeaderFiles\Drawable\Sphere.h" />
     <ClInclude Include="HeaderFiles\Drawable\Triangle.h" />
-    <ClInclude Include="HeaderFiles\DxgiInfoManager.h" />
-    <ClInclude Include="HeaderFiles\Exception.h" />
-    <ClInclude Include="HeaderFiles\ExceptionMacros.h" />
+    <ClInclude Include="HeaderFiles\Exception\DxgiInfoManager.h" />
+    <ClInclude Include="HeaderFiles\Exception\Exception.h" />
+    <ClInclude Include="HeaderFiles\Exception\ExceptionMacros.h" />
     <ClInclude Include="HeaderFiles\Graphics.h" />
     <ClInclude Include="HeaderFiles\Header.h" />
     <ClInclude Include="HeaderFiles\iGManager.h" />
     <ClInclude Include="HeaderFiles\ImGui\IG_EarthDemo.h" />
     <ClInclude Include="HeaderFiles\ImGui\IG_Fourier.h" />
+    <ClInclude Include="HeaderFiles\ImGui\IG_Tester.h" />
     <ClInclude Include="HeaderFiles\Keyboard.h" />
     <ClInclude Include="HeaderFiles\Mouse.h" />
     <ClInclude Include="HeaderFiles\Timer.h" />
@@ -266,6 +274,34 @@
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectDir)Shaders/%(Filename).cso</ObjectFileOutput>
     </FxCompile>
     <FxCompile Include="Shaders\BackgroundVS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4.0</ShaderModel>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectDir)Shaders/%(Filename).cso</ObjectFileOutput>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4.0</ShaderModel>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProjectDir)Shaders/%(Filename).cso</ObjectFileOutput>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectDir)Shaders/%(Filename).cso</ObjectFileOutput>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectDir)Shaders/%(Filename).cso</ObjectFileOutput>
+    </FxCompile>
+    <FxCompile Include="Shaders\CurvePS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4.0</ShaderModel>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectDir)Shaders/%(Filename).cso</ObjectFileOutput>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4.0</ShaderModel>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProjectDir)Shaders/%(Filename).cso</ObjectFileOutput>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectDir)Shaders/%(Filename).cso</ObjectFileOutput>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectDir)Shaders/%(Filename).cso</ObjectFileOutput>
+    </FxCompile>
+    <FxCompile Include="Shaders\CurveVS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
@@ -319,6 +355,34 @@
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectDir)Shaders/%(Filename).cso</ObjectFileOutput>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectDir)Shaders/%(Filename).cso</ObjectFileOutput>
+    </FxCompile>
+    <FxCompile Include="Shaders\PointLightPS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4.0</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4.0</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectDir)Shaders/%(Filename).cso</ObjectFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProjectDir)Shaders/%(Filename).cso</ObjectFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectDir)Shaders/%(Filename).cso</ObjectFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectDir)Shaders/%(Filename).cso</ObjectFileOutput>
+    </FxCompile>
+    <FxCompile Include="Shaders\PointLightVS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4.0</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4.0</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectDir)Shaders/%(Filename).cso</ObjectFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProjectDir)Shaders/%(Filename).cso</ObjectFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectDir)Shaders/%(Filename).cso</ObjectFileOutput>
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectDir)Shaders/%(Filename).cso</ObjectFileOutput>
     </FxCompile>
     <FxCompile Include="Shaders\SpherePS.hlsl">

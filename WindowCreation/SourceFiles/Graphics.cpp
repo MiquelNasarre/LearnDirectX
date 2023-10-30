@@ -3,7 +3,7 @@
 
 #include "iGManager.h"
 
-#include "ExceptionMacros.h"
+#include "Exception/ExceptionMacros.h"
 
 //	Graphics stuff
 
@@ -223,4 +223,19 @@ void Graphics::updatePerspective(Vector3f obs, Vector3f center, float scale)
 void Graphics::drawIndexed(UINT IndexCount)
 {
 	GFX_THROW_INFO_ONLY(pContext->DrawIndexed(IndexCount, 0u, 0u));
+}
+
+Vector3f Graphics::getObserver()
+{
+	return Observer;
+}
+
+Vector3f Graphics::getCenter()
+{
+	return Center;
+}
+
+float Graphics::getScale()
+{
+	return Scale;
 }

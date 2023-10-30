@@ -1,5 +1,5 @@
 #include "Bindable/Sampler.h"
-#include "ExceptionMacros.h"
+#include "Exception/ExceptionMacros.h"
 
 Sampler::Sampler(Graphics& gfx, D3D11_FILTER filter)
 {

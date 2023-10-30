@@ -69,18 +69,6 @@
     <ClCompile Include="SourceFiles\Graphics.cpp">
       <Filter>Sources\Private</Filter>
     </ClCompile>
-    <ClCompile Include="SourceFiles\Exception.cpp">
-      <Filter>Sources\Private\Exception</Filter>
-    </ClCompile>
-    <ClCompile Include="SourceFiles\DxgiInfoManager.cpp">
-      <Filter>Sources\Private\Exception</Filter>
-    </ClCompile>
-    <ClCompile Include="SourceFiles\_exFunc.cpp">
-      <Filter>Sources\Private\Exception</Filter>
-    </ClCompile>
-    <ClCompile Include="SourceFiles\Bindable\Bindable.cpp">
-      <Filter>Sources\Private\Bindable</Filter>
-    </ClCompile>
     <ClCompile Include="SourceFiles\Bindable\IndexBuffer.cpp">
       <Filter>Sources\Private\Bindable</Filter>
     </ClCompile>
@@ -138,6 +126,30 @@
     <ClCompile Include="SourceFiles\ImGui\IG_Fouier.cpp">
       <Filter>Sources\Private\ImGui</Filter>
     </ClCompile>
+    <ClCompile Include="SourceFiles\Exception\_exFunc.cpp">
+      <Filter>Sources\Private\Exception</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceFiles\Exception\DxgiInfoManager.cpp">
+      <Filter>Sources\Private\Exception</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceFiles\Exception\Exception.cpp">
+      <Filter>Sources\Private\Exception</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceFiles\Bindable.cpp">
+      <Filter>Sources\Private</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceFiles\Drawable\PointLight.cpp">
+      <Filter>Sources\Private\Drawable</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceFiles\Drawable\Curve.cpp">
+      <Filter>Sources\Private\Drawable</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceFiles\Apps\Tester.cpp">
+      <Filter>Sources\Private\Apps</Filter>
+    </ClCompile>
+    <ClCompile Include="SourceFiles\ImGui\IG_Tester.cpp">
+      <Filter>Sources\Private\ImGui</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="HeaderFiles\Header.h">
@@ -157,18 +169,6 @@
     </ClInclude>
     <ClInclude Include="HeaderFiles\Graphics.h">
       <Filter>Sources\Public</Filter>
-    </ClInclude>
-    <ClInclude Include="HeaderFiles\DxgiInfoManager.h">
-      <Filter>Sources\Public\Exception</Filter>
-    </ClInclude>
-    <ClInclude Include="HeaderFiles\Exception.h">
-      <Filter>Sources\Public\Exception</Filter>
-    </ClInclude>
-    <ClInclude Include="HeaderFiles\ExceptionMacros.h">
-      <Filter>Sources\Public\Exception</Filter>
-    </ClInclude>
-    <ClInclude Include="HeaderFiles\Bindable\Bindable.h">
-      <Filter>Sources\Public\Bindable</Filter>
     </ClInclude>
     <ClInclude Include="HeaderFiles\Bindable\ConstantBuffers.h">
       <Filter>Sources\Public\Bindable</Filter>
@@ -206,9 +206,6 @@
     <ClInclude Include="HeaderFiles\Drawable.h">
       <Filter>Sources\Public</Filter>
     </ClInclude>
-    <ClInclude Include="Resources\ResourceFiles\resource.h">
-      <Filter>Sources\Public</Filter>
-    </ClInclude>
     <ClInclude Include="HeaderFiles\Bindable\Texture.h">
       <Filter>Sources\Public\Bindable</Filter>
     </ClInclude>
@@ -231,6 +228,33 @@
       <Filter>Sources\Public\Apps</Filter>
     </ClInclude>
     <ClInclude Include="HeaderFiles\ImGui\IG_Fourier.h">
+      <Filter>Sources\Public\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="HeaderFiles\Bindable.h">
+      <Filter>Sources\Public</Filter>
+    </ClInclude>
+    <ClInclude Include="Resources\ResourceFiles\resource.h">
+      <Filter>Resources</Filter>
+    </ClInclude>
+    <ClInclude Include="HeaderFiles\Exception\DxgiInfoManager.h">
+      <Filter>Sources\Public\Exception</Filter>
+    </ClInclude>
+    <ClInclude Include="HeaderFiles\Exception\Exception.h">
+      <Filter>Sources\Public\Exception</Filter>
+    </ClInclude>
+    <ClInclude Include="HeaderFiles\Exception\ExceptionMacros.h">
+      <Filter>Sources\Public\Exception</Filter>
+    </ClInclude>
+    <ClInclude Include="HeaderFiles\Drawable\PointLight.h">
+      <Filter>Sources\Public\Drawable</Filter>
+    </ClInclude>
+    <ClInclude Include="HeaderFiles\Drawable\Curve.h">
+      <Filter>Sources\Public\Drawable</Filter>
+    </ClInclude>
+    <ClInclude Include="HeaderFiles\Apps\Tester.h">
+      <Filter>Sources\Public\Apps</Filter>
+    </ClInclude>
+    <ClInclude Include="HeaderFiles\ImGui\IG_Tester.h">
       <Filter>Sources\Public\ImGui</Filter>
     </ClInclude>
   </ItemGroup>
@@ -272,6 +296,18 @@
       <Filter>Shaders</Filter>
     </FxCompile>
     <FxCompile Include="Shaders\DyBgMercatorPS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\PointLightPS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\PointLightVS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\CurveVS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\CurvePS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
   </ItemGroup>

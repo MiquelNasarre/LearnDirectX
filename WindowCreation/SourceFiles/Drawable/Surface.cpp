@@ -366,6 +366,12 @@ void Surface::updateLight(Graphics& gfx, UINT id, _float4vector intensity, _floa
 	pPSCB->Update(gfx, pscBuff);
 }
 
+void Surface::clearLights(Graphics& gfx)
+{
+	pscBuff = {};
+	pPSCB->Update(gfx, pscBuff);
+}
+
 //	Private
 
 void Surface::generateExplicit(Graphics& gfx, float F(float, float), Vector2f minRect, Vector2f maxRect, UINT numX, UINT numY, bool Textured)

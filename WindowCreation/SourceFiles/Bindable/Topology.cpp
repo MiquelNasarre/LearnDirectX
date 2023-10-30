@@ -1,5 +1,5 @@
 #include "Bindable/Topology.h"
-#include "ExceptionMacros.h"
+#include "Exception/ExceptionMacros.h"
 
 Topology::Topology(D3D11_PRIMITIVE_TOPOLOGY type)
 	: type(type)

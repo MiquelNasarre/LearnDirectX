@@ -1,11 +1,12 @@
 #include "Apps/EarthDemo.h"
 #include "Apps/Fourier.h"
+#include "Apps/Tester.h"
 
 int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
 	try {
 
-		return Fourier().Run();
+		return Tester().Run();
 
 	}
 	catch (const ExceptionClass& exc) {

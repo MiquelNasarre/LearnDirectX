@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Exception.h"
+#include "Exception/Exception.h"
 #include "Timer.h"
 #include "Graphics.h"
 
@@ -59,7 +59,7 @@ private:
 	Timer timer;
 
 public:
-	Window(int width, int height, const char* name);
+	Window(int width, int height, const char* Title, const char* IconFilename = "", bool darkTheme = true);
 	~Window();
 	Window(const Window&) = delete;
 	Window& operator=(const Window&) = delete;

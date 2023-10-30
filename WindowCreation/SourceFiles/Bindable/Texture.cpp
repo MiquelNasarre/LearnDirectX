@@ -1,6 +1,5 @@
 #include "Bindable/Texture.h"
-#include "ExceptionMacros.h"
-#include "resource.h"
+#include "Exception/ExceptionMacros.h"
 #include "FreeImage.h"
 
 Texture::Texture(Graphics& gfx, std::string filename, UINT slot) : Slot{ slot }

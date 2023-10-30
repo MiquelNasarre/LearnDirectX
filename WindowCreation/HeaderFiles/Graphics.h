@@ -1,10 +1,10 @@
 #pragma once
 
 #include "Header.h"
-#include "Exception.h"
+#include "Exception/Exception.h"
 #include <d3d11.h>
 #include <wrl.h>
-#include "DxgiInfoManager.h"
+#include "Exception/DxgiInfoManager.h"
 
 #define pCom Microsoft::WRL::ComPtr
 
@@ -65,6 +65,10 @@ public:
 	Vector2i getWindowDimensions();
 	void updatePerspective(Vector3f obs, Vector3f center, float scale);
 	void drawIndexed(UINT IndexCount);
+
+	Vector3f getObserver();
+	Vector3f getCenter();
+	float getScale();
 
 private:
 	HWND HWnd;

@@ -18,25 +18,25 @@ Vector2i IG_DATA::UPDATE_TEXTURE = Vector2i(-1, -1);
 IG_DATA::lightsource* IG_DATA::LIGHTS = (IG_DATA::lightsource*)calloc(sizeof(IG_DATA::lightsource), 8);
 
 EarthDemo::EarthDemo()
-	: window(640, 480, "Hello World"),
+	: window(640, 480, "Hello World", "", true),
 
-	TexEarth(window.graphics,			"Resources/EarthDemo/earthTextures/default.jpg"),
-	TexNEarth(window.graphics,			"Resources/EarthDemo/earthTextures/defaultNight.jpg"),
-	TexEarthInverted(window.graphics,	"Resources/EarthDemo/earthTextures/inverted.jpg"),
-	TexNEarthInverted(window.graphics,	"Resources/EarthDemo/earthTextures/invertedNight.jpg"),
-	TexEarthChalked(window.graphics,	"Resources/EarthDemo/earthTextures/chalked.jpg"),
-	TexNEarthChalked(window.graphics,	"Resources/EarthDemo/earthTextures/chalkedNight.jpg"),
-	TexMoon(window.graphics,			"Resources/EarthDemo/moonTextures/default.jpg"),
-	TexMoonInverted(window.graphics,	"Resources/EarthDemo/moonTextures/inverted.jpg"),
-	TexMoonChalked(window.graphics,		"Resources/EarthDemo/moonTextures/chalked.jpg"),
-	TexBack(window.graphics,			"Resources/EarthDemo/nightSky/highperformance.jpg"),
-	TexBackInverted(window.graphics,	"Resources/EarthDemo/nightSky/inverted.jpg"),
-	TexBackEarth(window.graphics,		"Resources/EarthDemo/earthTextures/projected.jpg"),
-	TexBackMoon(window.graphics,		"Resources/EarthDemo/moonTextures/projected.jpg"),
+	TexEarth			(window.graphics,	"Resources/EarthDemo/earthTextures/default.jpg"			),
+	TexNEarth			(window.graphics,	"Resources/EarthDemo/earthTextures/defaultNight.jpg"	),
+	TexEarthInverted	(window.graphics,	"Resources/EarthDemo/earthTextures/inverted.jpg"		),
+	TexNEarthInverted	(window.graphics,	"Resources/EarthDemo/earthTextures/invertedNight.jpg"	),
+	TexEarthChalked		(window.graphics,	"Resources/EarthDemo/earthTextures/chalked.jpg"			),
+	TexNEarthChalked	(window.graphics,	"Resources/EarthDemo/earthTextures/chalkedNight.jpg"	),
+	TexMoon				(window.graphics,	"Resources/EarthDemo/moonTextures/default.jpg"			),
+	TexMoonInverted		(window.graphics,	"Resources/EarthDemo/moonTextures/inverted.jpg"			),
+	TexMoonChalked		(window.graphics,	"Resources/EarthDemo/moonTextures/chalked.jpg"			),
+	TexBack				(window.graphics,	"Resources/EarthDemo/nightSky/highperformance.jpg"		),
+	TexBackInverted		(window.graphics,	"Resources/EarthDemo/nightSky/inverted.jpg"				),
+	TexBackEarth		(window.graphics,	"Resources/EarthDemo/earthTextures/projected.jpg"		),
+	TexBackMoon			(window.graphics,	"Resources/EarthDemo/moonTextures/projected.jpg"		),
 
-	Earth(window.graphics, _RADIAL_SPHERICAL, EarthRadius, TexEarth, TexNEarth),
-	Moon(window.graphics, _RADIAL_SPHERICAL, MoonRadius, TexMoon, TexMoon),
-	back(window.graphics, TexBack, true, PT_AZIMUTHAL)
+	Earth	(window.graphics, _RADIAL_SPHERICAL, EarthRadius, TexEarth, TexNEarth),
+	Moon	(window.graphics, _RADIAL_SPHERICAL, MoonRadius, TexMoon, TexMoon),
+	back	(window.graphics, TexBack, true, PT_AZIMUTHAL)
 {
 
 	IG_DATA::LIGHTS[0].is_on = true;
@@ -44,7 +44,6 @@ EarthDemo::EarthDemo()
 	IG_DATA::LIGHTS[0].intensities = { 32000.f,5000.f };
 	IG_DATA::LIGHTS[0].position = { 160.f,0.f,60.f };
 
-	window.setDarkTheme(true);
 	window.setFramerateLimit(60);
 	timer.reset();
 }

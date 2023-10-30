@@ -8,7 +8,7 @@
 
 #include "iGManager.h"
 
-#include "ExceptionMacros.h"
+#include "Exception/ExceptionMacros.h"
 
 // Window Class Stuff
 
@@ -26,7 +26,7 @@ Window::WindowClass::WindowClass() noexcept
 	wc.cbClsExtra = 0;
 	wc.cbWndExtra = 0;
 	wc.hInstance = GetInstance();
-	wc.hIcon = static_cast<HICON>(LoadImage(hInst, MAKEINTRESOURCE(IDI_ICON1), IMAGE_ICON, 51, 51, 0));
+	wc.hIcon = static_cast<HICON>(LoadImage(hInst, MAKEINTRESOURCE(IDI_ICON1), IMAGE_ICON, 51, 51, LR_SHARED));
 	wc.hCursor = LoadCursor(NULL, IDC_ARROW);
 	wc.hbrBackground = nullptr;
 	wc.lpszMenuName = nullptr;
@@ -72,10 +72,10 @@ void Window::handleFramerate()
 	frame = timer.mark();
 }
 
-Window::Window(int width, int height, const char* name)
+Window::Window(int width, int height, const char* Title, const char* IconFilename, bool darkTheme)
 	: Dimensions{ Vector2i(width,height) }, timer(true)
 {
-	Name = name;
+	Name = Title;
 
 	//	Calculate window size based on desired client region size
 
@@ -109,9 +109,13 @@ Window::Window(int width, int height, const char* name)
 	if (!hWnd)
 		throw CHWND_LAST_EXCEPT();
 
-	//	Set title
+	//	Set title & icon & theme
 
-	setTitle(Name);
+	setTitle(Title);
+	if (IconFilename[0])
+		setIcon(IconFilename);
+	if (darkTheme)
+		setDarkTheme(TRUE);
 
 	//	Initialize Keyboard & mouse & ...
 
@@ -268,7 +272,7 @@ void Window::setTitle(std::string name)
 
 void Window::setIcon(std::string filename)
 {
-	HANDLE hIcon = LoadImageA(0, filename.c_str(), IMAGE_ICON, 0, 0, LR_DEFAULTSIZE | LR_LOADFROMFILE);
+	HANDLE hIcon = LoadImageA(0, filename.c_str(), IMAGE_ICON, 0, 0, LR_DEFAULTSIZE | LR_LOADFROMFILE | LR_SHARED);
 	if (hIcon) {
 		//	Change both icons to the same icon handle
 		SendMessage(hWnd, WM_SETICON, ICON_SMALL, (LPARAM)hIcon);

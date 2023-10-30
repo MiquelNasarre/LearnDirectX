@@ -13,7 +13,8 @@ enum SURFACE_TYPE {
 	_IMPLICIT_SPHERICAL
 };
 
-class Surface : public Drawable {
+class Surface : public Drawable
+{
 public:
 	//	Explicit & Radial spherical
 
@@ -46,6 +47,7 @@ public:
 	void updateTextures(Graphics& gfx, std::string texture0, std::string texture1);
 	void updateLight(Graphics& gfx, UINT id, Vector2f intensity, Color color, Vector3f position);
 	void updateLight(Graphics& gfx, UINT id, _float4vector intensity, _float4color color, _float4vector position);
+	void clearLights(Graphics& gfx);
 
 private:
 	void generateExplicit(Graphics& gfx, float F(float, float), Vector2f minRect, Vector2f maxRect, UINT numX, UINT numY, bool Textured = false);

@@ -1,5 +1,5 @@
 #include "Bindable/IndexBuffer.h"
-#include "ExceptionMacros.h"
+#include "Exception/ExceptionMacros.h"
 
 IndexBuffer::IndexBuffer(Graphics& gfx,const std::vector<unsigned short>& indices)
 	: count{ (UINT)indices.size() }

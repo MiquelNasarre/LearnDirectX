@@ -2,8 +2,8 @@
 #include "Mouse.h"
 #include "Keyboard.h"
 #include "Window.h"
-#include "Exception.h"
-#include "DxgiInfoManager.h"
+#include "Exception/Exception.h"
+#include "Exception/DxgiInfoManager.h"
 #include "dxerr.h"
 
 //	GRAPHICS exception functions

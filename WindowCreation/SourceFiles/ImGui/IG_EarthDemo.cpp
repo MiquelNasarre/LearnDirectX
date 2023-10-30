@@ -62,7 +62,11 @@ void IG_EarthDemo::render()
 
 	//	Add all imGui functionalities here
 
-	if (ImGui::Begin("Settings", NULL, ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize)) {
+	if (ImGui::Begin("Settings", NULL, ImGuiWindowFlags_MenuBar)) {
+
+	ImGui::SetWindowCollapsed(true, ImGuiCond_Once);
+	ImGui::SetWindowSize(ImVec2(616, 258), ImGuiCond_Once);
+	ImGui::SetWindowPos(ImVec2(2, 2), ImGuiCond_Once);
 
 		if (ImGui::BeginMenuBar())
 		{
@@ -148,6 +152,7 @@ void IG_EarthDemo::render()
 					IG_DATA::LIGHTS[0].intensities = { 32000.f,5000.f };
 					IG_DATA::LIGHTS[0].position = { 160.f,0.f,60.f };
 					IG_DATA::UPDATE_LIGHT = -2;
+					light = -1;
 				}
 
 				ImGui::EndMenu();

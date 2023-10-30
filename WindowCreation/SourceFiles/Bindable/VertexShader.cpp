@@ -1,5 +1,5 @@
 #include "Bindable/VertexShader.h"
-#include "ExceptionMacros.h"
+#include "Exception/ExceptionMacros.h"
 
 #include <d3dcompiler.h>
 
