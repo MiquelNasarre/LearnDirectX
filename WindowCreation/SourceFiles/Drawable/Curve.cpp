@@ -1,5 +1,7 @@
 #include "Drawable/Curve.h"
 
+//	Constructors
+
 Curve::Curve(Graphics& gfx, Vector3f F(float), Vector2f rangeT, UINT Npoints, Color color)
 {
 	std::vector<Vertex> vertexs;
@@ -15,6 +17,114 @@ Curve::Curve(Graphics& gfx, Vector3f F(float), Vector2f rangeT, UINT Npoints, Co
 	AddBind(std::make_unique<VertexBuffer>(gfx, vertexs));
 	AddBind(std::make_unique<IndexBuffer>(gfx, indexs));
 
+	addDefaultBinds(gfx);
+}
+
+Curve::Curve(Graphics& gfx, Vector3f F(float), Vector2f rangeT, UINT Npoints, std::vector<Color> colors)
+{
+	if (!colors.size())
+		throw std::exception("The color vector for a curve must have at least one color!!");
+
+	std::vector<Vertex> vertexs;
+
+	for (UINT i = 0; i <= Npoints; i++) {
+		float c = (colors.size() - 1) * float(i) / Npoints;
+		UINT C0 = UINT(c);
+		UINT C1 = (C0 + 1) % colors.size();
+		c -= C0;
+
+		vertexs.push_back(Vertex(
+			F(rangeT.x + float(i) / Npoints * (rangeT.y - rangeT.x)).getVector4(),
+			(colors[C0] * (1 - c) + colors[C1] * c).getColor4()
+		));
+	}
+
+
+	std::vector<unsigned short> indexs;
+
+	for (UINT i = 0; i <= Npoints; i++)
+		indexs.push_back(i);
+
+	AddBind(std::make_unique<VertexBuffer>(gfx, vertexs));
+	AddBind(std::make_unique<IndexBuffer>(gfx, indexs));
+
+	addDefaultBinds(gfx);
+}
+
+Curve::Curve(Graphics& gfx, float X(float), float Y(float), float Z(float), Vector2f rangeT, UINT Npoints, Color color)
+{
+	std::vector<Vertex> vertexs;
+
+	for (UINT i = 0; i <= Npoints; i++)
+		vertexs.push_back(Vertex(
+			Vector3f(
+				X(rangeT.x + float(i) / Npoints * (rangeT.y - rangeT.x)), 
+				Y(rangeT.x + float(i) / Npoints * (rangeT.y - rangeT.x)), 
+				Z(rangeT.x + float(i) / Npoints * (rangeT.y - rangeT.x))
+			).getVector4(),
+
+			color.getColor4()
+		));
+
+	std::vector<unsigned short> indexs;
+
+	for (UINT i = 0; i <= Npoints; i++)
+		indexs.push_back(i);
+
+	AddBind(std::make_unique<VertexBuffer>(gfx, vertexs));
+	AddBind(std::make_unique<IndexBuffer>(gfx, indexs));
+
+	addDefaultBinds(gfx);
+}
+
+Curve::Curve(Graphics& gfx, float X(float), float Y(float), float Z(float), Vector2f rangeT, UINT Npoints, std::vector<Color> colors)
+{
+	if (!colors.size())
+		throw std::exception("The color vector for a curve must have at least one color!!");
+
+	std::vector<Vertex> vertexs;
+
+	for (UINT i = 0; i <= Npoints; i++) {
+		float c = (colors.size() - 1) * float(i) / Npoints;
+		UINT C0 = UINT(c);
+		UINT C1 = (C0 + 1) % colors.size();
+		c -= C0;
+
+		vertexs.push_back(Vertex(
+			Vector3f(
+				X(rangeT.x + float(i) / Npoints * (rangeT.y - rangeT.x)),
+				Y(rangeT.x + float(i) / Npoints * (rangeT.y - rangeT.x)),
+				Z(rangeT.x + float(i) / Npoints * (rangeT.y - rangeT.x))
+			).getVector4(),
+
+			(colors[C0] * (1 - c) + colors[C1] * c).getColor4()
+		));
+	}
+
+	std::vector<unsigned short> indexs;
+
+	for (UINT i = 0; i <= Npoints; i++)
+		indexs.push_back(i);
+
+	AddBind(std::make_unique<VertexBuffer>(gfx, vertexs));
+	AddBind(std::make_unique<IndexBuffer>(gfx, indexs));
+
+	addDefaultBinds(gfx);
+}
+
+//	Public
+
+void Curve::updateRotation(Graphics& gfx, float rotationZ, float rotationX, Vector3f position)
+{
+	vscBuff.rotattion = (ZRotationMatrix(rotationZ) * XRotationMatrix(rotationX)).transpose().getMatrix4();
+	vscBuff.traslation = position.getVector4();
+	pVSCB->Update(gfx, vscBuff);
+}
+
+//	Private
+
+void Curve::addDefaultBinds(Graphics& gfx)
+{
 	auto pvs = (VertexShader*)AddBind(std::move(std::make_unique<VertexShader>(gfx, L"Shaders/CurveVS.cso")));
 	AddBind(std::make_unique<PixelShader>(gfx, L"Shaders/CurvePS.cso"));
 
@@ -33,11 +143,4 @@ Curve::Curve(Graphics& gfx, Vector3f F(float), Vector2f rangeT, UINT Npoints, Co
 	};
 
 	pVSCB = (ConstantBuffer<VSconstBuffer>*)AddBind(std::make_unique<ConstantBuffer<VSconstBuffer>>(gfx, vscBuff, VERTEX_CONSTANT_BUFFER_TYPE));
-}
-
-void Curve::updateRotation(Graphics& gfx, float rotationZ, float rotationX, Vector3f position)
-{
-	vscBuff.rotattion = (ZRotationMatrix(rotationZ) * XRotationMatrix(rotationX)).transpose().getMatrix4();
-	vscBuff.traslation = position.getVector4();
-	pVSCB->Update(gfx, vscBuff);
 }

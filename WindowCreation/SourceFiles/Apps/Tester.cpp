@@ -10,7 +10,7 @@ Tester::Tester()
 	:window(640, 480, "Plotter"),
 	surf(window.graphics, _RADIAL_SPHERICAL, weirdRadius),
 	light(window.graphics, Color::Black, { 3.f , 0.f , 2.f }, 1.f),
-	curve(window.graphics, curveF, { -10,10 }, 200)
+	curve(window.graphics, curveF, { 0.f ,2*pi }, 1000, { Color::Red / 3, Color::Yellow / 3, Color::Green / 3, Color::Cyan / 3, Color::Blue / 3, Color::Purple / 3, Color::Red / 3 })
 {
 	window.setFramerateLimit(60);
 	srand(143452);
@@ -76,6 +76,7 @@ void Tester::doFrame()
 {
 	eventManager();
 
+	window.setTitle("Plotter - " + std::to_string(int(window.getFramerate())) + "fps");
 	window.graphics.clearBuffer(Color::Black);
 
 	window.graphics.updatePerspective({ -cosf(IG_DATA_TESTER::PHI) * cosf(IG_DATA_TESTER::THETA), -cosf(IG_DATA_TESTER::PHI) * sinf(IG_DATA_TESTER::THETA), -sinf(IG_DATA_TESTER::PHI) }, center, scale);
@@ -104,7 +105,26 @@ void Tester::doFrame()
 
 Vector3f curveF(float t)
 {
-	return Vector3f(cosf(t), sinf(t), t/5.f);
+	Vector3f axis = { 5.f * cosf(t) , 5.f * sinf(t) , 0.f };
+	Vector3f V = (axis * Vector3f(0, 0, 1)).normalize();
+	Vector3f X = -axis/axis.abs();
+	Vector3f Y = X * V;
+	return axis + X*cosf(20*t) + Y*sinf(20*t);
+}
+
+float curveX(float t)
+{
+	return cosf(t);
+}
+
+float curveY(float t)
+{
+	return sinf(t);
+}
+
+float curveZ(float t)
+{
+	return t / 5.f;
 }
 
 float SincFunction(float x, float y)

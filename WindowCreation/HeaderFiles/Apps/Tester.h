@@ -45,6 +45,12 @@ public:
 
 Vector3f curveF(float);
 
+float curveX(float);
+
+float curveY(float);
+
+float curveZ(float);
+
 float SincFunction(float, float);
 
 float constantRadius(float, float);
