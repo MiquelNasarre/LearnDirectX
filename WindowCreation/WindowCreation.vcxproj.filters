@@ -37,225 +37,174 @@
     <Filter Include="Sources\Public\Drawable">
       <UniqueIdentifier>{e78ba6a6-4008-4009-af5f-d33a3c788151}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Sources\Private\Apps">
-      <UniqueIdentifier>{56e1fb75-3b47-4c2a-b079-af828c344958}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Sources\Public\Apps">
-      <UniqueIdentifier>{30b48e59-6439-46c6-a57b-a46d0bb963fe}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Sources\Private\ImGui">
-      <UniqueIdentifier>{8f041303-af78-4413-a97f-060bb12361fe}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Sources\Public\ImGui">
-      <UniqueIdentifier>{a52dd742-7360-4dab-af99-89bfdb43580a}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="SourceFiles\WinMain.cpp">
+    <ClCompile Include="source\Bindable.cpp">
       <Filter>Sources\Private</Filter>
     </ClCompile>
-    <ClCompile Include="SourceFiles\Window.cpp">
+    <ClCompile Include="source\Drawable.cpp">
       <Filter>Sources\Private</Filter>
     </ClCompile>
-    <ClCompile Include="SourceFiles\Keyboard.cpp">
+    <ClCompile Include="source\Graphics.cpp">
       <Filter>Sources\Private</Filter>
     </ClCompile>
-    <ClCompile Include="SourceFiles\Mouse.cpp">
+    <ClCompile Include="source\iGManager.cpp">
       <Filter>Sources\Private</Filter>
     </ClCompile>
-    <ClCompile Include="SourceFiles\Timer.cpp">
+    <ClCompile Include="source\Keyboard.cpp">
       <Filter>Sources\Private</Filter>
     </ClCompile>
-    <ClCompile Include="SourceFiles\Graphics.cpp">
+    <ClCompile Include="source\Mouse.cpp">
       <Filter>Sources\Private</Filter>
     </ClCompile>
-    <ClCompile Include="SourceFiles\Bindable\IndexBuffer.cpp">
+    <ClCompile Include="source\Timer.cpp">
+      <Filter>Sources\Private</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Window.cpp">
+      <Filter>Sources\Private</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Bindable\ConstantBuffers.cpp">
       <Filter>Sources\Private\Bindable</Filter>
     </ClCompile>
-    <ClCompile Include="SourceFiles\Bindable\InputLayout.cpp">
+    <ClCompile Include="source\Bindable\IndexBuffer.cpp">
       <Filter>Sources\Private\Bindable</Filter>
     </ClCompile>
-    <ClCompile Include="SourceFiles\Bindable\PixelShader.cpp">
+    <ClCompile Include="source\Bindable\InputLayout.cpp">
       <Filter>Sources\Private\Bindable</Filter>
     </ClCompile>
-    <ClCompile Include="SourceFiles\Bindable\VertexBuffer.cpp">
+    <ClCompile Include="source\Bindable\PixelShader.cpp">
       <Filter>Sources\Private\Bindable</Filter>
     </ClCompile>
-    <ClCompile Include="SourceFiles\Bindable\VertexShader.cpp">
+    <ClCompile Include="source\Bindable\Sampler.cpp">
       <Filter>Sources\Private\Bindable</Filter>
     </ClCompile>
-    <ClCompile Include="SourceFiles\Bindable\ConstantBuffers.cpp">
+    <ClCompile Include="source\Bindable\Texture.cpp">
       <Filter>Sources\Private\Bindable</Filter>
     </ClCompile>
-    <ClCompile Include="SourceFiles\Drawable\Triangle.cpp">
+    <ClCompile Include="source\Bindable\Topology.cpp">
+      <Filter>Sources\Private\Bindable</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Bindable\VertexBuffer.cpp">
+      <Filter>Sources\Private\Bindable</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Bindable\VertexShader.cpp">
+      <Filter>Sources\Private\Bindable</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Drawable\Background.cpp">
       <Filter>Sources\Private\Drawable</Filter>
     </ClCompile>
-    <ClCompile Include="SourceFiles\Bindable\Topology.cpp">
-      <Filter>Sources\Private\Bindable</Filter>
-    </ClCompile>
-    <ClCompile Include="SourceFiles\Drawable\Sphere.cpp">
+    <ClCompile Include="source\Drawable\Curve.cpp">
       <Filter>Sources\Private\Drawable</Filter>
     </ClCompile>
-    <ClCompile Include="SourceFiles\Drawable\Surface.cpp">
+    <ClCompile Include="source\Drawable\PointLight.cpp">
       <Filter>Sources\Private\Drawable</Filter>
     </ClCompile>
-    <ClCompile Include="SourceFiles\Drawable.cpp">
-      <Filter>Sources\Private</Filter>
-    </ClCompile>
-    <ClCompile Include="SourceFiles\Bindable\Texture.cpp">
-      <Filter>Sources\Private\Bindable</Filter>
-    </ClCompile>
-    <ClCompile Include="SourceFiles\Bindable\Sampler.cpp">
-      <Filter>Sources\Private\Bindable</Filter>
-    </ClCompile>
-    <ClCompile Include="SourceFiles\Drawable\Background.cpp">
+    <ClCompile Include="source\Drawable\Sphere.cpp">
       <Filter>Sources\Private\Drawable</Filter>
     </ClCompile>
-    <ClCompile Include="SourceFiles\iGManager.cpp">
-      <Filter>Sources\Private</Filter>
+    <ClCompile Include="source\Drawable\Surface.cpp">
+      <Filter>Sources\Private\Drawable</Filter>
     </ClCompile>
-    <ClCompile Include="SourceFiles\Apps\EarthDemo.cpp">
-      <Filter>Sources\Private\Apps</Filter>
+    <ClCompile Include="source\Drawable\Triangle.cpp">
+      <Filter>Sources\Private\Drawable</Filter>
     </ClCompile>
-    <ClCompile Include="SourceFiles\ImGui\IG_EarthDemo.cpp">
-      <Filter>Sources\Private\ImGui</Filter>
-    </ClCompile>
-    <ClCompile Include="SourceFiles\Apps\Fourier.cpp">
-      <Filter>Sources\Private\Apps</Filter>
-    </ClCompile>
-    <ClCompile Include="SourceFiles\ImGui\IG_Fouier.cpp">
-      <Filter>Sources\Private\ImGui</Filter>
-    </ClCompile>
-    <ClCompile Include="SourceFiles\Exception\_exFunc.cpp">
+    <ClCompile Include="source\Exception\_exFunc.cpp">
       <Filter>Sources\Private\Exception</Filter>
     </ClCompile>
-    <ClCompile Include="SourceFiles\Exception\DxgiInfoManager.cpp">
+    <ClCompile Include="source\Exception\DxgiInfoManager.cpp">
       <Filter>Sources\Private\Exception</Filter>
     </ClCompile>
-    <ClCompile Include="SourceFiles\Exception\Exception.cpp">
+    <ClCompile Include="source\Exception\Exception.cpp">
       <Filter>Sources\Private\Exception</Filter>
-    </ClCompile>
-    <ClCompile Include="SourceFiles\Bindable.cpp">
-      <Filter>Sources\Private</Filter>
-    </ClCompile>
-    <ClCompile Include="SourceFiles\Drawable\PointLight.cpp">
-      <Filter>Sources\Private\Drawable</Filter>
-    </ClCompile>
-    <ClCompile Include="SourceFiles\Drawable\Curve.cpp">
-      <Filter>Sources\Private\Drawable</Filter>
-    </ClCompile>
-    <ClCompile Include="SourceFiles\Apps\Tester.cpp">
-      <Filter>Sources\Private\Apps</Filter>
-    </ClCompile>
-    <ClCompile Include="SourceFiles\ImGui\IG_Tester.cpp">
-      <Filter>Sources\Private\ImGui</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="HeaderFiles\Header.h">
-      <Filter>Sources\Public</Filter>
-    </ClInclude>
-    <ClInclude Include="HeaderFiles\Window.h">
-      <Filter>Sources\Public</Filter>
-    </ClInclude>
-    <ClInclude Include="HeaderFiles\Keyboard.h">
-      <Filter>Sources\Public</Filter>
-    </ClInclude>
-    <ClInclude Include="HeaderFiles\Mouse.h">
-      <Filter>Sources\Public</Filter>
-    </ClInclude>
-    <ClInclude Include="HeaderFiles\Timer.h">
-      <Filter>Sources\Public</Filter>
-    </ClInclude>
-    <ClInclude Include="HeaderFiles\Graphics.h">
-      <Filter>Sources\Public</Filter>
-    </ClInclude>
-    <ClInclude Include="HeaderFiles\Bindable\ConstantBuffers.h">
-      <Filter>Sources\Public\Bindable</Filter>
-    </ClInclude>
-    <ClInclude Include="HeaderFiles\Bindable\IndexBuffer.h">
-      <Filter>Sources\Public\Bindable</Filter>
-    </ClInclude>
-    <ClInclude Include="HeaderFiles\Bindable\InputLayout.h">
-      <Filter>Sources\Public\Bindable</Filter>
-    </ClInclude>
-    <ClInclude Include="HeaderFiles\Bindable\PixelShader.h">
-      <Filter>Sources\Public\Bindable</Filter>
-    </ClInclude>
-    <ClInclude Include="HeaderFiles\Bindable\VertexBuffer.h">
-      <Filter>Sources\Public\Bindable</Filter>
-    </ClInclude>
-    <ClInclude Include="HeaderFiles\Bindable\VertexShader.h">
-      <Filter>Sources\Public\Bindable</Filter>
-    </ClInclude>
-    <ClInclude Include="HeaderFiles\Drawable\Triangle.h">
-      <Filter>Sources\Public\Drawable</Filter>
-    </ClInclude>
-    <ClInclude Include="HeaderFiles\Bindable\BindableBase.h">
-      <Filter>Sources\Public\Bindable</Filter>
-    </ClInclude>
-    <ClInclude Include="HeaderFiles\Bindable\Topology.h">
-      <Filter>Sources\Public\Bindable</Filter>
-    </ClInclude>
-    <ClInclude Include="HeaderFiles\Drawable\Sphere.h">
-      <Filter>Sources\Public\Drawable</Filter>
-    </ClInclude>
-    <ClInclude Include="HeaderFiles\Drawable\Surface.h">
-      <Filter>Sources\Public\Drawable</Filter>
-    </ClInclude>
-    <ClInclude Include="HeaderFiles\Drawable.h">
-      <Filter>Sources\Public</Filter>
-    </ClInclude>
-    <ClInclude Include="HeaderFiles\Bindable\Texture.h">
-      <Filter>Sources\Public\Bindable</Filter>
-    </ClInclude>
-    <ClInclude Include="HeaderFiles\Bindable\Sampler.h">
-      <Filter>Sources\Public\Bindable</Filter>
-    </ClInclude>
-    <ClInclude Include="HeaderFiles\Drawable\Background.h">
-      <Filter>Sources\Public\Drawable</Filter>
-    </ClInclude>
-    <ClInclude Include="HeaderFiles\iGManager.h">
-      <Filter>Sources\Public</Filter>
-    </ClInclude>
-    <ClInclude Include="HeaderFiles\Apps\EarthDemo.h">
-      <Filter>Sources\Public\Apps</Filter>
-    </ClInclude>
-    <ClInclude Include="HeaderFiles\ImGui\IG_EarthDemo.h">
-      <Filter>Sources\Public\ImGui</Filter>
-    </ClInclude>
-    <ClInclude Include="HeaderFiles\Apps\Fourier.h">
-      <Filter>Sources\Public\Apps</Filter>
-    </ClInclude>
-    <ClInclude Include="HeaderFiles\ImGui\IG_Fourier.h">
-      <Filter>Sources\Public\ImGui</Filter>
-    </ClInclude>
-    <ClInclude Include="HeaderFiles\Bindable.h">
-      <Filter>Sources\Public</Filter>
-    </ClInclude>
     <ClInclude Include="Resources\ResourceFiles\resource.h">
       <Filter>Resources</Filter>
     </ClInclude>
-    <ClInclude Include="HeaderFiles\Exception\DxgiInfoManager.h">
-      <Filter>Sources\Public\Exception</Filter>
+    <ClInclude Include="include\Bindable.h">
+      <Filter>Sources\Public</Filter>
     </ClInclude>
-    <ClInclude Include="HeaderFiles\Exception\Exception.h">
-      <Filter>Sources\Public\Exception</Filter>
+    <ClInclude Include="include\Drawable.h">
+      <Filter>Sources\Public</Filter>
     </ClInclude>
-    <ClInclude Include="HeaderFiles\Exception\ExceptionMacros.h">
-      <Filter>Sources\Public\Exception</Filter>
+    <ClInclude Include="include\Graphics.h">
+      <Filter>Sources\Public</Filter>
     </ClInclude>
-    <ClInclude Include="HeaderFiles\Drawable\PointLight.h">
+    <ClInclude Include="include\Header.h">
+      <Filter>Sources\Public</Filter>
+    </ClInclude>
+    <ClInclude Include="include\iGManager.h">
+      <Filter>Sources\Public</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Keyboard.h">
+      <Filter>Sources\Public</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Mouse.h">
+      <Filter>Sources\Public</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Timer.h">
+      <Filter>Sources\Public</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Window.h">
+      <Filter>Sources\Public</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Bindable\BindableBase.h">
+      <Filter>Sources\Public\Bindable</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Bindable\ConstantBuffers.h">
+      <Filter>Sources\Public\Bindable</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Bindable\IndexBuffer.h">
+      <Filter>Sources\Public\Bindable</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Bindable\InputLayout.h">
+      <Filter>Sources\Public\Bindable</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Bindable\PixelShader.h">
+      <Filter>Sources\Public\Bindable</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Bindable\Sampler.h">
+      <Filter>Sources\Public\Bindable</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Bindable\Texture.h">
+      <Filter>Sources\Public\Bindable</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Bindable\Topology.h">
+      <Filter>Sources\Public\Bindable</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Bindable\VertexBuffer.h">
+      <Filter>Sources\Public\Bindable</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Bindable\VertexShader.h">
+      <Filter>Sources\Public\Bindable</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Drawable\Background.h">
       <Filter>Sources\Public\Drawable</Filter>
     </ClInclude>
-    <ClInclude Include="HeaderFiles\Drawable\Curve.h">
+    <ClInclude Include="include\Drawable\Curve.h">
       <Filter>Sources\Public\Drawable</Filter>
     </ClInclude>
-    <ClInclude Include="HeaderFiles\Apps\Tester.h">
-      <Filter>Sources\Public\Apps</Filter>
+    <ClInclude Include="include\Drawable\PointLight.h">
+      <Filter>Sources\Public\Drawable</Filter>
     </ClInclude>
-    <ClInclude Include="HeaderFiles\ImGui\IG_Tester.h">
-      <Filter>Sources\Public\ImGui</Filter>
+    <ClInclude Include="include\Drawable\Sphere.h">
+      <Filter>Sources\Public\Drawable</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Drawable\Surface.h">
+      <Filter>Sources\Public\Drawable</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Drawable\Triangle.h">
+      <Filter>Sources\Public\Drawable</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Exception\DxgiInfoManager.h">
+      <Filter>Sources\Public\Exception</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Exception\Exception.h">
+      <Filter>Sources\Public\Exception</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Exception\ExceptionMacros.h">
+      <Filter>Sources\Public\Exception</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -27,26 +27,26 @@
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -71,29 +71,31 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <OutDir>$(SolutionDir)Build/$(ProjectName)/$(Configuration)/$(Platform)/</OutDir>
-    <IntDir>$(SolutionDir)Build/Intermediate/$(ProjectName)/$(Configuration)/$(Platform)/</IntDir>
+    <OutDir>$(ProjectDir)lib/</OutDir>
+    <IntDir>$(SolutionDir).intermediate/$(ProjectName)/$(Configuration)/$(Platform)/</IntDir>
+    <TargetName>$(ProjectName)_d</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <OutDir>$(SolutionDir)Build/$(ProjectName)/$(Configuration)/$(Platform)/</OutDir>
-    <IntDir>$(SolutionDir)Build/Intermediate/$(ProjectName)/$(Configuration)/$(Platform)/</IntDir>
+    <OutDir>$(ProjectDir)lib/</OutDir>
+    <IntDir>$(SolutionDir).intermediate/$(ProjectName)/$(Configuration)/$(Platform)/</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <OutDir>$(SolutionDir)Build/$(ProjectName)/$(Configuration)/$(Platform)/</OutDir>
-    <IntDir>$(SolutionDir)Build/Intermediate/$(ProjectName)/$(Configuration)/$(Platform)/</IntDir>
+    <OutDir>$(ProjectDir)lib/</OutDir>
+    <IntDir>$(SolutionDir).intermediate/$(ProjectName)/$(Configuration)/$(Platform)/</IntDir>
+    <TargetName>$(ProjectName)_d</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <OutDir>$(SolutionDir)Build/$(ProjectName)/$(Configuration)/$(Platform)/</OutDir>
-    <IntDir>$(SolutionDir)Build/Intermediate/$(ProjectName)/$(Configuration)/$(Platform)/</IntDir>
+    <OutDir>$(ProjectDir)lib/</OutDir>
+    <IntDir>$(SolutionDir).intermediate/$(ProjectName)/$(Configuration)/$(Platform)/</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_CRT_NO_WARNINGS;IS_DEBUG=true;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>RESOURCES_DIR=R"($(ProjectDir)Resources\)";SHADERS_DIR=LR"($(ProjectDir)Shaders\)";_CRT_NO_WARNINGS;IS_DEBUG=true;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir)HeaderFiles/;$(ProjectDir);$(ProjectDir)Resources/ResourceFiles/;$(SolutionDir)Math/include/;$(SolutionDir)dxerr/include/;$(SolutionDir)FreeImage/include/;$(SolutionDir)imGui/include/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)include/;$(ProjectDir)Resources/ResourceFiles/;$(SolutionDir)Math/include/;$(SolutionDir)dxerr/include/;$(SolutionDir)FreeImage/include/;$(SolutionDir)imGui/include/</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
@@ -115,10 +117,10 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_CRT_NO_WARNINGS;NDEBUG;IS_DEBUG=false;WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>RESOURCES_DIR=R"($(ProjectDir)Resources\)";SHADERS_DIR=LR"($(ProjectDir)Shaders\)";_CRT_NO_WARNINGS;NDEBUG;IS_DEBUG=false;WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir)HeaderFiles/;$(ProjectDir);$(ProjectDir)Resources/ResourceFiles/;$(SolutionDir)Math/include/;$(SolutionDir)dxerr/include/;$(SolutionDir)FreeImage/include/;$(SolutionDir)imGui/include/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)include/;$(ProjectDir)Resources/ResourceFiles/;$(SolutionDir)Math/include/;$(SolutionDir)dxerr/include/;$(SolutionDir)FreeImage/include/;$(SolutionDir)imGui/include/</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
@@ -140,10 +142,10 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_CRT_NO_WARNINGS;IS_DEBUG=true;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>RESOURCES_DIR=R"($(ProjectDir)Resources\)";SHADERS_DIR=LR"($(ProjectDir)Shaders\)";_CRT_NO_WARNINGS;IS_DEBUG=true;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir)HeaderFiles/;$(ProjectDir);$(ProjectDir)Resources/ResourceFiles/;$(SolutionDir)Math/include/;$(SolutionDir)dxerr/include/;$(SolutionDir)FreeImage/include/;$(SolutionDir)imGui/include/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)include/;$(ProjectDir)Resources/ResourceFiles/;$(SolutionDir)Math/include/;$(SolutionDir)dxerr/include/;$(SolutionDir)FreeImage/include/;$(SolutionDir)imGui/include/</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
@@ -165,10 +167,10 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_CRT_NO_WARNINGS;NDEBUG;IS_DEBUG=false;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>RESOURCES_DIR=R"($(ProjectDir)Resources\)";SHADERS_DIR=LR"($(ProjectDir)Shaders\)";_CRT_NO_WARNINGS;NDEBUG;IS_DEBUG=false;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir)HeaderFiles/;$(ProjectDir);$(ProjectDir)Resources/ResourceFiles/;$(SolutionDir)Math/include/;$(SolutionDir)dxerr/include/;$(SolutionDir)FreeImage/include/;$(SolutionDir)imGui/include/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)include/;$(ProjectDir)Resources/ResourceFiles/;$(SolutionDir)Math/include/;$(SolutionDir)dxerr/include/;$(SolutionDir)FreeImage/include/;$(SolutionDir)imGui/include/</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
@@ -187,75 +189,62 @@
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="SourceFiles\Apps\Fourier.cpp" />
-    <ClCompile Include="SourceFiles\Apps\EarthDemo.cpp" />
-    <ClCompile Include="SourceFiles\Apps\Tester.cpp" />
-    <ClCompile Include="SourceFiles\Bindable.cpp" />
-    <ClCompile Include="SourceFiles\Bindable\ConstantBuffers.cpp" />
-    <ClCompile Include="SourceFiles\Bindable\IndexBuffer.cpp" />
-    <ClCompile Include="SourceFiles\Bindable\InputLayout.cpp" />
-    <ClCompile Include="SourceFiles\Bindable\PixelShader.cpp" />
-    <ClCompile Include="SourceFiles\Bindable\Sampler.cpp" />
-    <ClCompile Include="SourceFiles\Bindable\Texture.cpp" />
-    <ClCompile Include="SourceFiles\Bindable\Topology.cpp" />
-    <ClCompile Include="SourceFiles\Bindable\VertexBuffer.cpp" />
-    <ClCompile Include="SourceFiles\Bindable\VertexShader.cpp" />
-    <ClCompile Include="SourceFiles\Drawable.cpp" />
-    <ClCompile Include="SourceFiles\Drawable\Background.cpp" />
-    <ClCompile Include="SourceFiles\Drawable\Curve.cpp" />
-    <ClCompile Include="SourceFiles\Drawable\PointLight.cpp" />
-    <ClCompile Include="SourceFiles\Drawable\Surface.cpp" />
-    <ClCompile Include="SourceFiles\Drawable\Sphere.cpp" />
-    <ClCompile Include="SourceFiles\Drawable\Triangle.cpp" />
-    <ClCompile Include="SourceFiles\Exception\DxgiInfoManager.cpp" />
-    <ClCompile Include="SourceFiles\Exception\Exception.cpp" />
-    <ClCompile Include="SourceFiles\Exception\_exFunc.cpp" />
-    <ClCompile Include="SourceFiles\iGManager.cpp" />
-    <ClCompile Include="SourceFiles\ImGui\IG_EarthDemo.cpp" />
-    <ClCompile Include="SourceFiles\ImGui\IG_Fouier.cpp" />
-    <ClCompile Include="SourceFiles\Graphics.cpp" />
-    <ClCompile Include="SourceFiles\ImGui\IG_Tester.cpp" />
-    <ClCompile Include="SourceFiles\Keyboard.cpp" />
-    <ClCompile Include="SourceFiles\Mouse.cpp" />
-    <ClCompile Include="SourceFiles\Timer.cpp" />
-    <ClCompile Include="SourceFiles\Window.cpp" />
-    <ClCompile Include="SourceFiles\WinMain.cpp" />
+    <ClCompile Include="source\Bindable.cpp" />
+    <ClCompile Include="source\Bindable\ConstantBuffers.cpp" />
+    <ClCompile Include="source\Bindable\IndexBuffer.cpp" />
+    <ClCompile Include="source\Bindable\InputLayout.cpp" />
+    <ClCompile Include="source\Bindable\PixelShader.cpp" />
+    <ClCompile Include="source\Bindable\Sampler.cpp" />
+    <ClCompile Include="source\Bindable\Texture.cpp" />
+    <ClCompile Include="source\Bindable\Topology.cpp" />
+    <ClCompile Include="source\Bindable\VertexBuffer.cpp" />
+    <ClCompile Include="source\Bindable\VertexShader.cpp" />
+    <ClCompile Include="source\Drawable.cpp" />
+    <ClCompile Include="source\Drawable\Background.cpp" />
+    <ClCompile Include="source\Drawable\Curve.cpp" />
+    <ClCompile Include="source\Drawable\PointLight.cpp" />
+    <ClCompile Include="source\Drawable\Sphere.cpp" />
+    <ClCompile Include="source\Drawable\Surface.cpp" />
+    <ClCompile Include="source\Drawable\Triangle.cpp" />
+    <ClCompile Include="source\Exception\DxgiInfoManager.cpp" />
+    <ClCompile Include="source\Exception\Exception.cpp" />
+    <ClCompile Include="source\Exception\_exFunc.cpp" />
+    <ClCompile Include="source\Graphics.cpp" />
+    <ClCompile Include="source\iGManager.cpp" />
+    <ClCompile Include="source\Keyboard.cpp" />
+    <ClCompile Include="source\Mouse.cpp" />
+    <ClCompile Include="source\Timer.cpp" />
+    <ClCompile Include="source\Window.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="HeaderFiles\Apps\Fourier.h" />
-    <ClInclude Include="HeaderFiles\Apps\EarthDemo.h" />
-    <ClInclude Include="HeaderFiles\Apps\Tester.h" />
-    <ClInclude Include="HeaderFiles\Bindable.h" />
-    <ClInclude Include="HeaderFiles\Bindable\BindableBase.h" />
-    <ClInclude Include="HeaderFiles\Bindable\ConstantBuffers.h" />
-    <ClInclude Include="HeaderFiles\Bindable\IndexBuffer.h" />
-    <ClInclude Include="HeaderFiles\Bindable\InputLayout.h" />
-    <ClInclude Include="HeaderFiles\Bindable\PixelShader.h" />
-    <ClInclude Include="HeaderFiles\Bindable\Sampler.h" />
-    <ClInclude Include="HeaderFiles\Bindable\Texture.h" />
-    <ClInclude Include="HeaderFiles\Bindable\Topology.h" />
-    <ClInclude Include="HeaderFiles\Bindable\VertexBuffer.h" />
-    <ClInclude Include="HeaderFiles\Bindable\VertexShader.h" />
-    <ClInclude Include="HeaderFiles\Drawable.h" />
-    <ClInclude Include="HeaderFiles\Drawable\Background.h" />
-    <ClInclude Include="HeaderFiles\Drawable\Curve.h" />
-    <ClInclude Include="HeaderFiles\Drawable\PointLight.h" />
-    <ClInclude Include="HeaderFiles\Drawable\Surface.h" />
-    <ClInclude Include="HeaderFiles\Drawable\Sphere.h" />
-    <ClInclude Include="HeaderFiles\Drawable\Triangle.h" />
-    <ClInclude Include="HeaderFiles\Exception\DxgiInfoManager.h" />
-    <ClInclude Include="HeaderFiles\Exception\Exception.h" />
-    <ClInclude Include="HeaderFiles\Exception\ExceptionMacros.h" />
-    <ClInclude Include="HeaderFiles\Graphics.h" />
-    <ClInclude Include="HeaderFiles\Header.h" />
-    <ClInclude Include="HeaderFiles\iGManager.h" />
-    <ClInclude Include="HeaderFiles\ImGui\IG_EarthDemo.h" />
-    <ClInclude Include="HeaderFiles\ImGui\IG_Fourier.h" />
-    <ClInclude Include="HeaderFiles\ImGui\IG_Tester.h" />
-    <ClInclude Include="HeaderFiles\Keyboard.h" />
-    <ClInclude Include="HeaderFiles\Mouse.h" />
-    <ClInclude Include="HeaderFiles\Timer.h" />
-    <ClInclude Include="HeaderFiles\Window.h" />
+    <ClInclude Include="include\Bindable.h" />
+    <ClInclude Include="include\Bindable\BindableBase.h" />
+    <ClInclude Include="include\Bindable\ConstantBuffers.h" />
+    <ClInclude Include="include\Bindable\IndexBuffer.h" />
+    <ClInclude Include="include\Bindable\InputLayout.h" />
+    <ClInclude Include="include\Bindable\PixelShader.h" />
+    <ClInclude Include="include\Bindable\Sampler.h" />
+    <ClInclude Include="include\Bindable\Texture.h" />
+    <ClInclude Include="include\Bindable\Topology.h" />
+    <ClInclude Include="include\Bindable\VertexBuffer.h" />
+    <ClInclude Include="include\Bindable\VertexShader.h" />
+    <ClInclude Include="include\Drawable.h" />
+    <ClInclude Include="include\Drawable\Background.h" />
+    <ClInclude Include="include\Drawable\Curve.h" />
+    <ClInclude Include="include\Drawable\PointLight.h" />
+    <ClInclude Include="include\Drawable\Sphere.h" />
+    <ClInclude Include="include\Drawable\Surface.h" />
+    <ClInclude Include="include\Drawable\Triangle.h" />
+    <ClInclude Include="include\Exception\DxgiInfoManager.h" />
+    <ClInclude Include="include\Exception\Exception.h" />
+    <ClInclude Include="include\Exception\ExceptionMacros.h" />
+    <ClInclude Include="include\Graphics.h" />
+    <ClInclude Include="include\Header.h" />
+    <ClInclude Include="include\iGManager.h" />
+    <ClInclude Include="include\Keyboard.h" />
+    <ClInclude Include="include\Mouse.h" />
+    <ClInclude Include="include\Timer.h" />
+    <ClInclude Include="include\Window.h" />
     <ClInclude Include="Resources\ResourceFiles\resource.h" />
   </ItemGroup>
   <ItemGroup>
