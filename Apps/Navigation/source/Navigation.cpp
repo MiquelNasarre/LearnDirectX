@@ -1,28 +1,28 @@
-#include "$safeprojectname$.h"
+#include "Navigation.h"
 #include "Keyboard.h"
 #include "Mouse.h"
-#include "IG_$safeprojectname$.h"
+#include "IG_Navigation.h"
 
 float IG_DATA::THETA = 0.f;
 float IG_DATA::PHI   = 0.f;
 float IG_DATA::SPEED = 0.f;
 
-$safeprojectname$::$safeprojectname$()
-	: window(640, 480, "$safeprojectname$", "", true),
+Navigation::Navigation()
+	: window(640, 480, "Navigation", "", true),
 
-	example(window.graphics,_RADIAL_SPHERICAL,EarthRadius)
+	example(window.graphics,_RADIAL_SPHERICAL,Radius<1>)
 {
 	window.setFramerateLimit(60);
 }
 
-int $safeprojectname$::Run()
+int Navigation::Run()
 {
 	while (window.processEvents())
 		doFrame();
 	return 0;
 }
 
-void $safeprojectname$::eventManager()
+void Navigation::eventManager()
 {
 	//	Keyboard and Mouse events
 
@@ -80,7 +80,7 @@ void $safeprojectname$::eventManager()
 	}
 }
 
-void $safeprojectname$::doFrame()
+void Navigation::doFrame()
 {
 	eventManager();
 
@@ -90,7 +90,7 @@ void $safeprojectname$::doFrame()
 
 	example.updateRotation(window.graphics, IG_DATA::THETA, IG_DATA::PHI);
 
-	window.setTitle("$safeprojectname$  -  " + std::to_string(int(std::round(window.getFramerate()))) + "fps");
+	window.setTitle("Navigation  -  " + std::to_string(int(std::round(window.getFramerate()))) + "fps");
 
 	//	Rendering
 
@@ -100,16 +100,9 @@ void $safeprojectname$::doFrame()
 
 	//	ImGui crap
 
-	IG_$safeprojectname$::render();
+	IG_Navigation::render();
 
 	//	Push the frame to the scriin
 
 	window.graphics.pushFrame();
-}
-
-//	Functions
-
-float EarthRadius(float theta, float phi)
-{
-	return 1.f + (sinf(theta) * sinf(theta) * cosf(phi) + cosf(phi) * cosf(phi) * sinf(phi)) * sinf(5 * theta) * cosf(3 * phi) / 2.f;
 }

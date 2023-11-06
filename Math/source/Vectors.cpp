@@ -154,6 +154,11 @@ Vector2d& Vector2d::normalize()
 	return *this;
 }
 
+double Vector2d::operator^(const Vector2d& other) const
+{
+	return x * other.x + y * other.y;
+}
+
 double Vector2d::abs() const
 {
 	return sqrt(x * x + y * y);
@@ -315,6 +320,11 @@ Vector2f& Vector2f::normalize()
 	return *this;
 }
 
+float Vector2f::operator^(const Vector2f& other) const
+{
+	return x * other.x + y * other.y;
+}
+
 float Vector2f::abs() const
 {
 	return sqrtf(x * x + y * y);
@@ -445,6 +455,11 @@ Vector2i& Vector2i::operator-=(const Vector2i& other)
 	x -= other.x;
 	y -= other.y;
 	return *this;
+}
+
+int Vector2i::operator^(const Vector2i& other) const
+{
+	return x * other.x + y * other.y;
 }
 
 float Vector2i::abs() const
@@ -1003,6 +1018,11 @@ Vector3i& Vector3i::operator-=(const Vector3i& other)
 Vector3i Vector3i::operator*(const Vector3i& other) const
 {
 	return -Vector3d(y * other.z - other.y * z, z * other.x - other.z * x, x * other.y - other.x * y);
+}
+
+int Vector3i::operator^(const Vector3i& other) const
+{
+	return x * other.x + y * other.y + z * other.z;
 }
 
 float Vector3i::abs() const

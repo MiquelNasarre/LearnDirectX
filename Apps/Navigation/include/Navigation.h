@@ -2,14 +2,17 @@
 
 #include "Window.h"
 #include "Drawable/Surface.h"
+#include "Spherical.h"
 
 struct IG_DATA {
 	static float THETA;
 	static float PHI;
 	static float SPEED;
+
+	static std::vector<Coordinates> Positions;
 };
 
-class $safeprojectname$ {
+class Navigation {
 
 private:
 	Window window;
@@ -22,10 +25,11 @@ private:
 	Vector2i initialDrag;
 	Vector2f initialDragAngles;
 
+	std::vector<std::unique_ptr<Surface>> Positions;
 	Surface example;
 
 public:
-	$safeprojectname$();
+	Navigation();
 
 	int Run();
 
@@ -36,4 +40,8 @@ public:
 
 //	Functions
 
-float EarthRadius(float, float);
+template <float r>
+float Radius(float, float)
+{
+	return r;
+}

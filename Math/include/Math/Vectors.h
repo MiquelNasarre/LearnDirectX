@@ -45,6 +45,7 @@ struct Vector2d {
 	Vector2d& operator-=(const Vector2i& other);
 
 	Vector2d& normalize();
+	double operator^(const Vector2d& other) const;
 
 	double		abs() const;
 	std::string str() const;
@@ -82,6 +83,7 @@ struct Vector2f {
 	Vector2f& operator/=(const float& other);
 
 	Vector2f& normalize();
+	float operator^(const Vector2f& other) const;
 
 	float		abs() const;
 	std::string str() const;
@@ -114,6 +116,8 @@ struct Vector2i {
 	Vector2d operator/(const double& other) const;
 	Vector2i& operator+=(const Vector2i& other);
 	Vector2i& operator-=(const Vector2i& other);
+
+	int operator^(const Vector2i& other) const;
 
 	float		abs() const;
 	std::string str() const;
@@ -245,6 +249,7 @@ struct Vector3i {
 	Vector3i& operator-=(const Vector3i& other);
 
 	Vector3i operator*(const Vector3i& other) const;
+	int operator^(const Vector3i& other) const;
 
 	float		abs() const;
 	std::string str() const;
