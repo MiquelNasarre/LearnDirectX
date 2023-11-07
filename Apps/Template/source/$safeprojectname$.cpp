@@ -10,7 +10,7 @@ float IG_DATA::SPEED = 0.f;
 $safeprojectname$::$safeprojectname$()
 	: window(640, 480, "$safeprojectname$", "", true),
 
-	example(window.graphics,_RADIAL_SPHERICAL,EarthRadius)
+	example(window.graphics,_RADIAL_SPHERICAL,exampleRadius)
 {
 	window.setFramerateLimit(60);
 }
@@ -109,7 +109,7 @@ void $safeprojectname$::doFrame()
 
 //	Functions
 
-float EarthRadius(float theta, float phi)
+float exampleRadius(float theta, float phi)
 {
 	return 1.f + (sinf(theta) * sinf(theta) * cosf(phi) + cosf(phi) * cosf(phi) * sinf(phi)) * sinf(5 * theta) * cosf(3 * phi) / 2.f;
 }

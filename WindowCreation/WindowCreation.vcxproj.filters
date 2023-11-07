@@ -119,9 +119,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Resources\ResourceFiles\resource.h">
-      <Filter>Resources</Filter>
-    </ClInclude>
     <ClInclude Include="include\Bindable.h">
       <Filter>Sources\Public</Filter>
     </ClInclude>
@@ -264,10 +261,5 @@
     <Image Include="Resources\Icon.ico">
       <Filter>Resources</Filter>
     </Image>
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="Resources\ResourceFiles\WindowCreation.rc">
-      <Filter>Resources</Filter>
-    </ResourceCompile>
   </ItemGroup>
 </Project>

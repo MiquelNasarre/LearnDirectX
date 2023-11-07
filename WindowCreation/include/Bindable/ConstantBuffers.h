@@ -30,25 +30,37 @@ private:
 template<typename C>
 void ConstantBuffer<C>::Update(Graphics& gfx, const C& consts)
 {
-	//INFOMAN(gfx);
-	//GFX_THROW_INFO_ONLY();
+#ifdef _DEBUG
+	DxgiInfoManager& infoManager = GetInfoManager((gfx));
+	infoManager.Set();
 	GetContext(gfx)->UpdateSubresource(pConstantBuffer.Get(), 0u, NULL, &consts, 0u, 0u);
+	auto v = infoManager.GetMessages();
+	if (!v.empty())
+		throw Graphics::InfoException(__LINE__, __FILE__, v);
+#else
+	GetContext(gfx)->UpdateSubresource(pConstantBuffer.Get(), 0u, NULL, &consts, 0u, 0u);
+#endif
 }
 
 template<typename C>
 void ConstantBuffer<C>::Update(Graphics& gfx, const C* consts)
 {
-	//INFOMAN(gfx);
-	//GFX_THROW_INFO_ONLY();
+#ifdef _DEBUG
+	DxgiInfoManager& infoManager = GetInfoManager((gfx));
+	infoManager.Set();
 	GetContext(gfx)->UpdateSubresource(pConstantBuffer.Get(), 0u, NULL, consts, 0u, 0u);
+	auto v = infoManager.GetMessages();
+	if (!v.empty())
+		throw Graphics::InfoException(__LINE__, __FILE__, v);
+#else
+	GetContext(gfx)->UpdateSubresource(pConstantBuffer.Get(), 0u, NULL, consts, 0u, 0u);
+#endif
 }
 
 template<typename C>
 ConstantBuffer<C>::ConstantBuffer(Graphics& gfx, const C& consts, TYPE_ConstBuffer type, const int slot)
 	:Type{ type }
 {
-	//INFOMAN(gfx);
-
 	if (slot == CONSTANT_BUFFER_DEFAULT_SLOT) {
 		if (type == VERTEX_CONSTANT_BUFFER_TYPE)
 			Slot = 1u;
@@ -68,15 +80,23 @@ ConstantBuffer<C>::ConstantBuffer(Graphics& gfx, const C& consts, TYPE_ConstBuff
 
 	D3D11_SUBRESOURCE_DATA csd = {};
 	csd.pSysMem = &consts;
-	//GFX_THROW_INFO();
+	
+#ifdef _DEBUG
+	DxgiInfoManager& infoManager = GetInfoManager((gfx));
+	infoManager.Set();
 	GetDevice(gfx)->CreateBuffer(&cbd, &csd, &pConstantBuffer);
+	auto v = infoManager.GetMessages();
+	if (!v.empty())
+		throw Graphics::InfoException(__LINE__, __FILE__, v);
+#else
+	GetDevice(gfx)->CreateBuffer(&cbd, &csd, &pConstantBuffer);
+#endif
 }
 
 template<typename C>
 ConstantBuffer<C>::ConstantBuffer(Graphics& gfx, TYPE_ConstBuffer type, const int slot)
 	:Type{ type }
 {
-	//INFOMAN(gfx);
 	if (slot == CONSTANT_BUFFER_DEFAULT_SLOT) {
 		if (type == VERTEX_CONSTANT_BUFFER_TYPE)
 			Slot = 1u;
@@ -93,20 +113,38 @@ ConstantBuffer<C>::ConstantBuffer(Graphics& gfx, TYPE_ConstBuffer type, const in
 	cbd.MiscFlags = 0u;
 	cbd.ByteWidth = sizeof(C);
 	cbd.StructureByteStride = 0u;
-	//GFX_THROW_INFO();
+
+#ifdef _DEBUG
+	DxgiInfoManager& infoManager = GetInfoManager((gfx));
+	infoManager.Set();
 	GetDevice(gfx)->CreateBuffer(&cbd, NULL, &pConstantBuffer);
+	auto v = infoManager.GetMessages();
+	if (!v.empty())
+		throw Graphics::InfoException(__LINE__, __FILE__, v);
+#else
+	GetDevice(gfx)->CreateBuffer(&cbd, NULL, &pConstantBuffer);
+#endif
 }
 
 template<typename C>
 void ConstantBuffer<C>::Bind(Graphics& gfx)
 {
-	//INFOMAN(gfx);
-	if (Type == VERTEX_CONSTANT_BUFFER_TYPE) {
-		//GFX_THROW_INFO_ONLY();
+#ifdef _DEBUG
+	DxgiInfoManager& infoManager = GetInfoManager((gfx));
+	infoManager.Set();
+
+	if (Type == VERTEX_CONSTANT_BUFFER_TYPE)
 		GetContext(gfx)->VSSetConstantBuffers(Slot, 1u, pConstantBuffer.GetAddressOf());
-	}
-	else if (Type == PIXEL_CONSTANT_BUFFER_TYPE) {
-		//GFX_THROW_INFO_ONLY();
+	else if (Type == PIXEL_CONSTANT_BUFFER_TYPE)
 		GetContext(gfx)->PSSetConstantBuffers(Slot, 1u, pConstantBuffer.GetAddressOf());
-	}
+
+	auto v = infoManager.GetMessages();
+	if (!v.empty())
+		throw Graphics::InfoException(__LINE__, __FILE__, v);
+#else
+	if (Type == VERTEX_CONSTANT_BUFFER_TYPE)
+		GetContext(gfx)->VSSetConstantBuffers(Slot, 1u, pConstantBuffer.GetAddressOf());
+	else if (Type == PIXEL_CONSTANT_BUFFER_TYPE)
+		GetContext(gfx)->PSSetConstantBuffers(Slot, 1u, pConstantBuffer.GetAddressOf());
+#endif
 }

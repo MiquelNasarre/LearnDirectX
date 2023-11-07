@@ -111,8 +111,8 @@ void Graphics::clearBuffer(float R, float G, float B, float A)
 
 void Graphics::clearBuffer(Color color)
 {
-	const float col[] = { color.R / 255.f,color.G / 255.f,color.B / 255.f,color.A / 255.f };
-	GFX_THROW_INFO_ONLY(pContext->ClearRenderTargetView(pTarget.Get(), col));
+	_float4color col = color.getColor4();
+	GFX_THROW_INFO_ONLY(pContext->ClearRenderTargetView(pTarget.Get(), &col.r));
 	GFX_THROW_INFO_ONLY(pContext->ClearDepthStencilView(pDSV.Get(),D3D11_CLEAR_DEPTH,1.f,0u));
 }
 

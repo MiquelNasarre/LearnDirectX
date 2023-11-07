@@ -95,7 +95,7 @@
       <PreprocessorDefinitions>RESOURCES_DIR=R"($(ProjectDir)Resources\)";SHADERS_DIR=LR"($(ProjectDir)Shaders\)";_CRT_NO_WARNINGS;IS_DEBUG=true;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir)include/;$(ProjectDir)Resources/ResourceFiles/;$(SolutionDir)Math/include/;$(SolutionDir)dxerr/include/;$(SolutionDir)FreeImage/include/;$(SolutionDir)imGui/include/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)include/;$(SolutionDir)Math/include/;$(SolutionDir)dxerr/include/;$(SolutionDir)Image/include/;$(SolutionDir)imGui/include/</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
@@ -120,7 +120,7 @@
       <PreprocessorDefinitions>RESOURCES_DIR=R"($(ProjectDir)Resources\)";SHADERS_DIR=LR"($(ProjectDir)Shaders\)";_CRT_NO_WARNINGS;NDEBUG;IS_DEBUG=false;WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir)include/;$(ProjectDir)Resources/ResourceFiles/;$(SolutionDir)Math/include/;$(SolutionDir)dxerr/include/;$(SolutionDir)FreeImage/include/;$(SolutionDir)imGui/include/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)include/;$(SolutionDir)Math/include/;$(SolutionDir)dxerr/include/;$(SolutionDir)Image/include/;$(SolutionDir)imGui/include/</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
@@ -145,7 +145,7 @@
       <PreprocessorDefinitions>RESOURCES_DIR=R"($(ProjectDir)Resources\)";SHADERS_DIR=LR"($(ProjectDir)Shaders\)";_CRT_NO_WARNINGS;IS_DEBUG=true;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir)include/;$(ProjectDir)Resources/ResourceFiles/;$(SolutionDir)Math/include/;$(SolutionDir)dxerr/include/;$(SolutionDir)FreeImage/include/;$(SolutionDir)imGui/include/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)include/;$(SolutionDir)Math/include/;$(SolutionDir)dxerr/include/;$(SolutionDir)Image/include/;$(SolutionDir)imGui/include/</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
@@ -170,7 +170,7 @@
       <PreprocessorDefinitions>RESOURCES_DIR=R"($(ProjectDir)Resources\)";SHADERS_DIR=LR"($(ProjectDir)Shaders\)";_CRT_NO_WARNINGS;NDEBUG;IS_DEBUG=false;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir)include/;$(ProjectDir)Resources/ResourceFiles/;$(SolutionDir)Math/include/;$(SolutionDir)dxerr/include/;$(SolutionDir)FreeImage/include/;$(SolutionDir)imGui/include/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)include/;$(SolutionDir)Math/include/;$(SolutionDir)dxerr/include/;$(SolutionDir)Image/include/;$(SolutionDir)imGui/include/</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
@@ -245,7 +245,6 @@
     <ClInclude Include="include\Mouse.h" />
     <ClInclude Include="include\Timer.h" />
     <ClInclude Include="include\Window.h" />
-    <ClInclude Include="Resources\ResourceFiles\resource.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shaders\BackgroundPS.hlsl">
@@ -493,9 +492,6 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="Resources\Icon.ico" />
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="Resources\ResourceFiles\WindowCreation.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

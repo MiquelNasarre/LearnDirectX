@@ -1,6 +1,5 @@
 #include "Window.h"
 
-#include "resource.h"
 #include "Keyboard.h"
 #include "Mouse.h"
 #include <windowsx.h>

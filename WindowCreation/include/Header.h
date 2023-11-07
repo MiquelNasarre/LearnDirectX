@@ -52,7 +52,8 @@
 #include <Windows.h>
 #include <WinUser.h>
 
-#include "Math/Color.h"
 #include "Math/Vectors.h"
 #include "Math/Matrix.h"
 #include "Math/constants.h"
+
+#include "Image.h"

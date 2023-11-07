@@ -36,4 +36,4 @@ public:
 
 //	Functions
 
-float EarthRadius(float, float);
+float exampleRadius(float, float);

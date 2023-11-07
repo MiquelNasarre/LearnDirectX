@@ -19,14 +19,12 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\Math\Color.h" />
     <ClInclude Include="include\Math\Complex.h" />
     <ClInclude Include="include\Math\constants.h" />
     <ClInclude Include="include\Math\Matrix.h" />
     <ClInclude Include="include\Math\Vectors.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="source\Color.cpp" />
     <ClCompile Include="source\Complex.cpp" />
     <ClCompile Include="source\Matrix.cpp" />
     <ClCompile Include="source\Vectors.cpp" />
@@ -109,7 +107,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <AdditionalIncludeDirectories>$(ProjectDir)include/Math/;</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)include/Math/</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -126,7 +124,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <AdditionalIncludeDirectories>$(ProjectDir)include/Math/;</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)include/Math/</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -143,7 +141,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <AdditionalIncludeDirectories>$(ProjectDir)include/Math/;</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)include/Math/</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -160,7 +158,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <AdditionalIncludeDirectories>$(ProjectDir)include/Math/;</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)include/Math/</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

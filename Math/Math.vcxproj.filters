@@ -20,9 +20,6 @@
     <ClInclude Include="include\Math\Complex.h">
       <Filter>Sources\Public</Filter>
     </ClInclude>
-    <ClInclude Include="include\Math\Color.h">
-      <Filter>Sources\Public</Filter>
-    </ClInclude>
     <ClInclude Include="include\Math\Matrix.h">
       <Filter>Sources\Public</Filter>
     </ClInclude>
@@ -35,9 +32,6 @@
       <Filter>Sources\Private</Filter>
     </ClCompile>
     <ClCompile Include="source\Complex.cpp">
-      <Filter>Sources\Private</Filter>
-    </ClCompile>
-    <ClCompile Include="source\Color.cpp">
       <Filter>Sources\Private</Filter>
     </ClCompile>
     <ClCompile Include="source\Matrix.cpp">
