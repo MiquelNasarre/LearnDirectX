@@ -24,6 +24,9 @@
     <ClInclude Include="include\IG_ImageEditor.h">
       <Filter>Sources\Public</Filter>
     </ClInclude>
+    <ClInclude Include="include\ImageFunctions.h">
+      <Filter>Sources\Public</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\WinMain.cpp">
@@ -33,6 +36,9 @@
       <Filter>Sources\Private</Filter>
     </ClCompile>
     <ClCompile Include="source\IG_ImageEditor.cpp">
+      <Filter>Sources\Private</Filter>
+    </ClCompile>
+    <ClCompile Include="source\ImageFunctions.cpp">
       <Filter>Sources\Private</Filter>
     </ClCompile>
   </ItemGroup>

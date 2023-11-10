@@ -13,7 +13,7 @@ cbuffer cBuff : register(b0)
     Lightsource lights[8];
 };
 
-float4 main(float3 pos : PointPos, float3 norm : Norm) : SV_Target
+float4 main(float4 color : Color, float3 pos : PointPos, float3 norm : Norm) : SV_Target
 {
     
     float4 totalLight = float4(0.f, 0.f, 0.f, 0.f);
@@ -34,5 +34,5 @@ float4 main(float3 pos : PointPos, float3 norm : Norm) : SV_Target
         totalLight += light * lights[i].color, 1.f;
     }
     
-    return totalLight;
+    return color * totalLight;
 }

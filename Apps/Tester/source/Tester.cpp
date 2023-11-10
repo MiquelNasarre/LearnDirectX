@@ -10,7 +10,8 @@ Tester::Tester()
 	:window(640, 480, "Plotter"),
 	surf(window.graphics, _RADIAL_SPHERICAL, weirdRadius),
 	light(window.graphics, Color::Black, { 3.f , 0.f , 2.f }, 1.f),
-	curve(window.graphics, curveF, { 0.f ,2 * pi }, 1000, { Color::Red / 3, Color::Yellow / 3, Color::Green / 3, Color::Cyan / 3, Color::Blue / 3, Color::Purple / 3, Color::Red / 3 })
+	curve(window.graphics, curveF, { 0.f ,2 * pi }, 1000, { Color::Red / 3, Color::Yellow / 3, Color::Green / 3, Color::Cyan / 3, Color::Blue / 3, Color::Purple / 3, Color::Red / 3 }),
+	Klein(window.graphics, _PARAMETRIC, KleinBottle, true,false,Vector2f(0,0),Vector2f(pi,2*pi))
 {
 	window.setFramerateLimit(60);
 	srand(143452);
@@ -93,9 +94,11 @@ void Tester::doFrame()
 
 	surf.updateRotation(window.graphics, theta, phi);
 	curve.updateRotation(window.graphics, theta, phi);
-	surf.Draw(window.graphics);
-	light.Draw(window.graphics);
-	curve.Draw(window.graphics);
+	Klein.updateRotation(window.graphics, theta, phi);
+	//surf.Draw(window.graphics);
+	//light.Draw(window.graphics);
+	//curve.Draw(window.graphics);
+	Klein.Draw(window.graphics);
 
 	IG_Tester::render();
 	window.graphics.pushFrame();
@@ -120,6 +123,19 @@ float curveX(float t)
 float curveY(float t)
 {
 	return sinf(t);
+}
+
+Vector3f KleinBottle(float u, float v)
+{
+	float c_u = cosf(u);
+	float s_u = sinf(u);
+	float c_v = cosf(v);
+	float s_v = sinf(v);
+
+	float x = -2.f / 15.f * c_u * (3 * c_v - 30 * s_u + 90 * powf(c_u, 4.f) * s_u - 60 * powf(c_u, 6.f) * s_u + 5 * c_u * c_v * s_u);
+	float y = -1.f / 15.f * s_u * (3 * c_v - 3 * c_u * c_u * c_v - 48 * powf(c_u, 4.f) * c_v + 48 * powf(c_u, 6.f) * c_v - 60 * s_u + 5 * c_u * c_v * s_u - 5 * powf(c_u, 3) * c_v * s_u - 80 * powf(c_u, 7.f) * c_v * s_u) - 1;
+	float z = 2.f / 15.f * (3 + 5 * c_u * s_u) * s_v;
+	return Vector3f(x, y, z);
 }
 
 float curveZ(float t)

@@ -22,6 +22,8 @@ private:
 	PointLight light;
 	Curve curve;
 
+	Surface Klein;
+
 	//	...
 
 	float scale = 250.f;
@@ -44,6 +46,8 @@ public:
 //	Surface functions
 
 Vector3f curveF(float);
+
+Vector3f KleinBottle(float, float);
 
 float curveX(float);
 

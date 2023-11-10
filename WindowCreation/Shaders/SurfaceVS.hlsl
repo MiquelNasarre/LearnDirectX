@@ -13,19 +13,19 @@ cbuffer Cbuff1 : register(b1)
 
 struct VSOut
 {
-    
+    float4 color : Color;
     float4 R3pos : PointPos;
     float4 norm : Norm;
     float4 SCpos : SV_Position;
 };
 
-VSOut main(float3 pos : Position, float3 norm : Normal)
+VSOut main(float3 pos : Position, float3 norm : Normal, float4 color : Color)
 {
     VSOut vso;
     vso.R3pos = mul(float4(pos, 1.f), rotation) + traslation;
     float4 test = mul(vso.R3pos - center, projection);
     vso.SCpos = float4(test.x, test.y, test.z / 10000000.f + 0.5f, 1.f);
     vso.norm = mul(float4(norm, 1.f), rotation);
-    
+    vso.color = color;
     return vso;
 }

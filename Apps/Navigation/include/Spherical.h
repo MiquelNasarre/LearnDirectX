@@ -22,6 +22,7 @@ class angle1 : public angle
 public:
 	double angleDeg;
 
+	angle1() = default;
 	angle1(double angle, ANGLE_TYPE type);
 	angle2 getAngle2() const;
 	angle3 getAngle3() const;
@@ -37,6 +38,7 @@ public:
 	int angleDeg;
 	double angleMin;
 
+	angle2() = default;
 	angle2(double angle, ANGLE_TYPE type);
 	angle1 getAngle1() const;
 	angle3 getAngle3() const;
@@ -52,6 +54,7 @@ public:
 	int angleMin;
 	double angleSec;
 
+	angle3() = default;
 	angle3(double angle, ANGLE_TYPE type);
 	angle1 getAngle1() const;
 	angle2 getAngle2() const;
@@ -60,32 +63,39 @@ public:
 	std::string getString() const;
 };
 
-class Coordinates
+class Coordinate
 {
 public:
 	angle1 latitude;
 	angle1 Longitude;
 
-	Coordinates(double lat, double Long, ANGLE_TYPE type);
-	Coordinates(angle& latitude, angle& Longitude);
+	Coordinate();
+	Coordinate(double lat, double Long, ANGLE_TYPE type);
+	Coordinate(angle& latitude, angle& Longitude);
 
 	std::string getString(UINT D = 3) const;
 	void correct();
 	Vector3d getVector() const;
 
-	static const Coordinates Greenwich;
-	static const Coordinates London;
-	static const Coordinates Barcelona;
-	static const Coordinates NewYork;
-	static const Coordinates Canary;
-	static const Coordinates Grenada;
-	static const Coordinates Gibraltar;
+	struct PLACES{
+		static const Coordinate Greenwich;
+		static const Coordinate London;
+		static const Coordinate Barcelona;
+		static const Coordinate NewYork;
+		static const Coordinate Canary;
+		static const Coordinate Grenada;
+		static const Coordinate Gibraltar;
+		static const Coordinate Auckland;
+	};
 
 };
 
 double cos(const angle& angle);
 double sin(const angle& angle);
 double tan(const angle& angle);
+float cosf(const angle& angle);
+float sinf(const angle& angle);
+float tanf(const angle& angle);
 
-double getDistance(const Coordinates& Pos1, const Coordinates& Pos2);
-double getDirection(const Coordinates& Pos1, const Coordinates& Pos2);
+double getDistance(const Coordinate& Pos1, const Coordinate& Pos2);
+double getDirection(const Coordinate& Pos1, const Coordinate& Pos2);

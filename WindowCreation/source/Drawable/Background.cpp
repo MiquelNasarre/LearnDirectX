@@ -29,6 +29,8 @@ Background::Background(Graphics& gfx, std::string filename, bool MakeDynamic, PR
 	if (!MakeDynamic) {
 		pvs = (VertexShader*)AddBind(std::move(std::make_unique<VertexShader>(gfx, SHADERS_DIR + std::wstring(L"BackgroundVS.cso"))));
 		AddBind(std::make_unique<PixelShader>(gfx, SHADERS_DIR + std::wstring(L"BackgroundPS.cso")));
+
+		vscBuff = (ConstantBuffer<_float4vector>*)AddBind(std::make_unique<ConstantBuffer<_float4vector>>(gfx, _float4vector{ 0.f,0.f,1.f,1.f }, VERTEX_CONSTANT_BUFFER_TYPE));
 	}
 	else {
 		pvs = (VertexShader*)AddBind(std::move(std::make_unique<VertexShader>(gfx, SHADERS_DIR + std::wstring(L"DynamicBgVS.cso"))));
@@ -83,6 +85,8 @@ Background::Background(Graphics& gfx, Texture texture, bool MakeDynamic, PROJECT
 	if (!MakeDynamic) {
 		pvs = (VertexShader*)AddBind(std::move(std::make_unique<VertexShader>(gfx, SHADERS_DIR + std::wstring(L"BackgroundVS.cso"))));
 		AddBind(std::make_unique<PixelShader>(gfx, SHADERS_DIR + std::wstring(L"BackgroundPS.cso")));
+
+		vscBuff = (ConstantBuffer<_float4vector>*)AddBind(std::make_unique<ConstantBuffer<_float4vector>>(gfx, _float4vector{ 0.f,0.f,1.f,1.f } , VERTEX_CONSTANT_BUFFER_TYPE));
 	}
 	else {
 		pvs = (VertexShader*)AddBind(std::move(std::make_unique<VertexShader>(gfx, SHADERS_DIR + std::wstring(L"DynamicBgVS.cso"))));
@@ -92,7 +96,7 @@ Background::Background(Graphics& gfx, Texture texture, bool MakeDynamic, PROJECT
 		else if (ProjectionType == PT_AZIMUTHAL)
 			AddBind(std::make_unique<PixelShader>(gfx, SHADERS_DIR + std::wstring(L"DyBgAzimuthPS.cso")));
 		else
-			throw std::exception("this Projection Type is not suported by the dynamic bacground");
+			throw std::exception("this Projection Type is not suported by the dynamic background");
 
 		pscBuff0 = (ConstantBuffer<PSconstBuffer>*)AddBind(std::make_unique<ConstantBuffer<PSconstBuffer>>(gfx, PIXEL_CONSTANT_BUFFER_TYPE));
 		pscBuff1 = (ConstantBuffer<_float4vector>*)AddBind(std::make_unique<ConstantBuffer<_float4vector>>(gfx, PIXEL_CONSTANT_BUFFER_TYPE, 1u));
@@ -135,4 +139,12 @@ void Background::updateWideness(Graphics& gfx, float FOV, Vector2f WindowDimensi
 		throw std::exception("Not possible to call updateWideness() on a non dynamic background!!");
 
 	pscBuff1->Update(gfx, Vector3f(FOV, WindowDimensions.x, WindowDimensions.y).getVector4());
+}
+
+void Background::updateRectangle(Graphics& gfx, _float4vector rectangle)
+{
+	if (!vscBuff)
+		throw std::exception("Not possible to call updateRectangle() on a dynamic background!!");
+
+	vscBuff->Update(gfx, rectangle);
 }

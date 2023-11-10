@@ -162,27 +162,33 @@ std::string angle3::getString() const
 
 //	Coordinates
 
-const Coordinates Coordinates::Greenwich	(0.			, 0.		, DEGREES);
-const Coordinates Coordinates::London		(51.5098	, -0.1180	, DEGREES);
-const Coordinates Coordinates::Barcelona	(41.3874	, 2.1686	, DEGREES);
-const Coordinates Coordinates::NewYork		(40.7831	, -73.9712	, DEGREES);
-const Coordinates Coordinates::Canary		(27.9202	, -15.5474	, DEGREES);
-const Coordinates Coordinates::Grenada		(12.1165	, -61.6790	, DEGREES);
-const Coordinates Coordinates::Gibraltar	(36.1408	, -5.3536	, DEGREES);
+const Coordinate Coordinate::PLACES::Greenwich	(51.4780	, 0.0014	, DEGREES);
+const Coordinate Coordinate::PLACES::London		(51.5098	, -0.1180	, DEGREES);
+const Coordinate Coordinate::PLACES::Barcelona	(41.3874	, 2.1686	, DEGREES);
+const Coordinate Coordinate::PLACES::NewYork	(40.7831	, -73.9712	, DEGREES);
+const Coordinate Coordinate::PLACES::Canary		(27.9202	, -15.5474	, DEGREES);
+const Coordinate Coordinate::PLACES::Grenada	(12.1165	, -61.6790	, DEGREES);
+const Coordinate Coordinate::PLACES::Gibraltar	(36.1408	, -5.3536	, DEGREES);
+const Coordinate Coordinate::PLACES::Auckland	(-36.8509	, 174.7645	, DEGREES);
 
-Coordinates::Coordinates(double lat, double Long, ANGLE_TYPE type)
+Coordinate::Coordinate()
+{
+	*this = PLACES::Greenwich;
+}
+
+Coordinate::Coordinate(double lat, double Long, ANGLE_TYPE type)
 	: latitude(lat,type), Longitude(Long, type)
 {
 	correct();
 }
 
-Coordinates::Coordinates(angle& lat, angle& Long)
+Coordinate::Coordinate(angle& lat, angle& Long)
 	: latitude(lat.getRaw(DEGREES), DEGREES), Longitude(Long.getRaw(DEGREES), DEGREES)
 {
 	correct();
 }
 
-std::string Coordinates::getString(UINT D) const
+std::string Coordinate::getString(UINT D) const
 {
 	angle1 lat = latitude;
 	angle1 Long = Longitude;
@@ -223,7 +229,7 @@ std::string Coordinates::getString(UINT D) const
 	}
 }
 
-void Coordinates::correct()
+void Coordinate::correct()
 {
 	while (Longitude.angleDeg > 360)
 		Longitude.angleDeg -= 360;
@@ -252,7 +258,7 @@ void Coordinates::correct()
 
 }
 
-Vector3d Coordinates::getVector() const
+Vector3d Coordinate::getVector() const
 {
 	return { cos(latitude) * cos(Longitude), cos(latitude) * sin(Longitude), sin(latitude) };
 }
@@ -274,12 +280,27 @@ double tan(const angle& angle)
 	return sin(angle) / cos(angle);
 }
 
-double getDistance(const Coordinates& Pos1, const Coordinates& Pos2)
+float cosf(const angle& angle)
+{
+	return cosf((float)angle.getRaw(RADIANS));
+}
+
+float sinf(const angle& angle)
+{
+	return sinf((float)angle.getRaw(RADIANS));
+}
+
+float tanf(const angle& angle)
+{
+	return sinf(angle) / cosf(angle);
+}
+
+double getDistance(const Coordinate& Pos1, const Coordinate& Pos2)
 {
 	return 360 * 60 / 2 / pi * acos(Pos1.getVector() ^ Pos2.getVector());
 }
 
-double getDirection(const Coordinates& Pos1, const Coordinates& Pos2)
+double getDirection(const Coordinate& Pos1, const Coordinate& Pos2)
 {
 	Vector3d North = Pos1.getVector() * Vector3d(0, 0, 1) * Pos1.getVector();
 	Vector3d Route = Pos1.getVector() * Pos2.getVector() * Pos1.getVector();

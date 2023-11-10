@@ -1,12 +1,24 @@
 #pragma once
 
 #include "Window.h"
+#include "Drawable/Background.h"
 #include "Drawable/Surface.h"
+
+#define INPUT_FOLDER(file)	(std::string(PROJECT_DIR) + std::string(R"(images\input\)")  + file).c_str()
+#define OUTPUT_FOLDER(file) (std::string(PROJECT_DIR) + std::string(R"(images\output\)") + file).c_str()
 
 struct IG_DATA {
 	static float THETA;
 	static float PHI;
 	static float SPEED;
+
+	enum TYPE{
+		BACK,
+		SPHERE,
+		WEIRD,
+	};
+
+	static TYPE SHOW;
 };
 
 class ImageEditor {
@@ -22,18 +34,30 @@ private:
 	Vector2i initialDrag;
 	Vector2f initialDragAngles;
 
-	Surface example;
+	Image		image;
+	Texture		imageTex;
+
+	Background	imageBG;
+	Surface		imageSP;
+	Surface		imageWD;
 
 public:
 	ImageEditor();
+	Image initialImage() const;
 
 	int Run();
 
-
+	void imageChanges();
 	void eventManager();
 	void doFrame();
 };
 
-//	Functions
+//	Shapes
 
 float exampleRadius(float, float);
+
+template <float r>
+float Radius(float, float)
+{
+	return r;
+}
