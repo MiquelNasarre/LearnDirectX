@@ -1,7 +1,12 @@
 #include "Drawable.h"
 #include <typeinfo>
 
-void Drawable::Draw(Graphics& gfx) const
+void Drawable::Draw(Graphics& gfx)
+{
+	_draw(gfx);
+}
+
+void Drawable::_draw(Graphics& gfx) const
 {
 	for (auto& b : binds)
 		b->Bind(gfx);

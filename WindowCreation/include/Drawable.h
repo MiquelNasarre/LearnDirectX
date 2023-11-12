@@ -6,9 +6,11 @@ class Drawable
 public:
 	Drawable() = default;
 	Drawable(const Drawable&) = delete;
-	void Draw(Graphics& gfx) const;
+	virtual void Draw(Graphics& gfx);
 
 protected:
+	void _draw(Graphics& gfx) const;
+
 	void* AddBind(std::unique_ptr<Bindable> bind);
 	void* changeBind(std::unique_ptr<Bindable> bind, UINT N);
 private:

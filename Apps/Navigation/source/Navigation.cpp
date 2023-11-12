@@ -15,12 +15,12 @@ Navigation::Navigation()
 	Earth::create(window.graphics);
 	window.setFramerateLimit(60);
 
-	points.push_back(Point(window.graphics, pl::London));
-	points.push_back(Point(window.graphics, pl::Barcelona));
-	points.push_back(Point(window.graphics, pl::Canary));
-	points.push_back(Point(window.graphics, pl::Grenada));
-	points.push_back(Point(window.graphics, pl::NewYork));
-	points.push_back(Point(window.graphics, pl::Auckland, Color::Red));
+	points.push_back(Waypoint(window.graphics, pl::London));
+	points.push_back(Waypoint(window.graphics, pl::Barcelona));
+	points.push_back(Waypoint(window.graphics, pl::Canary));
+	points.push_back(Waypoint(window.graphics, pl::Grenada));
+	points.push_back(Waypoint(window.graphics, pl::NewYork));
+	points.push_back(Waypoint(window.graphics, pl::Auckland, Color::Red));
 
 	routes.push_back(Route(window.graphics, std::vector<Coordinate>{ pl::NewYork, pl::London, pl::Barcelona, pl::Canary, pl::Grenada }));
 	routes.push_back(Route(window.graphics, std::vector<Coordinate>{ pl::Grenada, pl::Auckland }, Color::Blue));
@@ -38,19 +38,8 @@ void Navigation::eventManager()
 	//	Keyboard and Mouse events
 
 	scale *= powf(1.1f, Mouse::getWheel() / 120.f);
-
-	if (Keyboard::isKeyPressed('W'))
-		center.y += 0.02f;
-	if (Keyboard::isKeyPressed('S'))
-		center.y -= 0.02f;
-	if (Keyboard::isKeyPressed('A'))
-		center.x -= 0.02f;
-	if (Keyboard::isKeyPressed('D'))
-		center.x += 0.02f;
-	if (Keyboard::isKeyPressed('R'))
-		center.z += 0.02f;
-	if (Keyboard::isKeyPressed('F'))
-		center.z -= 0.02f;
+	if (scale < 50.f)
+		scale = 50.f;
 
 	if (Mouse::isButtonPressed(Mouse::Left) && !dragging) {
 		dragging = true;
@@ -101,8 +90,14 @@ void Navigation::doFrame()
 
 	Earth::update(window.graphics, IG_DATA::THETA, IG_DATA::PHI);
 	
-	for (auto& a : points)
-		a.point->updateRotation(window.graphics, IG_DATA::THETA, IG_DATA::PHI);
+	for (auto& a : points) {
+
+		Matrix M = ZRotationMatrix(IG_DATA::THETA) * XRotationMatrix(IG_DATA::PHI);
+		a.point->updatePosition(window.graphics, a.pos.getVector() * M);
+
+		
+	}
+
 
 	for (auto& b : routes)
 		b.route->updateRotation(window.graphics, IG_DATA::THETA, IG_DATA::PHI);
@@ -169,10 +164,10 @@ void Navigation::Earth::update(Graphics& gfx, float theta, float phi)
 		b->updateRotation(gfx, theta, phi);
 }
 
-Navigation::Point::Point(Graphics& gfx, const Coordinate& coor, Color color)
+Navigation::Waypoint::Waypoint(Graphics& gfx, const Coordinate& coor, Color color)
 {
 	pos = coor;
-	point = std::make_unique<Surface>(gfx, _PARAMETRIC, PointGen, coor, SURFACE_COLORING(color, false), false, Vector2f(0.f, -pi / 2.f), Vector2f(2.f * pi, pi / 2.f));
+	point = std::make_unique<Point>(gfx, Vector3f(), 7.f, color);
 }
 
 Navigation::Route::Route(Graphics& gfx, std::vector<Coordinate> coor, Color color)

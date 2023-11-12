@@ -134,10 +134,10 @@ Surface::Surface(Graphics& gfx, SURFACE_TYPE Type, float H(float, float, float),
 	switch (Type)
 	{
 	case _IMPLICIT:
-		generateImplicit(gfx, H);
+		generateImplicit(gfx, H, sc);
 		break;
 	case _IMPLICIT_SPHERICAL:
-		generateImplicitPolar(gfx, H);
+		generateImplicitPolar(gfx, H, sc);
 		break;
 	case _PARAMETRIC:
 		throw std::exception("The surface type specified is iconrrect for the given constructor arguments\nTo create a Parametric surface you must provide three functions that take two arguments");
@@ -189,8 +189,8 @@ void Surface::updateTextures(Graphics& gfx, Texture texture0, Texture texture1)
 	if (!textured)
 		throw std::exception("ERROR: You cannot call a texture update in a surface that wasn't initialized as textured");
 
-	((Texture*)changeBind(std::make_unique<Texture>(texture0), 2u))->setSlot(0u);
-	((Texture*)changeBind(std::make_unique<Texture>(texture1), 3u))->setSlot(1u);
+	changeBind(std::make_unique<Texture>(texture0, 0u), 4u);
+	changeBind(std::make_unique<Texture>(texture1, 1u), 5u);
 }
 
 void Surface::updateTextures(Graphics& gfx, std::string texture0, std::string texture1)
@@ -198,8 +198,8 @@ void Surface::updateTextures(Graphics& gfx, std::string texture0, std::string te
 	if (!textured)
 		throw std::exception("ERROR: You cannot call a texture update in a surface that wasn't initialized as textured");
 
-	changeBind(std::make_unique<Texture>(gfx, texture0, 0u), 2u);
-	changeBind(std::make_unique<Texture>(gfx, texture1, 1u), 3u);
+	changeBind(std::make_unique<Texture>(gfx, texture0, 0u), 4u);
+	changeBind(std::make_unique<Texture>(gfx, texture1, 1u), 5u);
 }
 
 void Surface::updateLight(Graphics& gfx, UINT id, Vector2f intensity, Color color, Vector3f position)
@@ -731,12 +731,62 @@ void Surface::generatePolarParametric(Graphics& gfx, Vector3f P(float, float), V
 	AddBind(std::make_unique<IndexBuffer>(gfx, indexs));
 }
 
-void Surface::generateImplicit(Graphics& gfx, float H(float, float, float))
+void Surface::generateImplicit(Graphics& gfx, float H(float, float, float), SURFACE_COLORING sc)
 {
-	throw std::exception("This surface type hasn't been implemented yet");
+
+	constexpr int cubes = 50;
+	float minx = -2.f;
+	float maxx = 2.f;
+	float miny = -2.f;
+	float maxy = 2.f;
+	float minz = -2.f;
+	float maxz = 2.f;
+
+	_float4vector*** h = (_float4vector***)calloc(cubes + 1, sizeof(void**));
+	
+	for (int i = 0; i <= cubes; i++)
+	{
+		h[i] = (_float4vector**)calloc(cubes + 1, sizeof(void*));
+
+		for (int j = 0; j <= cubes; j++)
+		{
+			h[i][j] = (_float4vector*)calloc(cubes + 1, sizeof(_float4vector));
+
+			for (int k = 0; k <= cubes; k++)
+			{
+				float di = float(i) / cubes;
+				float dj = float(j) / cubes;
+				float dk = float(k) / cubes;
+
+				float x = minx * (1 - di) + maxx * di;
+				float y = miny * (1 - dj) + maxy * dj;
+				float z = minz * (1 - dk) + maxz * dk;
+				h[i][j][k] = { x , y , z , H(x, y, z) };
+			}
+		}
+	}
+
+	std::vector<Vertex> vertexs;
+	std::vector<unsigned short> indexs;
+
+	for (int i = 0; i < cubes; i++)
+	{
+		for (int j = 0; j < cubes; j++)
+		{
+			for (int k = 0; k < cubes; k++)
+			{
+				_float4vector cube[8] = { h[i][j][k] , h[i][j][k + 1] , h[i][j + 1][k + 1] , h[i][j + 1][k] , h[i + 1][j][k] , h[i + 1][j][k + 1] , h[i + 1][j + 1][k + 1] , h[i + 1][j + 1][k] };
+
+				addVertexsCube(cube, vertexs, indexs, sc);
+			}
+		}
+	}
+
+	AddBind(std::make_unique<VertexBuffer>(gfx, vertexs));
+	AddBind(std::make_unique<IndexBuffer>(gfx, indexs));
 }
 
-void Surface::generateImplicitPolar(Graphics& gfx, float H(float, float, float))
+void Surface::generateImplicitPolar(Graphics& gfx, float H(float, float, float), SURFACE_COLORING sc)
 {
 	throw std::exception("This surface type hasn't been implemented yet");
 }
@@ -841,4 +891,48 @@ Vector3f Surface::evalPolar(float r(float, float), float theta, float phi)
 Vector3f Surface::makePolar(Vector3f other)
 {
 	return other.z * Vector3f(cosf(other.y) * cosf(other.x), cosf(other.y) * sinf(other.x), sinf(other.y));
+}
+
+void Surface::addVertexsCube(_float4vector cube[8], std::vector<Vertex>& vertexs, std::vector<unsigned short>& indexs, SURFACE_COLORING sc)
+{
+	UINT vi = (UINT)vertexs.size();
+
+	Vector2i cases[] = { {0 , 1} , {0 , 3} , {0 , 4} ,  {1 , 2} ,  {1 , 5} ,  {3 , 2} ,  {3 , 7} ,  {4 , 5} ,  {4 , 7} ,  {2 , 6} ,  {5 , 6} ,  {7 , 6} };
+
+	for (Vector2i& c : cases) {
+		Vector3f p0 = { cube[c.x].x ,cube[c.x].y ,cube[c.x].z };
+		Vector3f p1 = { cube[c.y].x ,cube[c.y].y ,cube[c.y].z };
+		float w0 = cube[c.x].w;
+		float w1 = cube[c.y].w;
+		
+		if (w0 * w1 <= 0)
+			vertexs.push_back(Vertex((p0 * w0 - p1 * w1) / (w0 - w1), ((p0 * w0 - p1 * w1) / (w0 - w1)).normalize(), Color::White));
+	}
+
+	if (vertexs.size() - vi == 3) {
+		indexs.push_back(vi - 1);
+		indexs.push_back(vi);
+		indexs.push_back(vi + 1);
+
+		indexs.push_back(vi);
+		indexs.push_back(vi - 1);
+		indexs.push_back(vi + 1);
+	}
+	if (vertexs.size() - vi == 4) {
+		indexs.push_back(vi - 1);
+		indexs.push_back(vi);
+		indexs.push_back(vi + 1);
+
+		indexs.push_back(vi - 1);
+		indexs.push_back(vi);
+		indexs.push_back(vi + 2);
+
+		indexs.push_back(vi);
+		indexs.push_back(vi - 1);
+		indexs.push_back(vi + 1);
+
+		indexs.push_back(vi);
+		indexs.push_back(vi - 1);
+		indexs.push_back(vi + 2);
+	}
 }

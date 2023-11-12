@@ -34,8 +34,8 @@ EarthDemo::EarthDemo()
 	TexBackEarth		(window.graphics,	"Resources/EarthDemo/earthTextures/projected.jpg"		),
 	TexBackMoon			(window.graphics,	"Resources/EarthDemo/moonTextures/projected.jpg"		),
 
-	Earth	(window.graphics, _RADIAL_SPHERICAL, EarthRadius, TexEarth, TexNEarth),
-	Moon	(window.graphics, _RADIAL_SPHERICAL, MoonRadius, TexMoon, TexMoon),
+	Earth	(window.graphics, _RADIAL_SPHERICAL, EarthRadius, SURFACE_COLORING(TexEarth, TexNEarth)),
+	Moon	(window.graphics, _RADIAL_SPHERICAL, MoonRadius, SURFACE_COLORING(TexMoon)),
 	back	(window.graphics, TexBack, true, PT_AZIMUTHAL)
 {
 

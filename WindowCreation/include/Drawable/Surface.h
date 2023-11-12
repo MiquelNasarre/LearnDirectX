@@ -111,8 +111,8 @@ private:
 	void generateParametric(Graphics& gfx, Vector3f P(float, float), Vector2f minRect, Vector2f maxRect, UINT numU, UINT numV, SURFACE_COLORING sc);
 	void generatePolarParametric(Graphics& gfx, float theta(float, float), float phi(float, float), float rad(float, float), Vector2f minRect, Vector2f maxRect, UINT numU, UINT numV, SURFACE_COLORING sc);
 	void generatePolarParametric(Graphics& gfx, Vector3f P(float, float), Vector2f minRect, Vector2f maxRect, UINT numU, UINT numV, SURFACE_COLORING sc);
-	void generateImplicit(Graphics& gfx, float H(float, float, float));
-	void generateImplicitPolar(Graphics& gfx, float H(float, float, float));
+	void generateImplicit(Graphics& gfx, float H(float, float, float), SURFACE_COLORING sc);
+	void generateImplicitPolar(Graphics& gfx, float H(float, float, float), SURFACE_COLORING sc);
 
 	template<typename C>
 	void generateExplicit(Graphics& gfx, float F(float, float, const C&), const C& param, Vector2f minRect, Vector2f maxRect, UINT numX, UINT numY, SURFACE_COLORING sc);
@@ -144,8 +144,6 @@ private:
 	ConstantBuffer<PSconstBuffer>* pPSCB = NULL;
 	bool textured = false;
 
-	Vector3f evalPolar(float r(float, float), float theta, float phi);
-	Vector3f makePolar(Vector3f other);
 
 	struct Vertex {
 		Vector3f vector;
@@ -158,6 +156,11 @@ private:
 		Vector3f norm;
 		Vector2f texCoor;
 	};
+
+	Vector3f evalPolar(float r(float, float), float theta, float phi);
+	Vector3f makePolar(Vector3f other);
+	void addVertexsCube(_float4vector cube[8], std::vector<Vertex>& vertexs, std::vector<unsigned short>& indexs, SURFACE_COLORING sc);
+
 };
 
 //	Templated stuff

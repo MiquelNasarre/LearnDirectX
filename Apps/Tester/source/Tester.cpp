@@ -11,7 +11,9 @@ Tester::Tester()
 	surf(window.graphics, _RADIAL_SPHERICAL, weirdRadius),
 	light(window.graphics, Color::Black, { 3.f , 0.f , 2.f }, 1.f),
 	curve(window.graphics, curveF, { 0.f ,2 * pi }, 1000, { Color::Red / 3, Color::Yellow / 3, Color::Green / 3, Color::Cyan / 3, Color::Blue / 3, Color::Purple / 3, Color::Red / 3 }),
-	Klein(window.graphics, _PARAMETRIC, KleinBottle, true,false,Vector2f(0,0),Vector2f(pi,2*pi))
+	Klein(window.graphics, _PARAMETRIC, KleinBottle, {}, false, Vector2f(0, 0), Vector2f(pi, 2 * pi)),
+	point(window.graphics, { 2.f,0.f,0.f }, 8.f),
+	impl(window.graphics, _IMPLICIT, sphere)
 {
 	window.setFramerateLimit(60);
 	srand(143452);
@@ -81,7 +83,6 @@ void Tester::doFrame()
 	window.graphics.clearBuffer(Color::Black);
 
 	window.graphics.updatePerspective({ -cosf(IG_DATA::PHI) * cosf(IG_DATA::THETA), -cosf(IG_DATA::PHI) * sinf(IG_DATA::THETA), -sinf(IG_DATA::PHI) }, center, scale);
-	light.update(window.graphics);
 
 	static int count = 0;
 	if (!(++count % 100)) {
@@ -95,10 +96,14 @@ void Tester::doFrame()
 	surf.updateRotation(window.graphics, theta, phi);
 	curve.updateRotation(window.graphics, theta, phi);
 	Klein.updateRotation(window.graphics, theta, phi);
+	impl.updateRotation(window.graphics, theta, phi);
 	//surf.Draw(window.graphics);
 	//light.Draw(window.graphics);
 	//curve.Draw(window.graphics);
-	Klein.Draw(window.graphics);
+	//Klein.Draw(window.graphics);
+	point.Draw(window.graphics);
+
+	impl.Draw(window.graphics);
 
 	IG_Tester::render();
 	window.graphics.pushFrame();
@@ -177,5 +182,6 @@ float returnY(float, float y)
 
 float sphere(float x, float y, float z)
 {
+	return z - x * x - y * y;
 	return x * x + y * y + z * z - 1;
 }

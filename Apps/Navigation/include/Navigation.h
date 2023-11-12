@@ -3,6 +3,7 @@
 #include "Window.h"
 #include "Drawable/Surface.h"
 #include "Drawable/Curve.h"
+#include "Drawable/Point.h"
 #include "Spherical.h"
 
 struct IG_DATA {
@@ -44,12 +45,12 @@ private:
 	Vector2i initialDrag;
 	Vector2f initialDragAngles;
 
-	struct Point
+	struct Waypoint
 	{
 		Coordinate pos;
-		std::unique_ptr<Surface> point;
+		std::unique_ptr<Point> point;
 
-		Point(Graphics& gfx, const Coordinate& coor, Color color = Color::White);
+		Waypoint(Graphics& gfx, const Coordinate& coor, Color color = Color::White);
 	};
 
 	struct Route
@@ -60,7 +61,7 @@ private:
 		Route(Graphics& gfx, std::vector<Coordinate> coor, Color color = Color::White);
 	};
 
-	std::vector<Point> points;
+	std::vector<Waypoint> points;
 	std::vector<Route> routes;
 
 public:
@@ -74,12 +75,6 @@ public:
 };
 
 //	Drawable generation functions
-
-template <float r>
-float Radius(float, float)
-{
-	return r;
-}
 
 Vector3f Meridian(float t, const Coordinate& coor);
 Vector3f Parallel(float t, const Coordinate& coor);

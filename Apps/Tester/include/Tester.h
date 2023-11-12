@@ -5,6 +5,7 @@
 #include "Drawable/Surface.h"
 #include "Drawable/PointLight.h"
 #include "Drawable/Curve.h"
+#include "Drawable/Point.h"
 
 struct IG_DATA {
 	static float THETA;
@@ -21,6 +22,9 @@ private:
 	Surface surf;
 	PointLight light;
 	Curve curve;
+	Point point;
+
+	Surface impl;
 
 	Surface Klein;
 

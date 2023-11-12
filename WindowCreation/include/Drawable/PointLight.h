@@ -6,10 +6,11 @@ class PointLight : public Drawable
 public:
 	PointLight(Graphics& gfx, Color color, Vector3f Position, float Radius, UINT circlePoints = 40u);
 
-	void update(Graphics& gfx);
 	void updateRadius(Graphics& gfx, float radius);
 	void updatePosition(Graphics& gfx, Vector3f position);
 	void updateColor(Graphics& gfx, Color color);
+
+	void Draw(Graphics& gfx) override;
 
 private:
 

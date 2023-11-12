@@ -36,13 +36,6 @@ PointLight::PointLight(Graphics& gfx, Color color, Vector3f Position, float Radi
 	pPSCB = (ConstantBuffer<PSconstBuffer>*)AddBind(std::make_unique<ConstantBuffer<PSconstBuffer>>(gfx, pscBuff, PIXEL_CONSTANT_BUFFER_TYPE));
 }
 
-void PointLight::update(Graphics& gfx)
-{
-	vscBuff.observer = gfx.getObserver().getVector4();
-
-	pVSCB->Update(gfx, vscBuff);
-}
-
 void PointLight::updateRadius(Graphics& gfx, float radius)
 {
 	vscBuff.radius = { radius, 0.f, 0.f, 0.f };
@@ -62,4 +55,12 @@ void PointLight::updateColor(Graphics& gfx, Color color)
 	pscBuff.color = color.getColor4();
 
 	pPSCB->Update(gfx, pscBuff);
+}
+
+void PointLight::Draw(Graphics& gfx)
+{
+	vscBuff.observer = gfx.getObserver().getVector4();
+	pVSCB->Update(gfx, vscBuff);
+
+	_draw(gfx);
 }

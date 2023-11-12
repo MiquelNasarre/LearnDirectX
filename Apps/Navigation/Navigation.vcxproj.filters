@@ -16,28 +16,16 @@
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
       <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
-    <Filter Include="Sources\Private\Display">
-      <UniqueIdentifier>{8159fbb6-4c6a-429d-bd2e-d6f577ff9f4c}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Sources\Public\Display">
-      <UniqueIdentifier>{f1288245-f519-4a9a-86ff-97134cad9737}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Sources\Private\Functions">
-      <UniqueIdentifier>{79f5225f-fbed-428c-9490-ff9a6caa86d3}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Sources\Public\Functions">
-      <UniqueIdentifier>{ca5d1c8a-12d2-4de1-8e60-f53ca6dc7044}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\IG_Navigation.h">
-      <Filter>Sources\Public\Display</Filter>
+      <Filter>Sources\Public</Filter>
     </ClInclude>
     <ClInclude Include="include\Navigation.h">
-      <Filter>Sources\Public\Display</Filter>
+      <Filter>Sources\Public</Filter>
     </ClInclude>
     <ClInclude Include="include\Spherical.h">
-      <Filter>Sources\Public\Functions</Filter>
+      <Filter>Sources\Public</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -45,13 +33,13 @@
       <Filter>Sources\Private</Filter>
     </ClCompile>
     <ClCompile Include="source\IG_Navigation.cpp">
-      <Filter>Sources\Private\Display</Filter>
+      <Filter>Sources\Private</Filter>
     </ClCompile>
     <ClCompile Include="source\Navigation.cpp">
-      <Filter>Sources\Private\Display</Filter>
+      <Filter>Sources\Private</Filter>
     </ClCompile>
     <ClCompile Include="source\Spherical.cpp">
-      <Filter>Sources\Private\Functions</Filter>
+      <Filter>Sources\Private</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
