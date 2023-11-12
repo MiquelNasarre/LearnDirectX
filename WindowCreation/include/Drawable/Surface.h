@@ -90,7 +90,7 @@ public:
 
 	//	Implicit & Implicit spherical
 
-	Surface(Graphics& gfx, SURFACE_TYPE Type, float H(float, float, float), SURFACE_COLORING sc = {});
+	Surface(Graphics& gfx, SURFACE_TYPE Type, float H(float, float, float), SURFACE_COLORING sc = {}, Vector3f regionBegin = { -2.f, -2.f, -2.f }, Vector3f regionEnd = { 2.f, 2.f, 2.f });
 
 	//	Public functions
 
@@ -111,8 +111,8 @@ private:
 	void generateParametric(Graphics& gfx, Vector3f P(float, float), Vector2f minRect, Vector2f maxRect, UINT numU, UINT numV, SURFACE_COLORING sc);
 	void generatePolarParametric(Graphics& gfx, float theta(float, float), float phi(float, float), float rad(float, float), Vector2f minRect, Vector2f maxRect, UINT numU, UINT numV, SURFACE_COLORING sc);
 	void generatePolarParametric(Graphics& gfx, Vector3f P(float, float), Vector2f minRect, Vector2f maxRect, UINT numU, UINT numV, SURFACE_COLORING sc);
-	void generateImplicit(Graphics& gfx, float H(float, float, float), SURFACE_COLORING sc);
-	void generateImplicitPolar(Graphics& gfx, float H(float, float, float), SURFACE_COLORING sc);
+	void generateImplicit(Graphics& gfx, float H(float, float, float), SURFACE_COLORING sc, Vector3f regionBegin, Vector3f regionEnd);
+	void generateImplicitPolar(Graphics& gfx, float H(float, float, float), SURFACE_COLORING sc, Vector3f regionBegin, Vector3f regionEnd);
 
 	template<typename C>
 	void generateExplicit(Graphics& gfx, float F(float, float, const C&), const C& param, Vector2f minRect, Vector2f maxRect, UINT numX, UINT numY, SURFACE_COLORING sc);
@@ -159,7 +159,7 @@ private:
 
 	Vector3f evalPolar(float r(float, float), float theta, float phi);
 	Vector3f makePolar(Vector3f other);
-	void addVertexsCube(_float4vector cube[8], std::vector<Vertex>& vertexs, std::vector<unsigned short>& indexs, SURFACE_COLORING sc);
+	void addVertexsCube(_float4vector cube[8], std::vector<Vertex>& vertexs, std::vector<unsigned short>& indexs, SURFACE_COLORING sc, bool polar = false);
 
 };
 

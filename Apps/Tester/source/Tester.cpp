@@ -13,7 +13,7 @@ Tester::Tester()
 	curve(window.graphics, curveF, { 0.f ,2 * pi }, 1000, { Color::Red / 3, Color::Yellow / 3, Color::Green / 3, Color::Cyan / 3, Color::Blue / 3, Color::Purple / 3, Color::Red / 3 }),
 	Klein(window.graphics, _PARAMETRIC, KleinBottle, {}, false, Vector2f(0, 0), Vector2f(pi, 2 * pi)),
 	point(window.graphics, { 2.f,0.f,0.f }, 8.f),
-	impl(window.graphics, _IMPLICIT, sphere)
+	impl(window.graphics, _IMPLICIT_SPHERICAL, sphere)
 {
 	window.setFramerateLimit(60);
 	srand(143452);
@@ -55,7 +55,9 @@ void Tester::eventManager()
 	if (dragging) {
 		Vector2i movement = Mouse::getPosition() - initialDrag;
 
-		theta = initialDragAngles.x - 2.f * (float)movement.x / scale;
+		float temp = initialDragAngles.x - 2.f * (float)movement.x / scale;
+		speed = -10.f * (temp - theta);
+		theta = temp;
 		phi = initialDragAngles.y + 2.f * (float)movement.y / scale;
 
 		if (phi > pi / 2.f) {
@@ -67,6 +69,20 @@ void Tester::eventManager()
 			initialDrag.y = Mouse::getPosition().y - int((-pi / 2.f - initialDragAngles.y) * scale / 2.f);
 		}
 	}
+	else {
+		if (speed > 1.f) {
+			speed *= 0.99f;
+			if (speed < 1.f)
+				speed = 1.f;
+		}
+		if (speed < -1.f) {
+			speed *= 0.99f;
+			if (speed > -1.f)
+				speed = -1.f;
+		}
+		theta += -speed / 10.f;
+	}
+
 
 	if (IG_DATA::PHI > 3.1415f / 2.f)
 		IG_DATA::PHI = 3.1415f / 2.f;
@@ -101,7 +117,7 @@ void Tester::doFrame()
 	//light.Draw(window.graphics);
 	//curve.Draw(window.graphics);
 	//Klein.Draw(window.graphics);
-	point.Draw(window.graphics);
+	//point.Draw(window.graphics);
 
 	impl.Draw(window.graphics);
 
@@ -182,6 +198,7 @@ float returnY(float, float y)
 
 float sphere(float x, float y, float z)
 {
-	return z - x * x - y * y;
+	//return z;
+	//return (z + 1) * (z + 1) * (z + 1) - x * x * sqrt(z + 1) - y * y;
 	return x * x + y * y + z * z - 1;
 }

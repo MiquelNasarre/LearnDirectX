@@ -33,6 +33,7 @@ private:
 	float scale = 250.f;
 	float theta = 0.f;
 	float phi = 0.f;
+	float speed = 0.f;
 	Vector3f center = {};
 
 	bool dragging = false;

@@ -129,15 +129,15 @@ Surface::Surface(Graphics& gfx, SURFACE_TYPE Type, Vector3f P(float, float), SUR
 	addOtherBinds(gfx, sc);
 }
 
-Surface::Surface(Graphics& gfx, SURFACE_TYPE Type, float H(float, float, float), SURFACE_COLORING sc)
+Surface::Surface(Graphics& gfx, SURFACE_TYPE Type, float H(float, float, float), SURFACE_COLORING sc, Vector3f regionBegin, Vector3f regionEnd)
 {
 	switch (Type)
 	{
 	case _IMPLICIT:
-		generateImplicit(gfx, H, sc);
+		generateImplicit(gfx, H, sc, regionBegin, regionEnd);
 		break;
 	case _IMPLICIT_SPHERICAL:
-		generateImplicitPolar(gfx, H, sc);
+		generateImplicitPolar(gfx, H, sc, regionBegin, regionEnd);
 		break;
 	case _PARAMETRIC:
 		throw std::exception("The surface type specified is iconrrect for the given constructor arguments\nTo create a Parametric surface you must provide three functions that take two arguments");
@@ -731,16 +731,15 @@ void Surface::generatePolarParametric(Graphics& gfx, Vector3f P(float, float), V
 	AddBind(std::make_unique<IndexBuffer>(gfx, indexs));
 }
 
-void Surface::generateImplicit(Graphics& gfx, float H(float, float, float), SURFACE_COLORING sc)
+void Surface::generateImplicit(Graphics& gfx, float H(float, float, float), SURFACE_COLORING sc, Vector3f regionBegin, Vector3f regionEnd)
 {
-
-	constexpr int cubes = 50;
-	float minx = -2.f;
-	float maxx = 2.f;
-	float miny = -2.f;
-	float maxy = 2.f;
-	float minz = -2.f;
-	float maxz = 2.f;
+	constexpr int cubes = 60;
+	float minx = regionBegin.x;
+	float maxx = regionEnd.x;
+	float miny = regionBegin.y;
+	float maxy = regionEnd.y;
+	float minz = regionBegin.z;
+	float maxz = regionEnd.z;
 
 	_float4vector*** h = (_float4vector***)calloc(cubes + 1, sizeof(void**));
 	
@@ -781,14 +780,83 @@ void Surface::generateImplicit(Graphics& gfx, float H(float, float, float), SURF
 			}
 		}
 	}
+	
+	for (int i = 0; i <= cubes; i++)
+	{
+		for (int j = 0; j <= cubes; j++)
+		{
+			free(h[i][j]);
+		}
+		free(h[i]);
+	}
+	free(h);
 
 	AddBind(std::make_unique<VertexBuffer>(gfx, vertexs));
 	AddBind(std::make_unique<IndexBuffer>(gfx, indexs));
 }
 
-void Surface::generateImplicitPolar(Graphics& gfx, float H(float, float, float), SURFACE_COLORING sc)
+void Surface::generateImplicitPolar(Graphics& gfx, float H(float, float, float), SURFACE_COLORING sc, Vector3f regionBegin, Vector3f regionEnd)
 {
-	throw std::exception("This surface type hasn't been implemented yet");
+	constexpr int cubes = 60;
+	float minx = regionBegin.x;
+	float maxx = regionEnd.x;
+	float miny = regionBegin.y;
+	float maxy = regionEnd.y;
+	float minz = regionBegin.z;
+	float maxz = regionEnd.z;
+
+	_float4vector*** h = (_float4vector***)calloc(cubes + 1, sizeof(void**));
+
+	for (int i = 0; i <= cubes; i++)
+	{
+		h[i] = (_float4vector**)calloc(cubes + 1, sizeof(void*));
+
+		for (int j = 0; j <= cubes; j++)
+		{
+			h[i][j] = (_float4vector*)calloc(cubes + 1, sizeof(_float4vector));
+
+			for (int k = 0; k <= cubes; k++)
+			{
+				float di = float(i) / cubes;
+				float dj = float(j) / cubes;
+				float dk = float(k) / cubes;
+
+				float x = minx * (1 - di) + maxx * di;
+				float y = miny * (1 - dj) + maxy * dj;
+				float z = minz * (1 - dk) + maxz * dk;
+				h[i][j][k] = { x , y , z , H(x, y, z) };
+			}
+		}
+	}
+
+	std::vector<Vertex> vertexs;
+	std::vector<unsigned short> indexs;
+
+	for (int i = 0; i < cubes; i++)
+	{
+		for (int j = 0; j < cubes; j++)
+		{
+			for (int k = 0; k < cubes; k++)
+			{
+				_float4vector cube[8] = { h[i][j][k] , h[i][j][k + 1] , h[i][j + 1][k + 1] , h[i][j + 1][k] , h[i + 1][j][k] , h[i + 1][j][k + 1] , h[i + 1][j + 1][k + 1] , h[i + 1][j + 1][k] };
+
+				addVertexsCube(cube, vertexs, indexs, sc, true);
+			}
+		}
+	}
+
+	for (int i = 0; i <= cubes; i++)
+	{
+		for (int j = 0; j <= cubes; j++)
+		{
+			free(h[i][j]);
+		}
+		free(h[i]);
+	}
+	free(h);
+
+	AddBind(std::make_unique<VertexBuffer>(gfx, vertexs));
+	AddBind(std::make_unique<IndexBuffer>(gfx, indexs));
 }
 
 void Surface::addOtherBinds(Graphics& gfx, SURFACE_COLORING sc)
@@ -893,46 +961,203 @@ Vector3f Surface::makePolar(Vector3f other)
 	return other.z * Vector3f(cosf(other.y) * cosf(other.x), cosf(other.y) * sinf(other.x), sinf(other.y));
 }
 
-void Surface::addVertexsCube(_float4vector cube[8], std::vector<Vertex>& vertexs, std::vector<unsigned short>& indexs, SURFACE_COLORING sc)
+void Surface::addVertexsCube(_float4vector cube[8], std::vector<Vertex>& vertexs, std::vector<unsigned short>& indexs, SURFACE_COLORING sc, bool polar)
 {
+	struct triangle {
+		unsigned short v0;
+		unsigned short v1;
+		unsigned short v2;
+
+		triangle(UINT x, UINT y, UINT z)
+		{
+			v0 = unsigned short(x);
+			v1 = unsigned short(y);
+			v2 = unsigned short(z);
+		}
+	};
+
+	std::vector<triangle> triangles;
+
 	UINT vi = (UINT)vertexs.size();
 
 	Vector2i cases[] = { {0 , 1} , {0 , 3} , {0 , 4} ,  {1 , 2} ,  {1 , 5} ,  {3 , 2} ,  {3 , 7} ,  {4 , 5} ,  {4 , 7} ,  {2 , 6} ,  {5 , 6} ,  {7 , 6} };
 
+	unsigned char b = 0x0;
+	for (int i = 0; i < 8; i++) {
+		if (cube[i].w <= 0)
+			b |= 0x1 << i;
+	}
+
 	for (Vector2i& c : cases) {
-		Vector3f p0 = { cube[c.x].x ,cube[c.x].y ,cube[c.x].z };
-		Vector3f p1 = { cube[c.y].x ,cube[c.y].y ,cube[c.y].z };
-		float w0 = cube[c.x].w;
-		float w1 = cube[c.y].w;
-		
-		if (w0 * w1 <= 0)
-			vertexs.push_back(Vertex((p0 * w0 - p1 * w1) / (w0 - w1), ((p0 * w0 - p1 * w1) / (w0 - w1)).normalize(), Color::White));
+		if (((b & (0x1 << c.x)) && !(b & (0x1 << c.y))) || (!(b & (0x1 << c.x)) && (b & (0x1 << c.y))))
+		{
+			Vector3f p0 = { cube[c.x].x ,cube[c.x].y ,cube[c.x].z };
+			Vector3f p1 = { cube[c.y].x ,cube[c.y].y ,cube[c.y].z };
+			float w0 = cube[c.x].w;
+			float w1 = cube[c.y].w;
+			if (polar)
+				vertexs.push_back(Vertex(makePolar((p0 * w1 - p1 * w0) / (w1 - w0)), ((p0 * w0 - p1 * w1) / (w1 - w0)).normalize(), Color::White));
+			else
+				vertexs.push_back(Vertex((p0 * w1 - p1 * w0) / (w1 - w0), ((p0 * w0 - p1 * w1) / (w1 - w0)).normalize(), Color::White));
+		}
+
 	}
 
-	if (vertexs.size() - vi == 3) {
-		indexs.push_back(vi - 1);
-		indexs.push_back(vi);
-		indexs.push_back(vi + 1);
+	constexpr unsigned char p0 = 0x01;
+	constexpr unsigned char p1 = 0x02;
+	constexpr unsigned char p2 = 0x04;
+	constexpr unsigned char p3 = 0x08;
+	constexpr unsigned char p4 = 0x10;
+	constexpr unsigned char p5 = 0x20;
+	constexpr unsigned char p6 = 0x40;
+	constexpr unsigned char p7 = 0x80;
 
-		indexs.push_back(vi);
-		indexs.push_back(vi - 1);
-		indexs.push_back(vi + 1);
+#define CASE(p) case (p):case 0xff - (p):
+#define T(v0,v1,v2) triangles.push_back(triangle(vi + v0,vi + v1,vi + v2))
+
+	switch (b)
+	{
+	CASE(0x00)
+		break;
+	CASE(p0)
+	CASE(p1)
+	CASE(p2)
+	CASE(p3)
+	CASE(p4)
+	CASE(p5)
+	CASE(p6)
+	CASE(p7)
+		T(0,1,2);
+		break;
+	CASE(p0 | p1)
+	CASE(p1 | p2)
+	CASE(p2 | p3)
+	CASE(p3 | p0)
+	CASE(p4 | p5)
+	CASE(p5 | p6)
+	CASE(p6 | p7)
+	CASE(p7 | p4)
+	CASE(p0 | p4)
+	CASE(p1 | p5)
+	CASE(p2 | p6)
+	CASE(p3 | p7)
+	CASE(p0 | p1 | p2 | p3)
+	CASE(p0 | p1 | p4 | p5)
+	CASE(p0 | p3 | p4 | p7)
+		T(0, 1, 2);
+		T(1, 2, 3);
+		break;
+	CASE(p0 | p1 | p3)
+		T(0, 2, 4);
+		T(1, 2, 3);
+		T(2, 3, 4);
+		break;
+	CASE(p0 | p4 | p1)
+		T(0, 1, 4);
+		T(1, 2, 4);
+		T(2, 4, 3);
+		break;
+	CASE(p0 | p3 | p4)
+		T(0, 1, 3);
+		T(1, 2, 3);
+		T(2, 3, 4);
+		break;
+	CASE(p1 | p0 | p2)
+		T(1, 2, 4);
+		T(0, 1, 3);
+		T(1, 3, 4);
+		break;
+	CASE(p1 | p2 | p5)
+	CASE(p3 | p2 | p7)
+	CASE(p4 | p5 | p7)
+		T(0, 1, 2);
+		T(1, 2, 3);
+		T(2, 3, 4);
+		break;
+	CASE(p1 | p0 | p5)
+	CASE(p2 | p6 | p1)
+	CASE(p3 | p7 | p0)
+	CASE(p5 | p6 | p1)
+	CASE(p7 | p6 | p3)
+		T(0, 2, 4);
+		T(0, 1, 4);
+		T(1, 4, 3);
+		break;
+	CASE(p2 | p1 | p3)
+	CASE(p5 | p1 | p4)
+	CASE(p6 | p2 | p5)
+	CASE(p7 | p3 | p4)
+		T(2, 3, 4);
+		T(0, 1, 2);
+		T(1, 2, 3);
+		break;
+	CASE(p2 | p3 | p6)
+	CASE(p5 | p4 | p6)
+	CASE(p7 | p4 | p6)
+		T(0, 1, 3);
+		T(0, 2, 3);
+		T(2, 3, 4);
+		break;
+	CASE(p3 | p0 | p2)
+	CASE(p4 | p0 | p5)
+		T(1, 3, 4);
+		T(1, 4, 0);
+		T(4, 0, 2);
+		break;
+	CASE(p4 | p7 | p0)
+		T(0, 3, 4);
+		T(0, 4, 1);
+		T(4, 1, 2);
+		break;
+	CASE(p6 | p5 | p7)
+		T(0, 1, 4);
+		T(0, 1, 2);
+		T(1, 2, 3);
+		break;
+	CASE(p6 | p7 | p2)
+		T(0, 3, 4);
+		T(0, 3, 1);
+		T(3, 1, 2);
+		break;
+	CASE(p0 | p1 | p3 | p4)
+		T(0, 1, 4);
+		T(0, 4, 2);
+		T(4, 2, 5);
+		T(2, 5, 3);
+		break;
+	CASE(p1 | p2 | p0 | p5)
+		T(1, 3, 5);
+		T(1, 5, 0);
+		T(5, 0, 4);
+		T(0, 4, 2);
+		break;
+	CASE(p2 | p3 | p1 | p6)
+		T(0, 2, 4);
+		T(0, 4, 5);
+		T(0, 5, 1);
+		T(5, 1, 3);
+		break;
+	CASE(p3 | p0 | p2 | p7)
+		T(0, 2, 4);
+		T(0, 4, 5);
+		T(0, 5, 1);
+		T(5, 1, 3);
+		break;
+
+	default:
+		throw std::exception("binggoo");
+		break;
 	}
-	if (vertexs.size() - vi == 4) {
-		indexs.push_back(vi - 1);
-		indexs.push_back(vi);
-		indexs.push_back(vi + 1);
 
-		indexs.push_back(vi - 1);
-		indexs.push_back(vi);
-		indexs.push_back(vi + 2);
+#undef CASE
+#undef T
 
-		indexs.push_back(vi);
-		indexs.push_back(vi - 1);
-		indexs.push_back(vi + 1);
-
-		indexs.push_back(vi);
-		indexs.push_back(vi - 1);
-		indexs.push_back(vi + 2);
+	for (auto& t : triangles) {
+		indexs.push_back(t.v0);
+		indexs.push_back(t.v1);
+		indexs.push_back(t.v2);
+		indexs.push_back(t.v0);
+		indexs.push_back(t.v2);
+		indexs.push_back(t.v1);
 	}
 }
