@@ -19,15 +19,19 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\Angles.h" />
+    <ClInclude Include="include\Astronomy.h" />
+    <ClInclude Include="include\Coordinate.h" />
     <ClInclude Include="include\Navigation.h" />
     <ClInclude Include="include\IG_Navigation.h" />
-    <ClInclude Include="include\Spherical.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="source\Angles.cpp" />
+    <ClCompile Include="source\Astronomy.cpp" />
+    <ClCompile Include="source\Coordinate.cpp" />
     <ClCompile Include="source\WinMain.cpp" />
     <ClCompile Include="source\Navigation.cpp" />
     <ClCompile Include="source\IG_Navigation.cpp" />
-    <ClCompile Include="source\Spherical.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

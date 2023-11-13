@@ -92,6 +92,9 @@ public:
 
 	Surface(Graphics& gfx, SURFACE_TYPE Type, float H(float, float, float), SURFACE_COLORING sc = {}, Vector3f regionBegin = { -2.f, -2.f, -2.f }, Vector3f regionEnd = { 2.f, 2.f, 2.f });
 
+	template<typename C>
+	Surface(Graphics& gfx, SURFACE_TYPE Type, float H(float, float, float, const C&), const C& param, SURFACE_COLORING sc = {}, Vector3f regionBegin = { -2.f, -2.f, -2.f }, Vector3f regionEnd = { 2.f, 2.f, 2.f });
+
 	//	Public functions
 
 	void updateRotation(Graphics& gfx, float rotationZ, float rotationX, Vector3f position = Vector3f());
@@ -128,6 +131,10 @@ private:
 	void generatePolarParametric(Graphics& gfx, float theta(float, float, const C&), float phi(float, float, const C&), float rad(float, float, const C&), const C& param, Vector2f minRect, Vector2f maxRect, UINT numU, UINT numV, SURFACE_COLORING sc);
 	template<typename C>
 	void generatePolarParametric(Graphics& gfx, Vector3f P(float, float, const C&), const C& param, Vector2f minRect, Vector2f maxRect, UINT numU, UINT numV, SURFACE_COLORING sc);
+	template<typename C>
+	void generateImplicit(Graphics& gfx, float H(float, float, float, const C&), const C& param, SURFACE_COLORING sc, Vector3f regionBegin, Vector3f regionEnd);
+	template<typename C>
+	void generateImplicitPolar(Graphics& gfx, float H(float, float, float, const C&), const C& param, SURFACE_COLORING sc, Vector3f regionBegin, Vector3f regionEnd);
 
 	void addOtherBinds(Graphics& gfx, SURFACE_COLORING sc);
 
@@ -290,6 +297,33 @@ Surface::Surface(Graphics& gfx, SURFACE_TYPE Type, Vector3f P(float, float, cons
 		throw std::exception("The surface type specified is iconrrect for the given constructor arguments\nTo create an Implicit surface you must provide just one function that takes three arguments");
 	case _IMPLICIT_SPHERICAL:
 		throw std::exception("The surface type specified is iconrrect for the given constructor arguments\nTo create an Implicit Spherical surface you must provide just one function that takes three arguments");
+	default:
+		throw std::exception("The surface type specified is not supported");
+	}
+	addOtherBinds(gfx, sc);
+}
+
+template<typename C>
+Surface::Surface(Graphics& gfx, SURFACE_TYPE Type, float H(float, float, float, const C&), const C& param, SURFACE_COLORING sc, Vector3f regionBegin, Vector3f regionEnd)
+{
+	switch (Type)
+	{
+	case _IMPLICIT:
+		generateImplicit(gfx, H, param, sc, regionBegin, regionEnd);
+		break;
+	case _IMPLICIT_SPHERICAL:
+		generateImplicitPolar(gfx, H, param, sc, regionBegin, regionEnd);
+		break;
+	case _PARAMETRIC:
+		throw std::exception("The surface type specified is iconrrect for the given constructor arguments\nTo create a Parametric surface you must provide three functions that take two arguments");
+	case _PARAMETRIC_SPHERICAL:
+		throw std::exception("The surface type specified is iconrrect for the given constructor arguments\nTo create a Parametric Spherical surface you must provide three functions that take two arguments");
+	case _RADIAL_ICOSPHERE:
+		throw std::exception("The surface type specified is iconrrect for the given constructor arguments\nTo create a Radial Icosphere surface you must provide a single function that take two arguments and a depth value");
+	case _EXPLICIT:
+		throw std::exception("The surface type specified is iconrrect for the given constructor arguments\nTo create an Explicit surface you must provide a single function that take two arguments");
+	case _RADIAL_SPHERICAL:
+		throw std::exception("The surface type specified is iconrrect for the given constructor arguments\nTo create a Radial Spherical surface you must provide a single function that take two arguments");
 	default:
 		throw std::exception("The surface type specified is not supported");
 	}
@@ -803,5 +837,135 @@ void Surface::generatePolarParametric(Graphics& gfx, Vector3f P(float, float, co
 		}
 	}
 
+	AddBind(std::make_unique<IndexBuffer>(gfx, indexs));
+}
+
+template<typename C>
+void Surface::generateImplicit(Graphics& gfx, float H(float, float, float, const C&), const C& param, SURFACE_COLORING sc, Vector3f regionBegin, Vector3f regionEnd)
+{
+	constexpr int cubes = 60;
+	float minx = regionBegin.x;
+	float maxx = regionEnd.x;
+	float miny = regionBegin.y;
+	float maxy = regionEnd.y;
+	float minz = regionBegin.z;
+	float maxz = regionEnd.z;
+
+	_float4vector*** h = (_float4vector***)calloc(cubes + 1, sizeof(void**));
+
+	for (int i = 0; i <= cubes; i++)
+	{
+		h[i] = (_float4vector**)calloc(cubes + 1, sizeof(void*));
+
+		for (int j = 0; j <= cubes; j++)
+		{
+			h[i][j] = (_float4vector*)calloc(cubes + 1, sizeof(_float4vector));
+
+			for (int k = 0; k <= cubes; k++)
+			{
+				float di = float(i) / cubes;
+				float dj = float(j) / cubes;
+				float dk = float(k) / cubes;
+
+				float x = minx * (1 - di) + maxx * di;
+				float y = miny * (1 - dj) + maxy * dj;
+				float z = minz * (1 - dk) + maxz * dk;
+				h[i][j][k] = { x , y , z , H(x, y, z, param) };
+			}
+		}
+	}
+
+	std::vector<Vertex> vertexs;
+	std::vector<unsigned short> indexs;
+
+	for (int i = 0; i < cubes; i++)
+	{
+		for (int j = 0; j < cubes; j++)
+		{
+			for (int k = 0; k < cubes; k++)
+			{
+				_float4vector cube[8] = { h[i][j][k] , h[i][j][k + 1] , h[i][j + 1][k + 1] , h[i][j + 1][k] , h[i + 1][j][k] , h[i + 1][j][k + 1] , h[i + 1][j + 1][k + 1] , h[i + 1][j + 1][k] };
+
+				addVertexsCube(cube, vertexs, indexs, sc);
+			}
+		}
+	}
+
+	for (int i = 0; i <= cubes; i++)
+	{
+		for (int j = 0; j <= cubes; j++)
+		{
+			free(h[i][j]);
+		}
+		free(h[i]);
+	}
+	free(h);
+
+	AddBind(std::make_unique<VertexBuffer>(gfx, vertexs));
+	AddBind(std::make_unique<IndexBuffer>(gfx, indexs));
+}
+
+template<typename C>
+void Surface::generateImplicitPolar(Graphics& gfx, float H(float, float, float, const C&), const C& param, SURFACE_COLORING sc, Vector3f regionBegin, Vector3f regionEnd)
+{
+	constexpr int cubes = 60;
+	float minx = regionBegin.x;
+	float maxx = regionEnd.x;
+	float miny = regionBegin.y;
+	float maxy = regionEnd.y;
+	float minz = regionBegin.z;
+	float maxz = regionEnd.z;
+
+	_float4vector*** h = (_float4vector***)calloc(cubes + 1, sizeof(void**));
+
+	for (int i = 0; i <= cubes; i++)
+	{
+		h[i] = (_float4vector**)calloc(cubes + 1, sizeof(void*));
+
+		for (int j = 0; j <= cubes; j++)
+		{
+			h[i][j] = (_float4vector*)calloc(cubes + 1, sizeof(_float4vector));
+
+			for (int k = 0; k <= cubes; k++)
+			{
+				float di = float(i) / cubes;
+				float dj = float(j) / cubes;
+				float dk = float(k) / cubes;
+
+				float x = minx * (1 - di) + maxx * di;
+				float y = miny * (1 - dj) + maxy * dj;
+				float z = minz * (1 - dk) + maxz * dk;
+				h[i][j][k] = { x , y , z , H(x, y, z, param) };
+			}
+		}
+	}
+
+	std::vector<Vertex> vertexs;
+	std::vector<unsigned short> indexs;
+
+	for (int i = 0; i < cubes; i++)
+	{
+		for (int j = 0; j < cubes; j++)
+		{
+			for (int k = 0; k < cubes; k++)
+			{
+				_float4vector cube[8] = { h[i][j][k] , h[i][j][k + 1] , h[i][j + 1][k + 1] , h[i][j + 1][k] , h[i + 1][j][k] , h[i + 1][j][k + 1] , h[i + 1][j + 1][k + 1] , h[i + 1][j + 1][k] };
+
+				addVertexsCube(cube, vertexs, indexs, sc, true);
+			}
+		}
+	}
+
+	for (int i = 0; i <= cubes; i++)
+	{
+		for (int j = 0; j <= cubes; j++)
+		{
+			free(h[i][j]);
+		}
+		free(h[i]);
+	}
+	free(h);
+
+	AddBind(std::make_unique<VertexBuffer>(gfx, vertexs));
 	AddBind(std::make_unique<IndexBuffer>(gfx, indexs));
 }

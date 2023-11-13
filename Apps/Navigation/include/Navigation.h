@@ -4,7 +4,7 @@
 #include "Drawable/Surface.h"
 #include "Drawable/Curve.h"
 #include "Drawable/Point.h"
-#include "Spherical.h"
+#include "Coordinate.h"
 
 struct IG_DATA {
 	static float THETA;

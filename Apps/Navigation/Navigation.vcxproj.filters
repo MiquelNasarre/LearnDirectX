@@ -24,7 +24,13 @@
     <ClInclude Include="include\Navigation.h">
       <Filter>Sources\Public</Filter>
     </ClInclude>
-    <ClInclude Include="include\Spherical.h">
+    <ClInclude Include="include\Astronomy.h">
+      <Filter>Sources\Public</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Coordinate.h">
+      <Filter>Sources\Public</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Angles.h">
       <Filter>Sources\Public</Filter>
     </ClInclude>
   </ItemGroup>
@@ -38,7 +44,13 @@
     <ClCompile Include="source\Navigation.cpp">
       <Filter>Sources\Private</Filter>
     </ClCompile>
-    <ClCompile Include="source\Spherical.cpp">
+    <ClCompile Include="source\Astronomy.cpp">
+      <Filter>Sources\Private</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Coordinate.cpp">
+      <Filter>Sources\Private</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Angles.cpp">
       <Filter>Sources\Private</Filter>
     </ClCompile>
   </ItemGroup>
