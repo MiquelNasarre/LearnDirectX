@@ -6,14 +6,6 @@
 #include "Drawable/Point.h"
 #include "Coordinate.h"
 
-struct IG_DATA {
-	static float THETA;
-	static float PHI;
-	static float SPEED;
-
-	static std::vector<Coordinate> Positions;
-};
-
 class Navigation {
 	class Earth
 	{
@@ -45,12 +37,17 @@ private:
 	Vector2i initialDrag;
 	Vector2f initialDragAngles;
 
+public:
+
 	struct Waypoint
 	{
 		Coordinate pos;
 		std::unique_ptr<Point> point;
+		char* name;
+		float rad = 7.f;
+		float color[4] = { 1.f,1.f,1.f,1.f };
 
-		Waypoint(Graphics& gfx, const Coordinate& coor, Color color = Color::White);
+		Waypoint(Graphics& gfx, const Coordinate& coor, Color color = Color::White, std::string name = "");
 	};
 
 	struct Route
@@ -61,10 +58,6 @@ private:
 		Route(Graphics& gfx, std::vector<Coordinate> coor, Color color = Color::White);
 	};
 
-	std::vector<Waypoint> points;
-	std::vector<Route> routes;
-
-public:
 	Navigation();
 
 	int Run();
@@ -72,6 +65,17 @@ public:
 
 	void eventManager();
 	void doFrame();
+};
+
+struct IG_DATA {
+	static Window* window;
+
+	static float THETA;
+	static float PHI;
+	static float SPEED;
+
+	static std::vector<Navigation::Waypoint> POINTS;
+	static std::vector<Navigation::Route> ROUTES;
 };
 
 //	Drawable generation functions

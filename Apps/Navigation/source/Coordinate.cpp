@@ -1,15 +1,6 @@
 #include "Coordinate.h"
 #include "Math/constants.h"
 
-const Coordinate Coordinate::PLACES::Greenwich	(51.4780	, 0.0014	, DEGREES);
-const Coordinate Coordinate::PLACES::London		(51.5098	, -0.1180	, DEGREES);
-const Coordinate Coordinate::PLACES::Barcelona	(41.3874	, 2.1686	, DEGREES);
-const Coordinate Coordinate::PLACES::NewYork	(40.7831	, -73.9712	, DEGREES);
-const Coordinate Coordinate::PLACES::Canary		(27.9202	, -15.5474	, DEGREES);
-const Coordinate Coordinate::PLACES::Grenada	(12.1165	, -61.6790	, DEGREES);
-const Coordinate Coordinate::PLACES::Gibraltar	(36.1408	, -5.3536	, DEGREES);
-const Coordinate Coordinate::PLACES::Auckland	(-36.8509	, 174.7645	, DEGREES);
-
 Coordinate::Coordinate()
 {
 	*this = PLACES::Greenwich;

@@ -6,24 +6,28 @@
 float IG_DATA::THETA = 0.f;
 float IG_DATA::PHI   = 0.f;
 float IG_DATA::SPEED = 0.f;
+std::vector<Navigation::Waypoint>	IG_DATA::POINTS;
+std::vector<Navigation::Route>		IG_DATA::ROUTES;
+Window* IG_DATA::window = NULL;
 
-#define pl Coordinate::PLACES
+using namespace PLACES;
 
 Navigation::Navigation()
 	: window(640, 480, "Navigation", "", true)
 {
 	Earth::create(window.graphics);
 	window.setFramerateLimit(60);
+	IG_DATA::window = &window;
 
-	points.push_back(Waypoint(window.graphics, pl::London));
-	points.push_back(Waypoint(window.graphics, pl::Barcelona));
-	points.push_back(Waypoint(window.graphics, pl::Canary));
-	points.push_back(Waypoint(window.graphics, pl::Grenada));
-	points.push_back(Waypoint(window.graphics, pl::NewYork));
-	points.push_back(Waypoint(window.graphics, pl::Auckland, Color::Red));
+	IG_DATA::POINTS.push_back(Waypoint(window.graphics, London, Color::White, "London"));
+	IG_DATA::POINTS.push_back(Waypoint(window.graphics, Barcelona, Color::White, "Barcelona"));
+	IG_DATA::POINTS.push_back(Waypoint(window.graphics, Canary, Color::White, "Canary"));
+	IG_DATA::POINTS.push_back(Waypoint(window.graphics, Grenada, Color::White, "Grenada"));
+	IG_DATA::POINTS.push_back(Waypoint(window.graphics, NewYork, Color::White, "New York"));
+	IG_DATA::POINTS.push_back(Waypoint(window.graphics, Auckland, Color::Red, "Auckland"));
 
-	routes.push_back(Route(window.graphics, std::vector<Coordinate>{ pl::NewYork, pl::London, pl::Barcelona, pl::Canary, pl::Grenada }));
-	routes.push_back(Route(window.graphics, std::vector<Coordinate>{ pl::Grenada, pl::Auckland }, Color::Blue));
+	IG_DATA::ROUTES.push_back(Route(window.graphics, { NewYork, London, Barcelona, Canary, Grenada }));
+	IG_DATA::ROUTES.push_back(Route(window.graphics, { Grenada, Auckland }, Color::Blue));
 }
 
 int Navigation::Run()
@@ -90,16 +94,10 @@ void Navigation::doFrame()
 
 	Earth::update(window.graphics, IG_DATA::THETA, IG_DATA::PHI);
 	
-	for (auto& a : points) {
+	for (auto& a : IG_DATA::POINTS)
+		a.point->updatePosition(window.graphics, a.pos.getVector() * ZRotationMatrix(IG_DATA::THETA) * XRotationMatrix(IG_DATA::PHI));
 
-		Matrix M = ZRotationMatrix(IG_DATA::THETA) * XRotationMatrix(IG_DATA::PHI);
-		a.point->updatePosition(window.graphics, a.pos.getVector() * M);
-
-		
-	}
-
-
-	for (auto& b : routes)
+	for (auto& b : IG_DATA::ROUTES)
 		b.route->updateRotation(window.graphics, IG_DATA::THETA, IG_DATA::PHI);
 
 	window.setTitle("Navigation  -  " + std::to_string(int(std::round(window.getFramerate()))) + "fps");
@@ -110,10 +108,10 @@ void Navigation::doFrame()
 
 	Earth::Draw(window.graphics);
 
-	for (auto& a : points)
+	for (auto& a : IG_DATA::POINTS)
 		a.point->Draw(window.graphics);
 
-	for (auto& b : routes)
+	for (auto& b : IG_DATA::ROUTES)
 		b.route->Draw(window.graphics);
 
 	//	ImGui crap
@@ -164,9 +162,12 @@ void Navigation::Earth::update(Graphics& gfx, float theta, float phi)
 		b->updateRotation(gfx, theta, phi);
 }
 
-Navigation::Waypoint::Waypoint(Graphics& gfx, const Coordinate& coor, Color color)
+Navigation::Waypoint::Waypoint(Graphics& gfx, const Coordinate& coor, Color color, std::string na)
+	: pos{coor}
 {
-	pos = coor;
+	name = (char*)calloc(20, sizeof(char));
+	for (UINT i = 0; i <= na.size(); i++)
+		name[i] = na.c_str()[i];
 	point = std::make_unique<Point>(gfx, Vector3f(), 7.f, color);
 }
 

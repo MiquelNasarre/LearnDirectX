@@ -25,6 +25,14 @@ Color::Color(unsigned char r, unsigned char g, unsigned char b, unsigned char a)
 {
 }
 
+Color::Color(float* f)
+{
+	R = unsigned char(f[0] * 255);
+	G = unsigned char(f[1] * 255);
+	B = unsigned char(f[2] * 255);
+	A = unsigned char(f[3] * 255);
+}
+
 Color Color::operator+(const Color& other) const
 {
 	int Ri = (int)R + (int)other.R;

@@ -15,6 +15,7 @@ struct Color {
 
 	Color();
 	Color(unsigned char r, unsigned char g, unsigned char b, unsigned char a = 255u);
+	Color(float* float4color);
 
 	static const Color Black;
 	static const Color White;

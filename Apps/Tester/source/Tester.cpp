@@ -13,7 +13,7 @@ Tester::Tester()
 	curve(window.graphics, curveF, { 0.f ,2 * pi }, 1000, { Color::Red / 3, Color::Yellow / 3, Color::Green / 3, Color::Cyan / 3, Color::Blue / 3, Color::Purple / 3, Color::Red / 3 }),
 	Klein(window.graphics, _PARAMETRIC, KleinBottle, {}, false, Vector2f(0, 0), Vector2f(pi, 2 * pi)),
 	point(window.graphics, { 2.f,0.f,0.f }, 8.f),
-	impl(window.graphics, _IMPLICIT_SPHERICAL, sphere)
+	impl(window.graphics, _IMPLICIT, sphere)
 {
 	window.setFramerateLimit(60);
 	srand(143452);
@@ -198,7 +198,9 @@ float returnY(float, float y)
 
 float sphere(float x, float y, float z)
 {
+	//return x * x + y * y - z * z - 1;
 	//return z;
 	//return (z + 1) * (z + 1) * (z + 1) - x * x * sqrt(z + 1) - y * y;
+	return y * y + z * z - expf(x) + 1;
 	return x * x + y * y + z * z - 1;
 }
