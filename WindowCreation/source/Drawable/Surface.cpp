@@ -1,30 +1,30 @@
 #include "Drawable/Surface.h"
 
-//	Constructors
+//	Surface shape
 
-Surface::Surface(Graphics& gfx, SURFACE_TYPE Type, float F0(float, float), SURFACE_COLORING sc, bool defaultValues, Vector2f minRect, Vector2f maxRect, UINT numX, UINT numY)
+SURFACE_SHAPE::SURFACE_SHAPE(SURFACE_TYPE Type, float explicit_(float, float), bool defaultValues, Vector2f min, Vector2f max, UINT numX, UINT numY)
+	:Type{ Type }, Explicit{ explicit_ }, minRect{ min }, maxRect{ max }, numU{ numX }, numV{ numY }
 {
 	switch (Type)
 	{
 	case _EXPLICIT:
 		if (defaultValues) {
 			minRect = { -1.f,-1.f };
-			maxRect = {  1.f, 1.f };
+			maxRect = { 1.f, 1.f };
 		}
-		generateExplicit(gfx, F0, minRect, maxRect, numX, numY, sc);
+		Explicit = explicit_;
 		break;
-	case _RADIAL_SPHERICAL:
+	case _EXPLICIT_SPHERICAL:
 		if (defaultValues) {
 			minRect = { 0.f, pi / 2.f };
 			maxRect = { 2.f * pi, -pi / 2.f };
 		}
-		generatePolarNormal(gfx, F0, minRect, maxRect, numX, numY, sc);
 		break;
 	case _IMPLICIT:
 		throw std::exception("The surface type specified is iconrrect for the given constructor arguments\nTo create an Implicit surface you must provide just one function that takes three arguments");
 	case _PARAMETRIC:
 		throw std::exception("The surface type specified is iconrrect for the given constructor arguments\nTo create a Parametric surface you must provide three functions that take two arguments");
-	case _RADIAL_ICOSPHERE:
+	case _EXPLICIT_ICOSPHERE:
 		throw std::exception("The surface type specified is iconrrect for the given constructor arguments\nTo create a Radial Icosphere surface you must specify the depth of the icosphere\n(depth 5 recomended)");
 	case _PARAMETRIC_SPHERICAL:
 		throw std::exception("The surface type specified is iconrrect for the given constructor arguments\nTo create a Parametric Spherical surface you must provide three functions that take two arguments");
@@ -33,19 +33,18 @@ Surface::Surface(Graphics& gfx, SURFACE_TYPE Type, float F0(float, float), SURFA
 	default:
 		throw std::exception("The surface type specified is not supported");
 	}
-	addOtherBinds(gfx, sc);
 }
 
-Surface::Surface(Graphics& gfx, SURFACE_TYPE Type, float rad(float, float), UINT ICOSPHERE_DEPTH, SURFACE_COLORING sc)
+SURFACE_SHAPE::SURFACE_SHAPE(SURFACE_TYPE Type, float radius(float, float), UINT depth)
+	:Type{ Type }, Explicit{ radius }, ICOSPHERE_DEPHT{ depth }
 {
 	switch (Type)
 	{
-	case _RADIAL_ICOSPHERE:
-		generatePolarIcosphere(gfx, rad, ICOSPHERE_DEPTH, sc);
+	case _EXPLICIT_ICOSPHERE:
 		break;
 	case _EXPLICIT:
 		throw std::exception("The surface type specified is iconrrect for the given constructor arguments\nTo create an Explicit surface you must remove the last value that provides a depth for the icosphere");
-	case _RADIAL_SPHERICAL:
+	case _EXPLICIT_SPHERICAL:
 		throw std::exception("The surface type specified is iconrrect for the given constructor arguments\nTo create a Radial Spherical surface you must remove the last value that provides a depth for the icosphere");
 	case _IMPLICIT:
 		throw std::exception("The surface type specified is iconrrect for the given constructor arguments\nTo create an Implicit surface you must provide just one function that takes three arguments");
@@ -58,10 +57,10 @@ Surface::Surface(Graphics& gfx, SURFACE_TYPE Type, float rad(float, float), UINT
 	default:
 		throw std::exception("The surface type specified is not supported");
 	}
-	addOtherBinds(gfx, sc);
 }
 
-Surface::Surface(Graphics& gfx, SURFACE_TYPE Type, float F0(float, float), float F1(float, float), float F2(float, float), SURFACE_COLORING sc, bool defaultValues, Vector2f minRect, Vector2f maxRect, UINT numU, UINT numV)
+SURFACE_SHAPE::SURFACE_SHAPE(SURFACE_TYPE Type, float p0(float, float), float p1(float, float), float p2(float, float), bool defaultValues, Vector2f min, Vector2f max, UINT U, UINT V)
+	:Type{ Type }, Parametric_0{ p0 }, Parametric_1{ p1 }, Parametric_2{ p2 }, minRect{ min }, maxRect{ max }, numU{ U }, numV{ V }
 {
 	switch (Type)
 	{
@@ -70,20 +69,18 @@ Surface::Surface(Graphics& gfx, SURFACE_TYPE Type, float F0(float, float), float
 			minRect = { -1.f,-1.f };
 			maxRect = { 1.f, 1.f };
 		}
-		generateParametric(gfx, F0, F1, F2, minRect, maxRect, numU, numV, sc);
 		break;
 	case _PARAMETRIC_SPHERICAL:
 		if (defaultValues) {
 			minRect = { 0.f, pi / 2.f };
 			maxRect = { 2.f * pi, -pi / 2.f };
 		}
-		generatePolarParametric(gfx, F0, F1, F2, minRect, maxRect, numU, numV, sc);
 		break;
-	case _RADIAL_ICOSPHERE:
+	case _EXPLICIT_ICOSPHERE:
 		throw std::exception("The surface type specified is iconrrect for the given constructor arguments\nTo create a Radial Icosphere surface you must provide a single function that take two arguments and a depth value");
 	case _EXPLICIT:
 		throw std::exception("The surface type specified is iconrrect for the given constructor arguments\nTo create an Explicit surface you must provide a single function that take two arguments");
-	case _RADIAL_SPHERICAL:
+	case _EXPLICIT_SPHERICAL:
 		throw std::exception("The surface type specified is iconrrect for the given constructor arguments\nTo create a Radial Spherical surface you must provide a single function that take two arguments");
 	case _IMPLICIT:
 		throw std::exception("The surface type specified is iconrrect for the given constructor arguments\nTo create an Implicit surface you must provide just one function that takes three arguments");
@@ -92,10 +89,10 @@ Surface::Surface(Graphics& gfx, SURFACE_TYPE Type, float F0(float, float), float
 	default:
 		throw std::exception("The surface type specified is not supported");
 	}
-	addOtherBinds(gfx, sc);
 }
 
-Surface::Surface(Graphics& gfx, SURFACE_TYPE Type, Vector3f P(float, float), SURFACE_COLORING sc, bool defaultValues, Vector2f minRect, Vector2f maxRect, UINT numU, UINT numV)
+SURFACE_SHAPE::SURFACE_SHAPE(SURFACE_TYPE Type, Vector3f pv(float, float), bool defaultValues, Vector2f min, Vector2f max, UINT U, UINT V)
+	:Type{ Type }, Parametric_V{ pv }, minRect{ min }, maxRect{ max }, numU{ U }, numV{ V }
 {
 	switch (Type)
 	{
@@ -104,20 +101,18 @@ Surface::Surface(Graphics& gfx, SURFACE_TYPE Type, Vector3f P(float, float), SUR
 			minRect = { -1.f,-1.f };
 			maxRect = { 1.f, 1.f };
 		}
-		generateParametric(gfx, P, minRect, maxRect, numU, numV, sc);
 		break;
 	case _PARAMETRIC_SPHERICAL:
 		if (defaultValues) {
 			minRect = { 0.f, pi / 2.f };
 			maxRect = { 2.f * pi, -pi / 2.f };
 		}
-		generatePolarParametric(gfx, P, minRect, maxRect, numU, numV, sc);
 		break;
-	case _RADIAL_ICOSPHERE:
+	case _EXPLICIT_ICOSPHERE:
 		throw std::exception("The surface type specified is iconrrect for the given constructor arguments\nTo create a Radial Icosphere surface you must provide a single function that take two arguments and a depth value");
 	case _EXPLICIT:
 		throw std::exception("The surface type specified is iconrrect for the given constructor arguments\nTo create an Explicit surface you must provide a single function that take two arguments");
-	case _RADIAL_SPHERICAL:
+	case _EXPLICIT_SPHERICAL:
 		throw std::exception("The surface type specified is iconrrect for the given constructor arguments\nTo create a Radial Spherical surface you must provide a single function that take two arguments");
 	case _IMPLICIT:
 		throw std::exception("The surface type specified is iconrrect for the given constructor arguments\nTo create an Implicit surface you must provide just one function that takes three arguments");
@@ -126,33 +121,769 @@ Surface::Surface(Graphics& gfx, SURFACE_TYPE Type, Vector3f P(float, float), SUR
 	default:
 		throw std::exception("The surface type specified is not supported");
 	}
-	addOtherBinds(gfx, sc);
 }
 
-Surface::Surface(Graphics& gfx, SURFACE_TYPE Type, float H(float, float, float), SURFACE_COLORING sc, Vector3f regionBegin, Vector3f regionEnd)
+SURFACE_SHAPE::SURFACE_SHAPE(SURFACE_TYPE Type, float imp(float, float, float), Vector3f min, Vector3f max)
+	:Type{ Type }, Implicit{ imp }, minCube{ min }, maxCube{ max }
 {
 	switch (Type)
 	{
 	case _IMPLICIT:
-		generateImplicit(gfx, H, sc, regionBegin, regionEnd);
-		break;
 	case _IMPLICIT_SPHERICAL:
-		generateImplicitPolar(gfx, H, sc, regionBegin, regionEnd);
 		break;
 	case _PARAMETRIC:
 		throw std::exception("The surface type specified is iconrrect for the given constructor arguments\nTo create a Parametric surface you must provide three functions that take two arguments");
 	case _PARAMETRIC_SPHERICAL:
 		throw std::exception("The surface type specified is iconrrect for the given constructor arguments\nTo create a Parametric Spherical surface you must provide three functions that take two arguments");
-	case _RADIAL_ICOSPHERE:
+	case _EXPLICIT_ICOSPHERE:
 		throw std::exception("The surface type specified is iconrrect for the given constructor arguments\nTo create a Radial Icosphere surface you must provide a single function that take two arguments and a depth value");
 	case _EXPLICIT:
 		throw std::exception("The surface type specified is iconrrect for the given constructor arguments\nTo create an Explicit surface you must provide a single function that take two arguments");
-	case _RADIAL_SPHERICAL:
+	case _EXPLICIT_SPHERICAL:
 		throw std::exception("The surface type specified is iconrrect for the given constructor arguments\nTo create a Radial Spherical surface you must provide a single function that take two arguments");
 	default:
 		throw std::exception("The surface type specified is not supported");
 	}
-	addOtherBinds(gfx, sc);
+}
+
+SURFACE_SHAPE::SURFACE_SHAPE(const SURFACE_SHAPE& other) :
+	Type			{ other.Type },
+	Explicit		{ other.Explicit },
+	Parametric_0	{ other.Parametric_0 },
+	Parametric_1	{ other.Parametric_1 },
+	Parametric_2	{ other.Parametric_2 },
+	Parametric_V	{ other.Parametric_V },
+	Implicit		{ other.Implicit },
+	minRect			{ other.minRect },
+	maxRect			{ other.maxRect },
+	ICOSPHERE_DEPHT	{ other.ICOSPHERE_DEPHT },
+	numU			{ other.numU },
+	numV			{ other.numV },
+	minCube			{ other.minCube },
+	maxCube			{ other.maxCube }
+{
+}
+
+//	Constructors
+
+Surface::Surface(Graphics& gfx, SURFACE_SHAPE ss, SURFACE_COLORING* psc)
+{
+	if (psc != NULL)
+		sc = *psc;
+	else
+		sc = {};
+
+	switch (ss.Type)
+	{
+	case _EXPLICIT:
+
+		if (ss.Explicit)
+		{
+			float epsilon = error_epsilon;
+			auto numX = ss.numU;
+			auto numY = ss.numV;
+			auto minRect = ss.minRect;
+			auto maxRect = ss.maxRect;
+			auto F = ss.Explicit;
+
+			if (!sc.Textured) {
+				std::vector<Vertex> vertexs;
+
+				for (UINT i = 0; i < numX + 1; i++) {
+					for (UINT j = 0; j < numY + 1; j++) {
+						float x = ((numX - i) * minRect.x + i * maxRect.x) / numX;
+						float y = ((numY - j) * minRect.y + j * maxRect.y) / numY;
+						vertexs.push_back({ Vector3f(x, y, F(x,y)) ,
+							-((Vector3f(x + epsilon, y, F(x + epsilon,y)) - Vector3f(x - epsilon, y, F(x - epsilon,y))) *
+							(Vector3f(x, y + epsilon, F(x,y + epsilon)) - Vector3f(x, y - epsilon, F(x,y - epsilon)))).normalize(),
+							sc.color });
+					}
+				}
+				AddBind(std::make_unique<VertexBuffer>(gfx, vertexs));
+			}
+
+			else {
+				std::vector<TexVertex> vertexs;
+
+				for (UINT i = 0; i < numX + 1; i++) {
+					for (UINT j = 0; j < numY + 1; j++) {
+						float x = ((numX - i) * minRect.x + i * maxRect.x) / numX;
+						float y = ((numY - j) * minRect.y + j * maxRect.y) / numY;
+						vertexs.push_back({ Vector3f(x, y, F(x,y)) ,
+							-((Vector3f(x + epsilon, y, F(x + epsilon,y)) - Vector3f(x - epsilon, y, F(x - epsilon,y))) *
+							(Vector3f(x, y + epsilon, F(x,y + epsilon)) - Vector3f(x, y - epsilon, F(x,y - epsilon)))).normalize() ,
+							Vector2f((float)i / numX,(float)j / numY) });
+					}
+				}
+				AddBind(std::make_unique<VertexBuffer>(gfx, vertexs));
+			}
+
+			std::vector<unsigned short> indexs;
+
+			for (UINT i = 0; i < numX; i++) {
+				for (UINT j = 0; j < numY; j++) {
+					indexs.push_back(i * (numY + 1) + j);
+					indexs.push_back(i * (numY + 1) + j + 1);
+					indexs.push_back((i + 1) * (numY + 1) + j + 1);
+
+					indexs.push_back(i * (numY + 1) + j);
+					indexs.push_back((i + 1) * (numY + 1) + j + 1);
+					indexs.push_back((i + 1) * (numY + 1) + j);
+
+					indexs.push_back(i * (numY + 1) + j);
+					indexs.push_back((i + 1) * (numY + 1) + j + 1);
+					indexs.push_back(i * (numY + 1) + j + 1);
+
+					indexs.push_back(i * (numY + 1) + j);
+					indexs.push_back((i + 1) * (numY + 1) + j);
+					indexs.push_back((i + 1) * (numY + 1) + j + 1);
+				}
+			}
+
+			AddBind(std::make_unique<IndexBuffer>(gfx, indexs));
+		}
+
+		else throw std::exception("Found nullptr while trying to read Explicit function");
+		break;
+	case _EXPLICIT_SPHERICAL:
+
+		if (ss.Explicit)
+		{
+			float epsilon = error_epsilon;
+			auto numX = ss.numU;
+			auto numY = ss.numV;
+			auto minRect = ss.minRect;
+			auto maxRect = ss.maxRect;
+			auto r = ss.Explicit;
+
+			if (!sc.Textured) {
+				std::vector<Vertex> vertexs;
+
+				for (UINT i = 0; i < numX + 1; i++) {
+					for (UINT j = 0; j < numY + 1; j++) {
+						float theta = ((numX - i) * minRect.x + i * maxRect.x) / numX;
+						float phi = ((numY - j) * minRect.y + j * maxRect.y) / numY;
+						vertexs.push_back({ evalPolar(r,theta,phi) ,
+
+							-((evalPolar(r,theta + epsilon,phi) - evalPolar(r,theta - epsilon,phi)) *
+							((evalPolar(r,theta,phi + epsilon) - evalPolar(r,theta,phi - epsilon))))
+							.normalize(),
+							sc.color });
+						if (!j || j == numY)
+							vertexs[vertexs.size() - 1].norm = Vector3f(0.f, 0.f, 2.f * phi / pi);
+					}
+				}
+				AddBind(std::make_unique<VertexBuffer>(gfx, vertexs));
+			}
+			else {
+				std::vector<TexVertex> vertexs;
+
+				for (UINT i = 0; i < numX + 1; i++) {
+					for (UINT j = 0; j < numY + 1; j++) {
+						float theta = ((numX - i) * minRect.x + i * maxRect.x) / numX;
+						float phi = ((numY - j) * minRect.y + j * maxRect.y) / numY;
+						vertexs.push_back({ evalPolar(r,theta,phi) ,
+
+							-((evalPolar(r,theta + epsilon,phi) - evalPolar(r,theta - epsilon,phi)) *
+							((evalPolar(r,theta,phi + epsilon) - evalPolar(r,theta,phi - epsilon))))
+							.normalize() ,
+
+							Vector2f((float)i / numX,(float)j / numY) });
+						if (!j || j == numY)
+							vertexs[vertexs.size() - 1].norm = Vector3f(0.f, 0.f, 2.f * phi / pi);
+					}
+				}
+				AddBind(std::make_unique<VertexBuffer>(gfx, vertexs));
+			}
+
+
+			std::vector<unsigned short> indexs;
+
+			for (UINT i = 0; i < numX; i++) {
+				for (UINT j = 0; j < numY; j++) {
+					indexs.push_back(i * (numY + 1) + j);
+					indexs.push_back(i * (numY + 1) + j + 1);
+					indexs.push_back((i + 1) * (numY + 1) + j + 1);
+
+					indexs.push_back(i * (numY + 1) + j);
+					indexs.push_back((i + 1) * (numY + 1) + j + 1);
+					indexs.push_back((i + 1) * (numY + 1) + j);
+
+					indexs.push_back(i * (numY + 1) + j);
+					indexs.push_back((i + 1) * (numY + 1) + j + 1);
+					indexs.push_back(i * (numY + 1) + j + 1);
+
+					indexs.push_back(i * (numY + 1) + j);
+					indexs.push_back((i + 1) * (numY + 1) + j);
+					indexs.push_back((i + 1) * (numY + 1) + j + 1);
+				}
+			}
+
+			AddBind(std::make_unique<IndexBuffer>(gfx, indexs));
+		}
+
+		else throw std::exception("Found nullptr while trying to read Explicit function");
+		break;
+	case _EXPLICIT_ICOSPHERE:
+
+		if (ss.Explicit)
+		{
+			float epsilon = error_epsilon;
+			auto depth = ss.ICOSPHERE_DEPHT;
+			auto r = ss.Explicit;
+
+
+			std::vector<Vertex> vertexs;
+
+			struct triangle {
+				unsigned short v0;
+				unsigned short v1;
+				unsigned short v2;
+			};
+
+			float gold = (1.f + sqrtf(5) / 2.f);
+
+			vertexs.push_back(Vertex({ 0.f, 1.f, gold })); //0
+			vertexs.push_back(Vertex({ 0.f, 1.f,-gold })); //1
+			vertexs.push_back(Vertex({ 0.f,-1.f, gold })); //2
+			vertexs.push_back(Vertex({ 0.f,-1.f,-gold })); //3
+			vertexs.push_back(Vertex({ 1.f, gold, 0.f })); //4
+			vertexs.push_back(Vertex({ 1.f,-gold, 0.f })); //5
+			vertexs.push_back(Vertex({ -1.f, gold, 0.f })); //6
+			vertexs.push_back(Vertex({ -1.f,-gold, 0.f })); //7
+			vertexs.push_back(Vertex({ gold, 0.f, 1.f })); //8
+			vertexs.push_back(Vertex({ -gold, 0.f, 1.f })); //9
+			vertexs.push_back(Vertex({ gold, 0.f,-1.f })); //10
+			vertexs.push_back(Vertex({ -gold, 0.f,-1.f })); //11
+
+			std::vector<triangle> triangles;
+			std::vector<triangle> newTriangles;
+
+			triangles.push_back({ 0,6,4 });
+			triangles.push_back({ 1,4,6 });
+			triangles.push_back({ 2,5,7 });
+			triangles.push_back({ 3,7,5 });
+			triangles.push_back({ 4,10,8 });
+			triangles.push_back({ 5,8,10 });
+			triangles.push_back({ 6,9,11 });
+			triangles.push_back({ 7,11,9 });
+			triangles.push_back({ 8,2,0 });
+			triangles.push_back({ 9,0,2 });
+			triangles.push_back({ 10,1,3 });
+			triangles.push_back({ 11,3,1 });
+			triangles.push_back({ 0,4,8 });
+			triangles.push_back({ 0,9,6 });
+			triangles.push_back({ 4,1,10 });
+			triangles.push_back({ 6,11,1 });
+			triangles.push_back({ 3,11,7 });
+			triangles.push_back({ 3,5,10 });
+			triangles.push_back({ 7,9,2 });
+			triangles.push_back({ 5,2,8 });
+
+			for (UINT i = 0; i < depth; i++) {
+				newTriangles.clear();
+				for (triangle& t : triangles) {
+					vertexs.push_back({ (vertexs[t.v0].vector + vertexs[t.v1].vector) / 2.f });
+					vertexs.push_back({ (vertexs[t.v1].vector + vertexs[t.v2].vector) / 2.f });
+					vertexs.push_back({ (vertexs[t.v2].vector + vertexs[t.v0].vector) / 2.f });
+					unsigned short s0 = (unsigned short)vertexs.size() - 3;
+					unsigned short s1 = s0 + 1;
+					unsigned short s2 = s0 + 2;
+					newTriangles.push_back({ t.v0 , s0 , s2 });
+					newTriangles.push_back({ t.v1 , s1 , s0 });
+					newTriangles.push_back({ t.v2 , s2 , s1 });
+					newTriangles.push_back({ s0 , s1 , s2 });
+				}
+				triangles = newTriangles;
+			}
+
+
+			std::vector<unsigned short> indexs;
+			for (triangle& t : triangles) {
+				indexs.push_back(t.v0);
+				indexs.push_back(t.v1);
+				indexs.push_back(t.v2);
+			}
+			std::vector<Vector2f> texCoord;
+			for (Vertex& v : vertexs) {
+				v.vector.normalize();
+				float phi = asinf(v.vector.z);
+				float theta = 0.f;
+				if (v.vector.x || v.vector.y) {
+					Vector2f temp = Vector2f(v.vector.x, v.vector.y).normalize();
+					theta = acosf(temp.x);
+					if (temp.y < 0)
+						theta = 2 * pi - theta;
+				}
+				if (!v.vector.x && !v.vector.y)
+					v.norm = v.vector;
+				else
+					v.norm =
+					-((evalPolar(r, theta + epsilon, phi) - evalPolar(r, theta - epsilon, phi)) *
+						((evalPolar(r, theta, phi + epsilon) - evalPolar(r, theta, phi - epsilon))))
+					.normalize();
+
+				v.vector *= r(theta, phi);
+				texCoord.push_back({ theta / 2.f / pi,(pi / 2.f - phi) / pi });
+			}
+
+			if (sc.Textured) {
+				std::vector<TexVertex> texvertexs;
+				for (UINT i = 0; i < vertexs.size(); i++)
+					texvertexs.push_back({ vertexs[i].vector,vertexs[i].norm,texCoord[i] });
+				AddBind(std::make_unique<VertexBuffer>(gfx, texvertexs));
+			}
+			else
+				AddBind(std::make_unique<VertexBuffer>(gfx, vertexs));
+
+			AddBind(std::make_unique<IndexBuffer>(gfx, indexs));
+		}
+
+		else throw std::exception("Found nullptr while trying to read Explicit function");
+		break;
+	case _IMPLICIT:
+
+		if (ss.Implicit)
+		{
+			auto H = ss.Implicit;
+			auto regionBegin = ss.minCube;
+			auto regionEnd = ss.maxCube;
+
+			constexpr int cubes = 60;
+			float minx = regionBegin.x;
+			float maxx = regionEnd.x;
+			float miny = regionBegin.y;
+			float maxy = regionEnd.y;
+			float minz = regionBegin.z;
+			float maxz = regionEnd.z;
+
+			_float4vector*** h = (_float4vector***)calloc(cubes + 1, sizeof(void**));
+
+			for (int i = 0; i <= cubes; i++)
+			{
+				h[i] = (_float4vector**)calloc(cubes + 1, sizeof(void*));
+
+				for (int j = 0; j <= cubes; j++)
+				{
+					h[i][j] = (_float4vector*)calloc(cubes + 1, sizeof(_float4vector));
+
+					for (int k = 0; k <= cubes; k++)
+					{
+						float di = float(i) / cubes;
+						float dj = float(j) / cubes;
+						float dk = float(k) / cubes;
+
+						float x = minx * (1 - di) + maxx * di;
+						float y = miny * (1 - dj) + maxy * dj;
+						float z = minz * (1 - dk) + maxz * dk;
+						h[i][j][k] = { x , y , z , H(x, y, z) };
+					}
+				}
+			}
+
+			std::vector<Vertex> vertexs;
+			std::vector<unsigned short> indexs;
+
+			for (int i = 0; i < cubes; i++)
+			{
+				for (int j = 0; j < cubes; j++)
+				{
+					for (int k = 0; k < cubes; k++)
+					{
+						_float4vector cube[8] = { h[i][j][k] , h[i][j][k + 1] , h[i][j + 1][k + 1] , h[i][j + 1][k] , h[i + 1][j][k] , h[i + 1][j][k + 1] , h[i + 1][j + 1][k + 1] , h[i + 1][j + 1][k] };
+
+						addVertexsCube(cube, vertexs, indexs);
+					}
+				}
+			}
+
+			for (int i = 0; i <= cubes; i++)
+			{
+				for (int j = 0; j <= cubes; j++)
+				{
+					free(h[i][j]);
+				}
+				free(h[i]);
+			}
+			free(h);
+
+			AddBind(std::make_unique<VertexBuffer>(gfx, vertexs));
+			AddBind(std::make_unique<IndexBuffer>(gfx, indexs));
+		}
+
+		else throw std::exception("Found nullptr while trying to read Implicit function");
+		break;
+	case _IMPLICIT_SPHERICAL:
+
+		if (ss.Implicit)
+		{
+			auto H = ss.Implicit;
+			auto regionBegin = ss.minCube;
+			auto regionEnd = ss.maxCube;
+
+			constexpr int cubes = 60;
+			float minx = regionBegin.x;
+			float maxx = regionEnd.x;
+			float miny = regionBegin.y;
+			float maxy = regionEnd.y;
+			float minz = regionBegin.z;
+			float maxz = regionEnd.z;
+
+			_float4vector*** h = (_float4vector***)calloc(cubes + 1, sizeof(void**));
+
+			for (int i = 0; i <= cubes; i++)
+			{
+				h[i] = (_float4vector**)calloc(cubes + 1, sizeof(void*));
+
+				for (int j = 0; j <= cubes; j++)
+				{
+					h[i][j] = (_float4vector*)calloc(cubes + 1, sizeof(_float4vector));
+
+					for (int k = 0; k <= cubes; k++)
+					{
+						float di = float(i) / cubes;
+						float dj = float(j) / cubes;
+						float dk = float(k) / cubes;
+
+						float x = minx * (1 - di) + maxx * di;
+						float y = miny * (1 - dj) + maxy * dj;
+						float z = minz * (1 - dk) + maxz * dk;
+						h[i][j][k] = { x , y , z , H(x, y, z) };
+					}
+				}
+			}
+
+			std::vector<Vertex> vertexs;
+			std::vector<unsigned short> indexs;
+
+			for (int i = 0; i < cubes; i++)
+			{
+				for (int j = 0; j < cubes; j++)
+				{
+					for (int k = 0; k < cubes; k++)
+					{
+						_float4vector cube[8] = { h[i][j][k] , h[i][j][k + 1] , h[i][j + 1][k + 1] , h[i][j + 1][k] , h[i + 1][j][k] , h[i + 1][j][k + 1] , h[i + 1][j + 1][k + 1] , h[i + 1][j + 1][k] };
+
+						addVertexsCube(cube, vertexs, indexs, true);
+					}
+				}
+			}
+
+			for (int i = 0; i <= cubes; i++)
+			{
+				for (int j = 0; j <= cubes; j++)
+				{
+					free(h[i][j]);
+				}
+				free(h[i]);
+			}
+			free(h);
+
+			AddBind(std::make_unique<VertexBuffer>(gfx, vertexs));
+			AddBind(std::make_unique<IndexBuffer>(gfx, indexs));
+		}
+
+		else throw std::exception("Found nullptr while trying to read Implicit function");
+		break;
+	case _PARAMETRIC:
+
+		if (ss.Parametric_V)
+		{
+			float epsilon = error_epsilon;
+			auto numU = ss.numU;
+			auto numV = ss.numV;
+			auto minRect = ss.minRect;
+			auto maxRect = ss.maxRect;
+			auto P = ss.Parametric_V;
+
+			if (!sc.Textured) {
+				std::vector<Vertex> vertexs;
+
+				for (UINT i = 0; i < numU + 1; i++) {
+					for (UINT j = 0; j < numV + 1; j++) {
+						float u = ((numU - i) * minRect.x + i * maxRect.x) / numU;
+						float v = ((numV - j) * minRect.y + j * maxRect.y) / numV;
+						vertexs.push_back({ P(u,v) ,
+							-((P(u + epsilon,v) - P(u - epsilon,v)) *
+							(P(u,v + epsilon) - P(u,v - epsilon)))
+							.normalize(),
+							sc.color });
+					}
+				}
+				AddBind(std::make_unique<VertexBuffer>(gfx, vertexs));
+			}
+			else {
+				std::vector<TexVertex> vertexs;
+
+				for (UINT i = 0; i < numU + 1; i++) {
+					for (UINT j = 0; j < numV + 1; j++) {
+						float u = ((numU - i) * minRect.x + i * maxRect.x) / numU;
+						float v = ((numV - j) * minRect.y + j * maxRect.y) / numV;
+						vertexs.push_back({ P(u,v) ,
+							-((P(u + epsilon,v) - P(u - epsilon,v)) *
+							(P(u,v + epsilon) - P(u,v - epsilon)))
+							.normalize(),
+
+							Vector2f((float)i / numU,(float)j / numV) });
+					}
+				}
+				AddBind(std::make_unique<VertexBuffer>(gfx, vertexs));
+			}
+
+			std::vector<unsigned short> indexs;
+
+			for (UINT i = 0; i < numU; i++) {
+				for (UINT j = 0; j < numV; j++) {
+					indexs.push_back(i * (numV + 1) + j);
+					indexs.push_back(i * (numV + 1) + j + 1);
+					indexs.push_back((i + 1) * (numV + 1) + j + 1);
+
+					indexs.push_back(i * (numV + 1) + j);
+					indexs.push_back((i + 1) * (numV + 1) + j + 1);
+					indexs.push_back((i + 1) * (numV + 1) + j);
+
+					indexs.push_back(i * (numV + 1) + j);
+					indexs.push_back((i + 1) * (numV + 1) + j + 1);
+					indexs.push_back(i * (numV + 1) + j + 1);
+
+					indexs.push_back(i * (numV + 1) + j);
+					indexs.push_back((i + 1) * (numV + 1) + j);
+					indexs.push_back((i + 1) * (numV + 1) + j + 1);
+				}
+			}
+
+			AddBind(std::make_unique<IndexBuffer>(gfx, indexs));
+		}
+
+		else if (ss.Parametric_0 && ss.Parametric_1 && ss.Parametric_2)
+		{
+			float epsilon = error_epsilon;
+			auto numU = ss.numU;
+			auto numV = ss.numV;
+			auto minRect = ss.minRect;
+			auto maxRect = ss.maxRect;
+			auto x = ss.Parametric_0;
+			auto y = ss.Parametric_1;
+			auto z = ss.Parametric_2;
+
+			if (!sc.Textured) {
+				std::vector<Vertex> vertexs;
+
+				for (UINT i = 0; i < numU + 1; i++) {
+					for (UINT j = 0; j < numV + 1; j++) {
+						float u = ((numU - i) * minRect.x + i * maxRect.x) / numU;
+						float v = ((numV - j) * minRect.y + j * maxRect.y) / numV;
+						vertexs.push_back({ Vector3f(x(u,v), y(u,v), z(u,v)) ,
+							-((Vector3f(x(u + epsilon,v), y(u + epsilon,v), z(u + epsilon,v)) - Vector3f(x(u - epsilon,v), y(u - epsilon,v), z(u - epsilon,v))) *
+							(Vector3f(x(u,v + epsilon), y(u,v + epsilon), z(u,v + epsilon)) - Vector3f(x(u,v - epsilon), y(u,v - epsilon), z(u,v - epsilon))))
+							.normalize(),
+							sc.color });
+					}
+				}
+				AddBind(std::make_unique<VertexBuffer>(gfx, vertexs));
+			}
+			else {
+				std::vector<TexVertex> vertexs;
+
+				for (UINT i = 0; i < numU + 1; i++) {
+					for (UINT j = 0; j < numV + 1; j++) {
+						float u = ((numU - i) * minRect.x + i * maxRect.x) / numU;
+						float v = ((numV - j) * minRect.y + j * maxRect.y) / numV;
+						vertexs.push_back({ Vector3f(x(u,v), y(u,v), z(u,v)) ,
+							-((Vector3f(x(u + epsilon,v), y(u + epsilon,v), z(u + epsilon,v)) - Vector3f(x(u - epsilon,v), y(u - epsilon,v), z(u - epsilon,v))) *
+							(Vector3f(x(u,v + epsilon), y(u,v + epsilon), z(u,v + epsilon)) - Vector3f(x(u,v - epsilon), y(u,v - epsilon), z(u,v - epsilon))))
+							.normalize(),
+
+							Vector2f((float)i / numU,(float)j / numV) });
+					}
+				}
+				AddBind(std::make_unique<VertexBuffer>(gfx, vertexs));
+			}
+
+			std::vector<unsigned short> indexs;
+
+			for (UINT i = 0; i < numU; i++) {
+				for (UINT j = 0; j < numV; j++) {
+					indexs.push_back(i * (numV + 1) + j);
+					indexs.push_back(i * (numV + 1) + j + 1);
+					indexs.push_back((i + 1) * (numV + 1) + j + 1);
+
+					indexs.push_back(i * (numV + 1) + j);
+					indexs.push_back((i + 1) * (numV + 1) + j + 1);
+					indexs.push_back((i + 1) * (numV + 1) + j);
+
+					indexs.push_back(i * (numV + 1) + j);
+					indexs.push_back((i + 1) * (numV + 1) + j + 1);
+					indexs.push_back(i * (numV + 1) + j + 1);
+
+					indexs.push_back(i * (numV + 1) + j);
+					indexs.push_back((i + 1) * (numV + 1) + j);
+					indexs.push_back((i + 1) * (numV + 1) + j + 1);
+				}
+			}
+
+			AddBind(std::make_unique<IndexBuffer>(gfx, indexs));
+		}
+
+		else throw std::exception("Found nullptr while trying to read Parametric function");
+		break;
+	case _PARAMETRIC_SPHERICAL:
+
+		if (ss.Parametric_V)
+		{
+			float epsilon = error_epsilon;
+			auto numU = ss.numU;
+			auto numV = ss.numV;
+			auto minRect = ss.minRect;
+			auto maxRect = ss.maxRect;
+			auto P = ss.Parametric_V;
+
+			if (!sc.Textured) {
+				std::vector<Vertex> vertexs;
+
+				for (UINT i = 0; i < numU + 1; i++) {
+					for (UINT j = 0; j < numV + 1; j++) {
+						float u = ((numU - i) * minRect.x + i * maxRect.x) / numU;
+						float v = ((numV - j) * minRect.y + j * maxRect.y) / numV;
+						vertexs.push_back({ makePolar(P(u,v)) ,
+
+							-((makePolar(P(u + epsilon,v)) - makePolar(P(u - epsilon,v))) *
+							(makePolar(P(u,v + epsilon)) - makePolar(P(u,v - epsilon))))
+							.normalize(),
+							sc.color });
+					}
+				}
+				AddBind(std::make_unique<VertexBuffer>(gfx, vertexs));
+			}
+			else {
+				std::vector<TexVertex> vertexs;
+
+				for (UINT i = 0; i < numU + 1; i++) {
+					for (UINT j = 0; j < numV + 1; j++) {
+						float u = ((numU - i) * minRect.x + i * maxRect.x) / numU;
+						float v = ((numV - j) * minRect.y + j * maxRect.y) / numV;
+						vertexs.push_back({ makePolar(P(u,v)) ,
+
+							-((makePolar(P(u + epsilon,v)) - makePolar(P(u - epsilon,v))) *
+							(makePolar(P(u,v + epsilon)) - makePolar(P(u,v - epsilon))))
+							.normalize(),
+
+							Vector2f((float)i / numU,(float)j / numV) });
+					}
+				}
+				AddBind(std::make_unique<VertexBuffer>(gfx, vertexs));
+			}
+
+
+			std::vector<unsigned short> indexs;
+
+			for (UINT i = 0; i < numU; i++) {
+				for (UINT j = 0; j < numV; j++) {
+					indexs.push_back(i * (numV + 1) + j);
+					indexs.push_back(i * (numV + 1) + j + 1);
+					indexs.push_back((i + 1) * (numV + 1) + j + 1);
+
+					indexs.push_back(i * (numV + 1) + j);
+					indexs.push_back((i + 1) * (numV + 1) + j + 1);
+					indexs.push_back((i + 1) * (numV + 1) + j);
+
+					indexs.push_back(i * (numV + 1) + j);
+					indexs.push_back((i + 1) * (numV + 1) + j + 1);
+					indexs.push_back(i * (numV + 1) + j + 1);
+
+					indexs.push_back(i * (numV + 1) + j);
+					indexs.push_back((i + 1) * (numV + 1) + j);
+					indexs.push_back((i + 1) * (numV + 1) + j + 1);
+				}
+			}
+
+			AddBind(std::make_unique<IndexBuffer>(gfx, indexs));
+		}
+
+		else if (ss.Parametric_0 && ss.Parametric_1 && ss.Parametric_2)
+		{
+			float epsilon = error_epsilon;
+			auto numU = ss.numU;
+			auto numV = ss.numV;
+			auto minRect = ss.minRect;
+			auto maxRect = ss.maxRect;
+			auto theta = ss.Parametric_0;
+			auto phi = ss.Parametric_1;
+			auto rad = ss.Parametric_2;
+
+			if (!sc.Textured) {
+				std::vector<Vertex> vertexs;
+
+				for (UINT i = 0; i < numU + 1; i++) {
+					for (UINT j = 0; j < numV + 1; j++) {
+						float u = ((numU - i) * minRect.x + i * maxRect.x) / numU;
+						float v = ((numV - j) * minRect.y + j * maxRect.y) / numV;
+						vertexs.push_back({ makePolar({ theta(u,v), phi(u,v), rad(u,v) }),
+
+							-((makePolar({ theta(u + epsilon,v), phi(u + epsilon,v), rad(u + epsilon,v) }) -
+							makePolar({ theta(u - epsilon,v), phi(u - epsilon,v), rad(u - epsilon,v) })) *
+							(makePolar({ theta(u,v + epsilon), phi(u,v + epsilon), rad(u,v + epsilon) }) -
+							makePolar({ theta(u,v - epsilon), phi(u,v - epsilon), rad(u,v - epsilon) })))
+							.normalize(),
+
+							sc.color });
+					}
+				}
+				AddBind(std::make_unique<VertexBuffer>(gfx, vertexs));
+			}
+			else {
+				std::vector<TexVertex> vertexs;
+
+				for (UINT i = 0; i < numU + 1; i++) {
+					for (UINT j = 0; j < numV + 1; j++) {
+						float u = ((numU - i) * minRect.x + i * maxRect.x) / numU;
+						float v = ((numV - j) * minRect.y + j * maxRect.y) / numV;
+						vertexs.push_back({ makePolar({ theta(u,v), phi(u,v), rad(u,v) }),
+
+							-((makePolar({ theta(u + epsilon,v), phi(u + epsilon,v), rad(u + epsilon,v) }) -
+							makePolar({ theta(u - epsilon,v), phi(u - epsilon,v), rad(u - epsilon,v) })) *
+							(makePolar({ theta(u,v + epsilon), phi(u,v + epsilon), rad(u,v + epsilon) }) -
+							makePolar({ theta(u,v - epsilon), phi(u,v - epsilon), rad(u,v - epsilon) })))
+							.normalize(),
+
+							Vector2f((float)i / numU,(float)j / numV) });
+					}
+				}
+				AddBind(std::make_unique<VertexBuffer>(gfx, vertexs));
+			}
+
+
+			std::vector<unsigned short> indexs;
+
+			for (UINT i = 0; i < numU; i++) {
+				for (UINT j = 0; j < numV; j++) {
+					indexs.push_back(i * (numV + 1) + j);
+					indexs.push_back(i * (numV + 1) + j + 1);
+					indexs.push_back((i + 1) * (numV + 1) + j + 1);
+
+					indexs.push_back(i * (numV + 1) + j);
+					indexs.push_back((i + 1) * (numV + 1) + j + 1);
+					indexs.push_back((i + 1) * (numV + 1) + j);
+
+					indexs.push_back(i * (numV + 1) + j);
+					indexs.push_back((i + 1) * (numV + 1) + j + 1);
+					indexs.push_back(i * (numV + 1) + j + 1);
+
+					indexs.push_back(i * (numV + 1) + j);
+					indexs.push_back((i + 1) * (numV + 1) + j);
+					indexs.push_back((i + 1) * (numV + 1) + j + 1);
+				}
+			}
+
+			AddBind(std::make_unique<IndexBuffer>(gfx, indexs));
+		}
+
+		else throw std::exception("Found nullptr while trying to read Parametric function");
+		break;
+	default:
+		throw std::exception("The surface type specified is not supported");
+	}
+	addOtherBinds(gfx);
 }
 
 //	Public
@@ -166,7 +897,7 @@ void Surface::updateRotation(Graphics& gfx, float rotationZ, float rotationX, Ve
 
 void Surface::updateTexture(Graphics& gfx, UINT id, std::string texture)
 {
-	if (!textured)
+	if (!sc.Textured)
 		throw std::exception(std::string("ERROR: You cannot call a texture update in a surface that wasn't initialized as textured\nREF: [" + texture + "]").c_str());
 	if (id > 1u)
 		throw std::exception("ERROR: The given id to update the texture is not valid, id must be 0 or 1");
@@ -176,7 +907,7 @@ void Surface::updateTexture(Graphics& gfx, UINT id, std::string texture)
 
 void Surface::updateTexture(Graphics& gfx, UINT id, Texture texture)
 {
-	if (!textured)
+	if (!sc.Textured)
 		throw std::exception("ERROR: You cannot call a texture update in a surface that wasn't initialized as textured");
 	if (id > 1u)
 		throw std::exception("ERROR: The given id to update the texture is not valid, id must be 0 or 1");
@@ -186,7 +917,7 @@ void Surface::updateTexture(Graphics& gfx, UINT id, Texture texture)
 
 void Surface::updateTextures(Graphics& gfx, Texture texture0, Texture texture1)
 {
-	if (!textured)
+	if (!sc.Textured)
 		throw std::exception("ERROR: You cannot call a texture update in a surface that wasn't initialized as textured");
 
 	changeBind(std::make_unique<Texture>(texture0, 0u), 4u);
@@ -195,7 +926,7 @@ void Surface::updateTextures(Graphics& gfx, Texture texture0, Texture texture1)
 
 void Surface::updateTextures(Graphics& gfx, std::string texture0, std::string texture1)
 {
-	if (!textured)
+	if (!sc.Textured)
 		throw std::exception("ERROR: You cannot call a texture update in a surface that wasn't initialized as textured");
 
 	changeBind(std::make_unique<Texture>(gfx, texture0, 0u), 4u);
@@ -226,640 +957,723 @@ void Surface::clearLights(Graphics& gfx)
 	pPSCB->Update(gfx, pscBuff);
 }
 
+void Surface::updateShape(Graphics& gfx, SURFACE_SHAPE ss)
+{
+	switch (ss.Type)
+	{
+	case _EXPLICIT:
+
+		if (ss.Explicit)
+		{
+			float epsilon = error_epsilon;
+			auto numX = ss.numU;
+			auto numY = ss.numV;
+			auto minRect = ss.minRect;
+			auto maxRect = ss.maxRect;
+			auto F = ss.Explicit;
+
+			if (!sc.Textured) {
+				std::vector<Vertex> vertexs;
+
+				for (UINT i = 0; i < numX + 1; i++) {
+					for (UINT j = 0; j < numY + 1; j++) {
+						float x = ((numX - i) * minRect.x + i * maxRect.x) / numX;
+						float y = ((numY - j) * minRect.y + j * maxRect.y) / numY;
+						vertexs.push_back({ Vector3f(x, y, F(x,y)) ,
+							-((Vector3f(x + epsilon, y, F(x + epsilon,y)) - Vector3f(x - epsilon, y, F(x - epsilon,y))) *
+							(Vector3f(x, y + epsilon, F(x,y + epsilon)) - Vector3f(x, y - epsilon, F(x,y - epsilon)))).normalize(),
+							sc.color });
+					}
+				}
+				changeBind(std::make_unique<VertexBuffer>(gfx, vertexs), 0u);
+			}
+
+			else {
+				std::vector<TexVertex> vertexs;
+
+				for (UINT i = 0; i < numX + 1; i++) {
+					for (UINT j = 0; j < numY + 1; j++) {
+						float x = ((numX - i) * minRect.x + i * maxRect.x) / numX;
+						float y = ((numY - j) * minRect.y + j * maxRect.y) / numY;
+						vertexs.push_back({ Vector3f(x, y, F(x,y)) ,
+							-((Vector3f(x + epsilon, y, F(x + epsilon,y)) - Vector3f(x - epsilon, y, F(x - epsilon,y))) *
+							(Vector3f(x, y + epsilon, F(x,y + epsilon)) - Vector3f(x, y - epsilon, F(x,y - epsilon)))).normalize() ,
+							Vector2f((float)i / numX,(float)j / numY) });
+					}
+				}
+				changeBind(std::make_unique<VertexBuffer>(gfx, vertexs), 0u);
+			}
+
+			std::vector<unsigned short> indexs;
+
+			for (UINT i = 0; i < numX; i++) {
+				for (UINT j = 0; j < numY; j++) {
+					indexs.push_back(i * (numY + 1) + j);
+					indexs.push_back(i * (numY + 1) + j + 1);
+					indexs.push_back((i + 1) * (numY + 1) + j + 1);
+
+					indexs.push_back(i * (numY + 1) + j);
+					indexs.push_back((i + 1) * (numY + 1) + j + 1);
+					indexs.push_back((i + 1) * (numY + 1) + j);
+
+					indexs.push_back(i * (numY + 1) + j);
+					indexs.push_back((i + 1) * (numY + 1) + j + 1);
+					indexs.push_back(i * (numY + 1) + j + 1);
+
+					indexs.push_back(i * (numY + 1) + j);
+					indexs.push_back((i + 1) * (numY + 1) + j);
+					indexs.push_back((i + 1) * (numY + 1) + j + 1);
+				}
+			}
+
+			changeBind(std::make_unique<IndexBuffer>(gfx, indexs), 1u);
+		}
+
+		else throw std::exception("Found nullptr while trying to read Explicit function");
+		break;
+	case _EXPLICIT_SPHERICAL:
+
+		if (ss.Explicit)
+		{
+			float epsilon = error_epsilon;
+			auto numX = ss.numU;
+			auto numY = ss.numV;
+			auto minRect = ss.minRect;
+			auto maxRect = ss.maxRect;
+			auto r = ss.Explicit;
+
+			if (!sc.Textured) {
+				std::vector<Vertex> vertexs;
+
+				for (UINT i = 0; i < numX + 1; i++) {
+					for (UINT j = 0; j < numY + 1; j++) {
+						float theta = ((numX - i) * minRect.x + i * maxRect.x) / numX;
+						float phi = ((numY - j) * minRect.y + j * maxRect.y) / numY;
+						vertexs.push_back({ evalPolar(r,theta,phi) ,
+
+							-((evalPolar(r,theta + epsilon,phi) - evalPolar(r,theta - epsilon,phi)) *
+							((evalPolar(r,theta,phi + epsilon) - evalPolar(r,theta,phi - epsilon))))
+							.normalize(),
+							sc.color });
+						if (!j || j == numY)
+							vertexs[vertexs.size() - 1].norm = Vector3f(0.f, 0.f, 2.f * phi / pi);
+					}
+				}
+				changeBind(std::make_unique<VertexBuffer>(gfx, vertexs), 0u);
+			}
+			else {
+				std::vector<TexVertex> vertexs;
+
+				for (UINT i = 0; i < numX + 1; i++) {
+					for (UINT j = 0; j < numY + 1; j++) {
+						float theta = ((numX - i) * minRect.x + i * maxRect.x) / numX;
+						float phi = ((numY - j) * minRect.y + j * maxRect.y) / numY;
+						vertexs.push_back({ evalPolar(r,theta,phi) ,
+
+							-((evalPolar(r,theta + epsilon,phi) - evalPolar(r,theta - epsilon,phi)) *
+							((evalPolar(r,theta,phi + epsilon) - evalPolar(r,theta,phi - epsilon))))
+							.normalize() ,
+
+							Vector2f((float)i / numX,(float)j / numY) });
+						if (!j || j == numY)
+							vertexs[vertexs.size() - 1].norm = Vector3f(0.f, 0.f, 2.f * phi / pi);
+					}
+				}
+				changeBind(std::make_unique<VertexBuffer>(gfx, vertexs), 0u);
+			}
+
+
+			std::vector<unsigned short> indexs;
+
+			for (UINT i = 0; i < numX; i++) {
+				for (UINT j = 0; j < numY; j++) {
+					indexs.push_back(i * (numY + 1) + j);
+					indexs.push_back(i * (numY + 1) + j + 1);
+					indexs.push_back((i + 1) * (numY + 1) + j + 1);
+
+					indexs.push_back(i * (numY + 1) + j);
+					indexs.push_back((i + 1) * (numY + 1) + j + 1);
+					indexs.push_back((i + 1) * (numY + 1) + j);
+
+					indexs.push_back(i * (numY + 1) + j);
+					indexs.push_back((i + 1) * (numY + 1) + j + 1);
+					indexs.push_back(i * (numY + 1) + j + 1);
+
+					indexs.push_back(i * (numY + 1) + j);
+					indexs.push_back((i + 1) * (numY + 1) + j);
+					indexs.push_back((i + 1) * (numY + 1) + j + 1);
+				}
+			}
+
+			changeBind(std::make_unique<IndexBuffer>(gfx, indexs), 1u);
+		}
+
+		else throw std::exception("Found nullptr while trying to read Explicit function");
+		break;
+	case _EXPLICIT_ICOSPHERE:
+
+		if (ss.Explicit)
+		{
+			float epsilon = error_epsilon;
+			auto depth = ss.ICOSPHERE_DEPHT;
+			auto r = ss.Explicit;
+
+
+			std::vector<Vertex> vertexs;
+
+			struct triangle {
+				unsigned short v0;
+				unsigned short v1;
+				unsigned short v2;
+			};
+
+			float gold = (1.f + sqrtf(5) / 2.f);
+
+			vertexs.push_back(Vertex({ 0.f, 1.f, gold })); //0
+			vertexs.push_back(Vertex({ 0.f, 1.f,-gold })); //1
+			vertexs.push_back(Vertex({ 0.f,-1.f, gold })); //2
+			vertexs.push_back(Vertex({ 0.f,-1.f,-gold })); //3
+			vertexs.push_back(Vertex({ 1.f, gold, 0.f })); //4
+			vertexs.push_back(Vertex({ 1.f,-gold, 0.f })); //5
+			vertexs.push_back(Vertex({ -1.f, gold, 0.f })); //6
+			vertexs.push_back(Vertex({ -1.f,-gold, 0.f })); //7
+			vertexs.push_back(Vertex({ gold, 0.f, 1.f })); //8
+			vertexs.push_back(Vertex({ -gold, 0.f, 1.f })); //9
+			vertexs.push_back(Vertex({ gold, 0.f,-1.f })); //10
+			vertexs.push_back(Vertex({ -gold, 0.f,-1.f })); //11
+
+			std::vector<triangle> triangles;
+			std::vector<triangle> newTriangles;
+
+			triangles.push_back({ 0,6,4 });
+			triangles.push_back({ 1,4,6 });
+			triangles.push_back({ 2,5,7 });
+			triangles.push_back({ 3,7,5 });
+			triangles.push_back({ 4,10,8 });
+			triangles.push_back({ 5,8,10 });
+			triangles.push_back({ 6,9,11 });
+			triangles.push_back({ 7,11,9 });
+			triangles.push_back({ 8,2,0 });
+			triangles.push_back({ 9,0,2 });
+			triangles.push_back({ 10,1,3 });
+			triangles.push_back({ 11,3,1 });
+			triangles.push_back({ 0,4,8 });
+			triangles.push_back({ 0,9,6 });
+			triangles.push_back({ 4,1,10 });
+			triangles.push_back({ 6,11,1 });
+			triangles.push_back({ 3,11,7 });
+			triangles.push_back({ 3,5,10 });
+			triangles.push_back({ 7,9,2 });
+			triangles.push_back({ 5,2,8 });
+
+			for (UINT i = 0; i < depth; i++) {
+				newTriangles.clear();
+				for (triangle& t : triangles) {
+					vertexs.push_back({ (vertexs[t.v0].vector + vertexs[t.v1].vector) / 2.f });
+					vertexs.push_back({ (vertexs[t.v1].vector + vertexs[t.v2].vector) / 2.f });
+					vertexs.push_back({ (vertexs[t.v2].vector + vertexs[t.v0].vector) / 2.f });
+					unsigned short s0 = (unsigned short)vertexs.size() - 3;
+					unsigned short s1 = s0 + 1;
+					unsigned short s2 = s0 + 2;
+					newTriangles.push_back({ t.v0 , s0 , s2 });
+					newTriangles.push_back({ t.v1 , s1 , s0 });
+					newTriangles.push_back({ t.v2 , s2 , s1 });
+					newTriangles.push_back({ s0 , s1 , s2 });
+				}
+				triangles = newTriangles;
+			}
+
+
+			std::vector<unsigned short> indexs;
+			for (triangle& t : triangles) {
+				indexs.push_back(t.v0);
+				indexs.push_back(t.v1);
+				indexs.push_back(t.v2);
+			}
+			std::vector<Vector2f> texCoord;
+			for (Vertex& v : vertexs) {
+				v.vector.normalize();
+				float phi = asinf(v.vector.z);
+				float theta = 0.f;
+				if (v.vector.x || v.vector.y) {
+					Vector2f temp = Vector2f(v.vector.x, v.vector.y).normalize();
+					theta = acosf(temp.x);
+					if (temp.y < 0)
+						theta = 2 * pi - theta;
+				}
+				if (!v.vector.x && !v.vector.y)
+					v.norm = v.vector;
+				else
+					v.norm =
+					-((evalPolar(r, theta + epsilon, phi) - evalPolar(r, theta - epsilon, phi)) *
+						((evalPolar(r, theta, phi + epsilon) - evalPolar(r, theta, phi - epsilon))))
+					.normalize();
+
+				v.vector *= r(theta, phi);
+				texCoord.push_back({ theta / 2.f / pi,(pi / 2.f - phi) / pi });
+			}
+
+			if (sc.Textured) {
+				std::vector<TexVertex> texvertexs;
+				for (UINT i = 0; i < vertexs.size(); i++)
+					texvertexs.push_back({ vertexs[i].vector,vertexs[i].norm,texCoord[i] });
+				changeBind(std::make_unique<VertexBuffer>(gfx, texvertexs), 0u);
+			}
+			else
+				changeBind(std::make_unique<VertexBuffer>(gfx, vertexs), 0u);
+
+			changeBind(std::make_unique<IndexBuffer>(gfx, indexs), 1u);
+		}
+
+		else throw std::exception("Found nullptr while trying to read Explicit function");
+		break;
+	case _IMPLICIT:
+
+		if (ss.Implicit)
+		{
+			auto H = ss.Implicit;
+			auto regionBegin = ss.minCube;
+			auto regionEnd = ss.maxCube;
+
+			constexpr int cubes = 60;
+			float minx = regionBegin.x;
+			float maxx = regionEnd.x;
+			float miny = regionBegin.y;
+			float maxy = regionEnd.y;
+			float minz = regionBegin.z;
+			float maxz = regionEnd.z;
+
+			_float4vector*** h = (_float4vector***)calloc(cubes + 1, sizeof(void**));
+
+			for (int i = 0; i <= cubes; i++)
+			{
+				h[i] = (_float4vector**)calloc(cubes + 1, sizeof(void*));
+
+				for (int j = 0; j <= cubes; j++)
+				{
+					h[i][j] = (_float4vector*)calloc(cubes + 1, sizeof(_float4vector));
+
+					for (int k = 0; k <= cubes; k++)
+					{
+						float di = float(i) / cubes;
+						float dj = float(j) / cubes;
+						float dk = float(k) / cubes;
+
+						float x = minx * (1 - di) + maxx * di;
+						float y = miny * (1 - dj) + maxy * dj;
+						float z = minz * (1 - dk) + maxz * dk;
+						h[i][j][k] = { x , y , z , H(x, y, z) };
+					}
+				}
+			}
+
+			std::vector<Vertex> vertexs;
+			std::vector<unsigned short> indexs;
+
+			for (int i = 0; i < cubes; i++)
+			{
+				for (int j = 0; j < cubes; j++)
+				{
+					for (int k = 0; k < cubes; k++)
+					{
+						_float4vector cube[8] = { h[i][j][k] , h[i][j][k + 1] , h[i][j + 1][k + 1] , h[i][j + 1][k] , h[i + 1][j][k] , h[i + 1][j][k + 1] , h[i + 1][j + 1][k + 1] , h[i + 1][j + 1][k] };
+
+						addVertexsCube(cube, vertexs, indexs);
+					}
+				}
+			}
+
+			for (int i = 0; i <= cubes; i++)
+			{
+				for (int j = 0; j <= cubes; j++)
+				{
+					free(h[i][j]);
+				}
+				free(h[i]);
+			}
+			free(h);
+
+			changeBind(std::make_unique<VertexBuffer>(gfx, vertexs), 0u);
+			changeBind(std::make_unique<IndexBuffer>(gfx, indexs), 1u);
+		}
+
+		else throw std::exception("Found nullptr while trying to read Implicit function");
+		break;
+	case _IMPLICIT_SPHERICAL:
+
+		if (ss.Implicit)
+		{
+			auto H = ss.Implicit;
+			auto regionBegin = ss.minCube;
+			auto regionEnd = ss.maxCube;
+
+			constexpr int cubes = 60;
+			float minx = regionBegin.x;
+			float maxx = regionEnd.x;
+			float miny = regionBegin.y;
+			float maxy = regionEnd.y;
+			float minz = regionBegin.z;
+			float maxz = regionEnd.z;
+
+			_float4vector*** h = (_float4vector***)calloc(cubes + 1, sizeof(void**));
+
+			for (int i = 0; i <= cubes; i++)
+			{
+				h[i] = (_float4vector**)calloc(cubes + 1, sizeof(void*));
+
+				for (int j = 0; j <= cubes; j++)
+				{
+					h[i][j] = (_float4vector*)calloc(cubes + 1, sizeof(_float4vector));
+
+					for (int k = 0; k <= cubes; k++)
+					{
+						float di = float(i) / cubes;
+						float dj = float(j) / cubes;
+						float dk = float(k) / cubes;
+
+						float x = minx * (1 - di) + maxx * di;
+						float y = miny * (1 - dj) + maxy * dj;
+						float z = minz * (1 - dk) + maxz * dk;
+						h[i][j][k] = { x , y , z , H(x, y, z) };
+					}
+				}
+			}
+
+			std::vector<Vertex> vertexs;
+			std::vector<unsigned short> indexs;
+
+			for (int i = 0; i < cubes; i++)
+			{
+				for (int j = 0; j < cubes; j++)
+				{
+					for (int k = 0; k < cubes; k++)
+					{
+						_float4vector cube[8] = { h[i][j][k] , h[i][j][k + 1] , h[i][j + 1][k + 1] , h[i][j + 1][k] , h[i + 1][j][k] , h[i + 1][j][k + 1] , h[i + 1][j + 1][k + 1] , h[i + 1][j + 1][k] };
+
+						addVertexsCube(cube, vertexs, indexs, true);
+					}
+				}
+			}
+
+			for (int i = 0; i <= cubes; i++)
+			{
+				for (int j = 0; j <= cubes; j++)
+				{
+					free(h[i][j]);
+				}
+				free(h[i]);
+			}
+			free(h);
+
+			changeBind(std::make_unique<VertexBuffer>(gfx, vertexs), 0u);
+			changeBind(std::make_unique<IndexBuffer>(gfx, indexs), 1u);
+		}
+
+		else throw std::exception("Found nullptr while trying to read Implicit function");
+		break;
+	case _PARAMETRIC:
+
+		if (ss.Parametric_V)
+		{
+			float epsilon = error_epsilon;
+			auto numU = ss.numU;
+			auto numV = ss.numV;
+			auto minRect = ss.minRect;
+			auto maxRect = ss.maxRect;
+			auto P = ss.Parametric_V;
+
+			if (!sc.Textured) {
+				std::vector<Vertex> vertexs;
+
+				for (UINT i = 0; i < numU + 1; i++) {
+					for (UINT j = 0; j < numV + 1; j++) {
+						float u = ((numU - i) * minRect.x + i * maxRect.x) / numU;
+						float v = ((numV - j) * minRect.y + j * maxRect.y) / numV;
+						vertexs.push_back({ P(u,v) ,
+							-((P(u + epsilon,v) - P(u - epsilon,v)) *
+							(P(u,v + epsilon) - P(u,v - epsilon)))
+							.normalize(),
+							sc.color });
+					}
+				}
+				changeBind(std::make_unique<VertexBuffer>(gfx, vertexs), 0u);
+			}
+			else {
+				std::vector<TexVertex> vertexs;
+
+				for (UINT i = 0; i < numU + 1; i++) {
+					for (UINT j = 0; j < numV + 1; j++) {
+						float u = ((numU - i) * minRect.x + i * maxRect.x) / numU;
+						float v = ((numV - j) * minRect.y + j * maxRect.y) / numV;
+						vertexs.push_back({ P(u,v) ,
+							-((P(u + epsilon,v) - P(u - epsilon,v)) *
+							(P(u,v + epsilon) - P(u,v - epsilon)))
+							.normalize(),
+
+							Vector2f((float)i / numU,(float)j / numV) });
+					}
+				}
+				changeBind(std::make_unique<VertexBuffer>(gfx, vertexs), 0u);
+			}
+
+			std::vector<unsigned short> indexs;
+
+			for (UINT i = 0; i < numU; i++) {
+				for (UINT j = 0; j < numV; j++) {
+					indexs.push_back(i * (numV + 1) + j);
+					indexs.push_back(i * (numV + 1) + j + 1);
+					indexs.push_back((i + 1) * (numV + 1) + j + 1);
+
+					indexs.push_back(i * (numV + 1) + j);
+					indexs.push_back((i + 1) * (numV + 1) + j + 1);
+					indexs.push_back((i + 1) * (numV + 1) + j);
+
+					indexs.push_back(i * (numV + 1) + j);
+					indexs.push_back((i + 1) * (numV + 1) + j + 1);
+					indexs.push_back(i * (numV + 1) + j + 1);
+
+					indexs.push_back(i * (numV + 1) + j);
+					indexs.push_back((i + 1) * (numV + 1) + j);
+					indexs.push_back((i + 1) * (numV + 1) + j + 1);
+				}
+			}
+
+			changeBind(std::make_unique<IndexBuffer>(gfx, indexs), 1u);
+		}
+
+		else if (ss.Parametric_0 && ss.Parametric_1 && ss.Parametric_2)
+		{
+			float epsilon = error_epsilon;
+			auto numU = ss.numU;
+			auto numV = ss.numV;
+			auto minRect = ss.minRect;
+			auto maxRect = ss.maxRect;
+			auto x = ss.Parametric_0;
+			auto y = ss.Parametric_1;
+			auto z = ss.Parametric_2;
+
+			if (!sc.Textured) {
+				std::vector<Vertex> vertexs;
+
+				for (UINT i = 0; i < numU + 1; i++) {
+					for (UINT j = 0; j < numV + 1; j++) {
+						float u = ((numU - i) * minRect.x + i * maxRect.x) / numU;
+						float v = ((numV - j) * minRect.y + j * maxRect.y) / numV;
+						vertexs.push_back({ Vector3f(x(u,v), y(u,v), z(u,v)) ,
+							-((Vector3f(x(u + epsilon,v), y(u + epsilon,v), z(u + epsilon,v)) - Vector3f(x(u - epsilon,v), y(u - epsilon,v), z(u - epsilon,v))) *
+							(Vector3f(x(u,v + epsilon), y(u,v + epsilon), z(u,v + epsilon)) - Vector3f(x(u,v - epsilon), y(u,v - epsilon), z(u,v - epsilon))))
+							.normalize(),
+							sc.color });
+					}
+				}
+				changeBind(std::make_unique<VertexBuffer>(gfx, vertexs), 0u);
+			}
+			else {
+				std::vector<TexVertex> vertexs;
+
+				for (UINT i = 0; i < numU + 1; i++) {
+					for (UINT j = 0; j < numV + 1; j++) {
+						float u = ((numU - i) * minRect.x + i * maxRect.x) / numU;
+						float v = ((numV - j) * minRect.y + j * maxRect.y) / numV;
+						vertexs.push_back({ Vector3f(x(u,v), y(u,v), z(u,v)) ,
+							-((Vector3f(x(u + epsilon,v), y(u + epsilon,v), z(u + epsilon,v)) - Vector3f(x(u - epsilon,v), y(u - epsilon,v), z(u - epsilon,v))) *
+							(Vector3f(x(u,v + epsilon), y(u,v + epsilon), z(u,v + epsilon)) - Vector3f(x(u,v - epsilon), y(u,v - epsilon), z(u,v - epsilon))))
+							.normalize(),
+
+							Vector2f((float)i / numU,(float)j / numV) });
+					}
+				}
+				changeBind(std::make_unique<VertexBuffer>(gfx, vertexs), 0u);
+			}
+
+			std::vector<unsigned short> indexs;
+
+			for (UINT i = 0; i < numU; i++) {
+				for (UINT j = 0; j < numV; j++) {
+					indexs.push_back(i * (numV + 1) + j);
+					indexs.push_back(i * (numV + 1) + j + 1);
+					indexs.push_back((i + 1) * (numV + 1) + j + 1);
+
+					indexs.push_back(i * (numV + 1) + j);
+					indexs.push_back((i + 1) * (numV + 1) + j + 1);
+					indexs.push_back((i + 1) * (numV + 1) + j);
+
+					indexs.push_back(i * (numV + 1) + j);
+					indexs.push_back((i + 1) * (numV + 1) + j + 1);
+					indexs.push_back(i * (numV + 1) + j + 1);
+
+					indexs.push_back(i * (numV + 1) + j);
+					indexs.push_back((i + 1) * (numV + 1) + j);
+					indexs.push_back((i + 1) * (numV + 1) + j + 1);
+				}
+			}
+
+			changeBind(std::make_unique<IndexBuffer>(gfx, indexs), 1u);
+		}
+
+		else throw std::exception("Found nullptr while trying to read Parametric function");
+		break;
+	case _PARAMETRIC_SPHERICAL:
+
+		if (ss.Parametric_V)
+		{
+			float epsilon = error_epsilon;
+			auto numU = ss.numU;
+			auto numV = ss.numV;
+			auto minRect = ss.minRect;
+			auto maxRect = ss.maxRect;
+			auto P = ss.Parametric_V;
+
+			if (!sc.Textured) {
+				std::vector<Vertex> vertexs;
+
+				for (UINT i = 0; i < numU + 1; i++) {
+					for (UINT j = 0; j < numV + 1; j++) {
+						float u = ((numU - i) * minRect.x + i * maxRect.x) / numU;
+						float v = ((numV - j) * minRect.y + j * maxRect.y) / numV;
+						vertexs.push_back({ makePolar(P(u,v)) ,
+
+							-((makePolar(P(u + epsilon,v)) - makePolar(P(u - epsilon,v))) *
+							(makePolar(P(u,v + epsilon)) - makePolar(P(u,v - epsilon))))
+							.normalize(),
+							sc.color });
+					}
+				}
+				changeBind(std::make_unique<VertexBuffer>(gfx, vertexs), 0u);
+			}
+			else {
+				std::vector<TexVertex> vertexs;
+
+				for (UINT i = 0; i < numU + 1; i++) {
+					for (UINT j = 0; j < numV + 1; j++) {
+						float u = ((numU - i) * minRect.x + i * maxRect.x) / numU;
+						float v = ((numV - j) * minRect.y + j * maxRect.y) / numV;
+						vertexs.push_back({ makePolar(P(u,v)) ,
+
+							-((makePolar(P(u + epsilon,v)) - makePolar(P(u - epsilon,v))) *
+							(makePolar(P(u,v + epsilon)) - makePolar(P(u,v - epsilon))))
+							.normalize(),
+
+							Vector2f((float)i / numU,(float)j / numV) });
+					}
+				}
+				changeBind(std::make_unique<VertexBuffer>(gfx, vertexs), 0u);
+			}
+
+
+			std::vector<unsigned short> indexs;
+
+			for (UINT i = 0; i < numU; i++) {
+				for (UINT j = 0; j < numV; j++) {
+					indexs.push_back(i * (numV + 1) + j);
+					indexs.push_back(i * (numV + 1) + j + 1);
+					indexs.push_back((i + 1) * (numV + 1) + j + 1);
+
+					indexs.push_back(i * (numV + 1) + j);
+					indexs.push_back((i + 1) * (numV + 1) + j + 1);
+					indexs.push_back((i + 1) * (numV + 1) + j);
+
+					indexs.push_back(i * (numV + 1) + j);
+					indexs.push_back((i + 1) * (numV + 1) + j + 1);
+					indexs.push_back(i * (numV + 1) + j + 1);
+
+					indexs.push_back(i * (numV + 1) + j);
+					indexs.push_back((i + 1) * (numV + 1) + j);
+					indexs.push_back((i + 1) * (numV + 1) + j + 1);
+				}
+			}
+
+			changeBind(std::make_unique<IndexBuffer>(gfx, indexs), 1u);
+		}
+
+		else if (ss.Parametric_0 && ss.Parametric_1 && ss.Parametric_2)
+		{
+			float epsilon = error_epsilon;
+			auto numU = ss.numU;
+			auto numV = ss.numV;
+			auto minRect = ss.minRect;
+			auto maxRect = ss.maxRect;
+			auto theta = ss.Parametric_0;
+			auto phi = ss.Parametric_1;
+			auto rad = ss.Parametric_2;
+
+			if (!sc.Textured) {
+				std::vector<Vertex> vertexs;
+
+				for (UINT i = 0; i < numU + 1; i++) {
+					for (UINT j = 0; j < numV + 1; j++) {
+						float u = ((numU - i) * minRect.x + i * maxRect.x) / numU;
+						float v = ((numV - j) * minRect.y + j * maxRect.y) / numV;
+						vertexs.push_back({ makePolar({ theta(u,v), phi(u,v), rad(u,v) }),
+
+							-((makePolar({ theta(u + epsilon,v), phi(u + epsilon,v), rad(u + epsilon,v) }) -
+							makePolar({ theta(u - epsilon,v), phi(u - epsilon,v), rad(u - epsilon,v) })) *
+							(makePolar({ theta(u,v + epsilon), phi(u,v + epsilon), rad(u,v + epsilon) }) -
+							makePolar({ theta(u,v - epsilon), phi(u,v - epsilon), rad(u,v - epsilon) })))
+							.normalize(),
+
+							sc.color });
+					}
+				}
+				changeBind(std::make_unique<VertexBuffer>(gfx, vertexs), 0u);
+			}
+			else {
+				std::vector<TexVertex> vertexs;
+
+				for (UINT i = 0; i < numU + 1; i++) {
+					for (UINT j = 0; j < numV + 1; j++) {
+						float u = ((numU - i) * minRect.x + i * maxRect.x) / numU;
+						float v = ((numV - j) * minRect.y + j * maxRect.y) / numV;
+						vertexs.push_back({ makePolar({ theta(u,v), phi(u,v), rad(u,v) }),
+
+							-((makePolar({ theta(u + epsilon,v), phi(u + epsilon,v), rad(u + epsilon,v) }) -
+							makePolar({ theta(u - epsilon,v), phi(u - epsilon,v), rad(u - epsilon,v) })) *
+							(makePolar({ theta(u,v + epsilon), phi(u,v + epsilon), rad(u,v + epsilon) }) -
+							makePolar({ theta(u,v - epsilon), phi(u,v - epsilon), rad(u,v - epsilon) })))
+							.normalize(),
+
+							Vector2f((float)i / numU,(float)j / numV) });
+					}
+				}
+				changeBind(std::make_unique<VertexBuffer>(gfx, vertexs), 0u);
+			}
+
+
+			std::vector<unsigned short> indexs;
+
+			for (UINT i = 0; i < numU; i++) {
+				for (UINT j = 0; j < numV; j++) {
+					indexs.push_back(i * (numV + 1) + j);
+					indexs.push_back(i * (numV + 1) + j + 1);
+					indexs.push_back((i + 1) * (numV + 1) + j + 1);
+
+					indexs.push_back(i * (numV + 1) + j);
+					indexs.push_back((i + 1) * (numV + 1) + j + 1);
+					indexs.push_back((i + 1) * (numV + 1) + j);
+
+					indexs.push_back(i * (numV + 1) + j);
+					indexs.push_back((i + 1) * (numV + 1) + j + 1);
+					indexs.push_back(i * (numV + 1) + j + 1);
+
+					indexs.push_back(i * (numV + 1) + j);
+					indexs.push_back((i + 1) * (numV + 1) + j);
+					indexs.push_back((i + 1) * (numV + 1) + j + 1);
+				}
+			}
+
+			changeBind(std::make_unique<IndexBuffer>(gfx, indexs), 1u);
+		}
+
+		else throw std::exception("Found nullptr while trying to read Parametric function");
+		break;
+	default:
+		throw std::exception("The surface type specified is not supported");
+	}
+}
+
 //	Private
 
-void Surface::generateExplicit(Graphics& gfx, float F(float, float), Vector2f minRect, Vector2f maxRect, UINT numX, UINT numY, SURFACE_COLORING sc)
-{
-	float epsilon = error_epsilon;
-	if (!sc.Textured) {
-		std::vector<Vertex> vertexs;
-		
-		for (UINT i = 0; i < numX + 1; i++) {
-			for (UINT j = 0; j < numY + 1; j++) {
-				float x = ((numX - i) * minRect.x + i * maxRect.x) / numX;
-				float y = ((numY - j) * minRect.y + j * maxRect.y) / numY;
-				vertexs.push_back({ Vector3f(x, y, F(x,y)) ,
-					-((Vector3f(x + epsilon, y, F(x + epsilon,y)) - Vector3f(x - epsilon, y, F(x - epsilon,y))) * 
-					(Vector3f(x, y + epsilon, F(x,y + epsilon)) - Vector3f(x, y - epsilon, F(x,y - epsilon)))).normalize(),
-					sc.color });
-			}
-		}
-		AddBind(std::make_unique<VertexBuffer>(gfx, vertexs));
-	}
-
-	else {
-		std::vector<TexVertex> vertexs;
-
-		for (UINT i = 0; i < numX + 1; i++) {
-			for (UINT j = 0; j < numY + 1; j++) {
-				float x = ((numX - i) * minRect.x + i * maxRect.x) / numX;
-				float y = ((numY - j) * minRect.y + j * maxRect.y) / numY;
-				vertexs.push_back({ Vector3f(x, y, F(x,y)) ,
-					-((Vector3f(x + epsilon, y, F(x + epsilon,y)) - Vector3f(x - epsilon, y, F(x - epsilon,y))) *
-					(Vector3f(x, y + epsilon, F(x,y + epsilon)) - Vector3f(x, y - epsilon, F(x,y - epsilon)))).normalize() ,
-					Vector2f((float)i / numX,(float)j / numY) });
-			}
-		}
-		AddBind(std::make_unique<VertexBuffer>(gfx, vertexs));
-	}
-
-	std::vector<unsigned short> indexs;
-
-	for (UINT i = 0; i < numX; i++) {
-		for (UINT j = 0; j < numY; j++) {
-			indexs.push_back(i * (numY + 1) + j);
-			indexs.push_back(i * (numY + 1) + j + 1);
-			indexs.push_back((i + 1) * (numY + 1) + j + 1);
-
-			indexs.push_back(i * (numY + 1) + j);
-			indexs.push_back((i + 1) * (numY + 1) + j + 1);
-			indexs.push_back((i + 1) * (numY + 1) + j);
-
-			indexs.push_back(i * (numY + 1) + j);
-			indexs.push_back((i + 1) * (numY + 1) + j + 1);
-			indexs.push_back(i * (numY + 1) + j + 1);
-
-			indexs.push_back(i * (numY + 1) + j);
-			indexs.push_back((i + 1) * (numY + 1) + j);
-			indexs.push_back((i + 1) * (numY + 1) + j + 1);
-		}
-	}
-
-	AddBind(std::make_unique<IndexBuffer>(gfx, indexs));
-}
-
-void Surface::generatePolarNormal(Graphics& gfx, float r(float, float), Vector2f minRect, Vector2f maxRect, UINT numX, UINT numY, SURFACE_COLORING sc)
-{
-	float epsilon = error_epsilon;
-
-	if (!sc.Textured) {
-		std::vector<Vertex> vertexs;
-
-		for (UINT i = 0; i < numX + 1; i++) {
-			for (UINT j = 0; j < numY + 1; j++) {
-				float theta = ((numX - i) * minRect.x + i * maxRect.x) / numX;
-				float phi = ((numY - j) * minRect.y + j * maxRect.y) / numY;
-				vertexs.push_back({ evalPolar(r,theta,phi) ,
-
-					-((evalPolar(r,theta + epsilon,phi) - evalPolar(r,theta - epsilon,phi)) *
-					((evalPolar(r,theta,phi + epsilon) - evalPolar(r,theta,phi - epsilon))))
-					.normalize(),
-					sc.color });
-				if (!j || j == numY)
-					vertexs[vertexs.size() - 1].norm = Vector3f(0.f, 0.f, 2.f * phi / pi);
-			}
-		}
-		AddBind(std::make_unique<VertexBuffer>(gfx, vertexs));
-	}
-	else {
-		std::vector<TexVertex> vertexs;
-
-		for (UINT i = 0; i < numX + 1; i++) {
-			for (UINT j = 0; j < numY + 1; j++) {
-				float theta = ((numX - i) * minRect.x + i * maxRect.x) / numX;
-				float phi = ((numY - j) * minRect.y + j * maxRect.y) / numY;
-				vertexs.push_back({ evalPolar(r,theta,phi) ,
-
-					-((evalPolar(r,theta + epsilon,phi) - evalPolar(r,theta - epsilon,phi)) *
-					((evalPolar(r,theta,phi + epsilon) - evalPolar(r,theta,phi - epsilon))))
-					.normalize() ,
-
-					Vector2f((float)i / numX,(float)j / numY) });
-				if (!j || j == numY)
-					vertexs[vertexs.size() - 1].norm = Vector3f(0.f, 0.f, 2.f * phi / pi);
-			}
-		}
-		AddBind(std::make_unique<VertexBuffer>(gfx, vertexs));
-	}
-	
-
-	std::vector<unsigned short> indexs;
-
-	for (UINT i = 0; i < numX; i++) {
-		for (UINT j = 0; j < numY; j++) {
-			indexs.push_back(i * (numY + 1) + j);
-			indexs.push_back(i * (numY + 1) + j + 1);
-			indexs.push_back((i + 1) * (numY + 1) + j + 1);
-
-			indexs.push_back(i * (numY + 1) + j);
-			indexs.push_back((i + 1) * (numY + 1) + j + 1);
-			indexs.push_back((i + 1) * (numY + 1) + j);
-
-			indexs.push_back(i * (numY + 1) + j);
-			indexs.push_back((i + 1) * (numY + 1) + j + 1);
-			indexs.push_back(i * (numY + 1) + j + 1);
-
-			indexs.push_back(i * (numY + 1) + j);
-			indexs.push_back((i + 1) * (numY + 1) + j);
-			indexs.push_back((i + 1) * (numY + 1) + j + 1);
-		}
-	}
-
-	AddBind(std::make_unique<IndexBuffer>(gfx, indexs));
-	
-}
-
-void Surface::generatePolarIcosphere(Graphics& gfx, float r(float, float), UINT depth, SURFACE_COLORING sc)
-{
-	float epsilon = error_epsilon;
-	std::vector<Vertex> vertexs;
-
-	struct triangle {
-		unsigned short v0;
-		unsigned short v1;
-		unsigned short v2;
-	};
-
-	float gold = (1.f + sqrtf(5) / 2.f);
-
-	vertexs.push_back(Vertex({ 0.f, 1.f, gold })); //0
-	vertexs.push_back(Vertex({ 0.f, 1.f,-gold })); //1
-	vertexs.push_back(Vertex({ 0.f,-1.f, gold })); //2
-	vertexs.push_back(Vertex({ 0.f,-1.f,-gold })); //3
-	vertexs.push_back(Vertex({ 1.f, gold, 0.f })); //4
-	vertexs.push_back(Vertex({ 1.f,-gold, 0.f })); //5
-	vertexs.push_back(Vertex({ -1.f, gold, 0.f })); //6
-	vertexs.push_back(Vertex({ -1.f,-gold, 0.f })); //7
-	vertexs.push_back(Vertex({ gold, 0.f, 1.f })); //8
-	vertexs.push_back(Vertex({ -gold, 0.f, 1.f })); //9
-	vertexs.push_back(Vertex({ gold, 0.f,-1.f })); //10
-	vertexs.push_back(Vertex({ -gold, 0.f,-1.f })); //11
-
-	std::vector<triangle> triangles;
-	std::vector<triangle> newTriangles;
-
-	triangles.push_back({ 0,6,4 });
-	triangles.push_back({ 1,4,6 });
-	triangles.push_back({ 2,5,7 });
-	triangles.push_back({ 3,7,5 });
-	triangles.push_back({ 4,10,8 });
-	triangles.push_back({ 5,8,10 });
-	triangles.push_back({ 6,9,11 });
-	triangles.push_back({ 7,11,9 });
-	triangles.push_back({ 8,2,0 });
-	triangles.push_back({ 9,0,2 });
-	triangles.push_back({ 10,1,3 });
-	triangles.push_back({ 11,3,1 });
-	triangles.push_back({ 0,4,8 });
-	triangles.push_back({ 0,9,6 });
-	triangles.push_back({ 4,1,10 });
-	triangles.push_back({ 6,11,1 });
-	triangles.push_back({ 3,11,7 });
-	triangles.push_back({ 3,5,10 });
-	triangles.push_back({ 7,9,2 });
-	triangles.push_back({ 5,2,8 });
-
-	for (UINT i = 0; i < depth; i++) {
-		newTriangles.clear();
-		for (triangle& t : triangles) {
-			vertexs.push_back({ (vertexs[t.v0].vector + vertexs[t.v1].vector) / 2.f });
-			vertexs.push_back({ (vertexs[t.v1].vector + vertexs[t.v2].vector) / 2.f });
-			vertexs.push_back({ (vertexs[t.v2].vector + vertexs[t.v0].vector) / 2.f });
-			unsigned short s0 = (unsigned short)vertexs.size() - 3;
-			unsigned short s1 = s0 + 1;
-			unsigned short s2 = s0 + 2;
-			newTriangles.push_back({ t.v0 , s0 , s2 });
-			newTriangles.push_back({ t.v1 , s1 , s0 });
-			newTriangles.push_back({ t.v2 , s2 , s1 });
-			newTriangles.push_back({ s0 , s1 , s2 });
-		}
-		triangles = newTriangles;
-	}
-
-
-	std::vector<unsigned short> indexs;
-	for (triangle& t : triangles) {
-		indexs.push_back(t.v0);
-		indexs.push_back(t.v1);
-		indexs.push_back(t.v2);
-	}
-	std::vector<Vector2f> texCoord;
-	for (Vertex& v : vertexs) {
-		v.vector.normalize();
-		float phi = asinf(v.vector.z);
-		float theta = 0.f;
-		if (v.vector.x || v.vector.y) {
-			Vector2f temp = Vector2f(v.vector.x, v.vector.y).normalize();
-			theta = acosf(temp.x);
-			if (temp.y < 0)
-				theta = 2 * pi - theta;
-		}
-		if (!v.vector.x && !v.vector.y)
-			v.norm = v.vector;
-		else 
-			v.norm =
-			-((evalPolar(r, theta + epsilon, phi) - evalPolar(r, theta - epsilon, phi)) *
-			((evalPolar(r, theta, phi + epsilon) - evalPolar(r, theta, phi - epsilon))))
-			.normalize();
-
-		v.vector *= r(theta, phi);
-		texCoord.push_back({ theta / 2.f / pi,(pi / 2.f - phi) / pi });
-	}
-
-	if (sc.Textured) {
-		std::vector<TexVertex> texvertexs;
-		for (UINT i = 0; i < vertexs.size(); i++)
-			texvertexs.push_back({ vertexs[i].vector,vertexs[i].norm,texCoord[i] });
-		AddBind(std::make_unique<VertexBuffer>(gfx, texvertexs));
-	}
-	else
-		AddBind(std::make_unique<VertexBuffer>(gfx, vertexs));
-
-	AddBind(std::make_unique<IndexBuffer>(gfx, indexs));
-
-}
-
-void Surface::generateParametric(Graphics& gfx, float x(float, float), float y(float, float), float z(float, float), Vector2f minRect, Vector2f maxRect, UINT numU, UINT numV, SURFACE_COLORING sc)
-{
-	float epsilon = error_epsilon;
-
-	if (!sc.Textured) {
-		std::vector<Vertex> vertexs;
-
-		for (UINT i = 0; i < numU + 1; i++) {
-			for (UINT j = 0; j < numV + 1; j++) {
-				float u = ((numU - i) * minRect.x + i * maxRect.x) / numU;
-				float v = ((numV - j) * minRect.y + j * maxRect.y) / numV;
-				vertexs.push_back({ Vector3f(x(u,v), y(u,v), z(u,v)) ,
-					-((Vector3f(x(u + epsilon,v), y(u + epsilon,v), z(u + epsilon,v)) - Vector3f(x(u - epsilon,v), y(u - epsilon,v), z(u - epsilon,v))) *
-					(Vector3f(x(u,v + epsilon), y(u,v + epsilon), z(u,v + epsilon)) - Vector3f(x(u,v - epsilon), y(u,v - epsilon), z(u,v - epsilon))))
-					.normalize(),
-					sc.color });
-			}
-		}
-		AddBind(std::make_unique<VertexBuffer>(gfx, vertexs));
-	}
-	else {
-		std::vector<TexVertex> vertexs;
-
-		for (UINT i = 0; i < numU + 1; i++) {
-			for (UINT j = 0; j < numV + 1; j++) {
-				float u = ((numU - i) * minRect.x + i * maxRect.x) / numU;
-				float v = ((numV - j) * minRect.y + j * maxRect.y) / numV;
-				vertexs.push_back({ Vector3f(x(u,v), y(u,v), z(u,v)) ,
-					-((Vector3f(x(u + epsilon,v), y(u + epsilon,v), z(u + epsilon,v)) - Vector3f(x(u - epsilon,v), y(u - epsilon,v), z(u - epsilon,v))) *
-					(Vector3f(x(u,v + epsilon), y(u,v + epsilon), z(u,v + epsilon)) - Vector3f(x(u,v - epsilon), y(u,v - epsilon), z(u,v - epsilon))))
-					.normalize(),
-					
-					Vector2f((float)i / numU,(float)j / numV) });
-			}
-		}
-		AddBind(std::make_unique<VertexBuffer>(gfx, vertexs));
-	}
-
-	std::vector<unsigned short> indexs;
-
-	for (UINT i = 0; i < numU; i++) {
-		for (UINT j = 0; j < numV; j++) {
-			indexs.push_back(i * (numV + 1) + j);
-			indexs.push_back(i * (numV + 1) + j + 1);
-			indexs.push_back((i + 1) * (numV + 1) + j + 1);
-
-			indexs.push_back(i * (numV + 1) + j);
-			indexs.push_back((i + 1) * (numV + 1) + j + 1);
-			indexs.push_back((i + 1) * (numV + 1) + j);
-
-			indexs.push_back(i * (numV + 1) + j);
-			indexs.push_back((i + 1) * (numV + 1) + j + 1);
-			indexs.push_back(i * (numV + 1) + j + 1);
-
-			indexs.push_back(i * (numV + 1) + j);
-			indexs.push_back((i + 1) * (numV + 1) + j);
-			indexs.push_back((i + 1) * (numV + 1) + j + 1);
-		}
-	}
-
-	AddBind(std::make_unique<IndexBuffer>(gfx, indexs));
-}
-
-void Surface::generateParametric(Graphics& gfx, Vector3f P(float, float), Vector2f minRect, Vector2f maxRect, UINT numU, UINT numV, SURFACE_COLORING sc)
-{
-	float epsilon = error_epsilon;
-
-	if (!sc.Textured) {
-		std::vector<Vertex> vertexs;
-
-		for (UINT i = 0; i < numU + 1; i++) {
-			for (UINT j = 0; j < numV + 1; j++) {
-				float u = ((numU - i) * minRect.x + i * maxRect.x) / numU;
-				float v = ((numV - j) * minRect.y + j * maxRect.y) / numV;
-				vertexs.push_back({ P(u,v) ,
-					-((P(u + epsilon,v) - P(u - epsilon,v)) *
-					(P(u,v + epsilon) - P(u,v - epsilon)))
-					.normalize(),
-					sc.color });
-			}
-		}
-		AddBind(std::make_unique<VertexBuffer>(gfx, vertexs));
-	}
-	else {
-		std::vector<TexVertex> vertexs;
-
-		for (UINT i = 0; i < numU + 1; i++) {
-			for (UINT j = 0; j < numV + 1; j++) {
-				float u = ((numU - i) * minRect.x + i * maxRect.x) / numU;
-				float v = ((numV - j) * minRect.y + j * maxRect.y) / numV;
-				vertexs.push_back({ P(u,v) ,
-					-((P(u + epsilon,v) - P(u - epsilon,v)) *
-					(P(u,v + epsilon) - P(u,v - epsilon)))
-					.normalize(),
-
-					Vector2f((float)i / numU,(float)j / numV) });
-			}
-		}
-		AddBind(std::make_unique<VertexBuffer>(gfx, vertexs));
-	}
-
-	std::vector<unsigned short> indexs;
-
-	for (UINT i = 0; i < numU; i++) {
-		for (UINT j = 0; j < numV; j++) {
-			indexs.push_back(i * (numV + 1) + j);
-			indexs.push_back(i * (numV + 1) + j + 1);
-			indexs.push_back((i + 1) * (numV + 1) + j + 1);
-
-			indexs.push_back(i * (numV + 1) + j);
-			indexs.push_back((i + 1) * (numV + 1) + j + 1);
-			indexs.push_back((i + 1) * (numV + 1) + j);
-
-			indexs.push_back(i * (numV + 1) + j);
-			indexs.push_back((i + 1) * (numV + 1) + j + 1);
-			indexs.push_back(i * (numV + 1) + j + 1);
-
-			indexs.push_back(i * (numV + 1) + j);
-			indexs.push_back((i + 1) * (numV + 1) + j);
-			indexs.push_back((i + 1) * (numV + 1) + j + 1);
-		}
-	}
-
-	AddBind(std::make_unique<IndexBuffer>(gfx, indexs));
-}
-
-void Surface::generatePolarParametric(Graphics& gfx, float theta(float, float), float phi(float, float), float rad(float, float), Vector2f minRect, Vector2f maxRect, UINT numU, UINT numV, SURFACE_COLORING sc)
-{
-	float epsilon = error_epsilon;
-
-	if (!sc.Textured) {
-		std::vector<Vertex> vertexs;
-
-		for (UINT i = 0; i < numU + 1; i++) {
-			for (UINT j = 0; j < numV + 1; j++) {
-				float u = ((numU - i) * minRect.x + i * maxRect.x) / numU;
-				float v = ((numV - j) * minRect.y + j * maxRect.y) / numV;
-				vertexs.push_back({ rad(u,v) * Vector3f(cosf(theta(u,v)) * cosf(phi(u,v)), sinf(theta(u,v)) * cosf(phi(u,v)), sinf(phi(u,v))) ,
-
-					-((rad(u + epsilon,v) * Vector3f(cosf(theta(u + epsilon,v)) * cosf(phi(u + epsilon,v)), sinf(theta(u + epsilon,v)) * cosf(phi(u + epsilon,v)), sinf(phi(u + epsilon,v))) -
-					rad(u + epsilon,v) * Vector3f(cosf(theta(u - epsilon,v)) * cosf(phi(u - epsilon,v)), sinf(theta(u - epsilon,v)) * cosf(phi(u - epsilon,v)), sinf(phi(u - epsilon,v)))) *
-					((rad(u,v + epsilon) * Vector3f(cosf(theta(u,v + epsilon)) * cosf(phi(u,v + epsilon)), sinf(theta(u,v + epsilon)) * cosf(phi(u,v + epsilon)), sinf(phi(u,v + epsilon))) -
-					rad(u,v + epsilon) * Vector3f(cosf(theta(u,v - epsilon)) * cosf(phi(u,v - epsilon)), sinf(theta(u,v - epsilon)) * cosf(phi(u,v - epsilon)), sinf(phi(u,v - epsilon))))))
-					.normalize(),
-					sc.color });
-			}
-		}
-		AddBind(std::make_unique<VertexBuffer>(gfx, vertexs));
-	}
-	else {
-		std::vector<TexVertex> vertexs;
-
-		for (UINT i = 0; i < numU + 1; i++) {
-			for (UINT j = 0; j < numV + 1; j++) {
-				float u = ((numU - i) * minRect.x + i * maxRect.x) / numU;
-				float v = ((numV - j) * minRect.y + j * maxRect.y) / numV;
-				vertexs.push_back({ rad(u,v) * Vector3f(cosf(theta(u,v)) * cosf(phi(u,v)), sinf(theta(u,v)) * cosf(phi(u,v)), sinf(phi(u,v))) ,
-
-					-((rad(u + epsilon,v) * Vector3f(cosf(theta(u + epsilon,v)) * cosf(phi(u + epsilon,v)), sinf(theta(u + epsilon,v)) * cosf(phi(u + epsilon,v)), sinf(phi(u + epsilon,v))) -
-					rad(u + epsilon,v) * Vector3f(cosf(theta(u - epsilon,v)) * cosf(phi(u - epsilon,v)), sinf(theta(u - epsilon,v)) * cosf(phi(u - epsilon,v)), sinf(phi(u - epsilon,v)))) *
-					((rad(u,v + epsilon) * Vector3f(cosf(theta(u,v + epsilon)) * cosf(phi(u,v + epsilon)), sinf(theta(u,v + epsilon)) * cosf(phi(u,v + epsilon)), sinf(phi(u,v + epsilon))) -
-					rad(u,v + epsilon) * Vector3f(cosf(theta(u,v - epsilon)) * cosf(phi(u,v - epsilon)), sinf(theta(u,v - epsilon)) * cosf(phi(u,v - epsilon)), sinf(phi(u,v - epsilon))))))
-					.normalize(),
-
-					Vector2f((float)i / numU,(float)j / numV) });
-			}
-		}
-		AddBind(std::make_unique<VertexBuffer>(gfx, vertexs));
-	}
-
-
-	std::vector<unsigned short> indexs;
-
-	for (UINT i = 0; i < numU; i++) {
-		for (UINT j = 0; j < numV; j++) {
-			indexs.push_back(i * (numV + 1) + j);
-			indexs.push_back(i * (numV + 1) + j + 1);
-			indexs.push_back((i + 1) * (numV + 1) + j + 1);
-
-			indexs.push_back(i * (numV + 1) + j);
-			indexs.push_back((i + 1) * (numV + 1) + j + 1);
-			indexs.push_back((i + 1) * (numV + 1) + j);
-
-			indexs.push_back(i * (numV + 1) + j);
-			indexs.push_back((i + 1) * (numV + 1) + j + 1);
-			indexs.push_back(i * (numV + 1) + j + 1);
-
-			indexs.push_back(i * (numV + 1) + j);
-			indexs.push_back((i + 1) * (numV + 1) + j);
-			indexs.push_back((i + 1) * (numV + 1) + j + 1);
-		}
-	}
-
-	AddBind(std::make_unique<IndexBuffer>(gfx, indexs));
-}
-
-void Surface::generatePolarParametric(Graphics& gfx, Vector3f P(float, float), Vector2f minRect, Vector2f maxRect, UINT numU, UINT numV, SURFACE_COLORING sc)
-{
-	float epsilon = error_epsilon;
-
-	if (!sc.Textured) {
-		std::vector<Vertex> vertexs;
-
-		for (UINT i = 0; i < numU + 1; i++) {
-			for (UINT j = 0; j < numV + 1; j++) {
-				float u = ((numU - i) * minRect.x + i * maxRect.x) / numU;
-				float v = ((numV - j) * minRect.y + j * maxRect.y) / numV;
-				vertexs.push_back({ makePolar(P(u,v)) ,
-
-					-((makePolar(P(u + epsilon,v)) - makePolar(P(u - epsilon,v))) *
-					(makePolar(P(u,v + epsilon)) - makePolar(P(u,v - epsilon))))
-					.normalize(),
-					sc.color });
-			}
-		}
-		AddBind(std::make_unique<VertexBuffer>(gfx, vertexs));
-	}
-	else {
-		std::vector<TexVertex> vertexs;
-
-		for (UINT i = 0; i < numU + 1; i++) {
-			for (UINT j = 0; j < numV + 1; j++) {
-				float u = ((numU - i) * minRect.x + i * maxRect.x) / numU;
-				float v = ((numV - j) * minRect.y + j * maxRect.y) / numV;
-				vertexs.push_back({ makePolar(P(u,v)) ,
-
-					-((makePolar(P(u + epsilon,v)) - makePolar(P(u - epsilon,v))) *
-					(makePolar(P(u,v + epsilon)) - makePolar(P(u,v - epsilon))))
-					.normalize(),
-
-					Vector2f((float)i / numU,(float)j / numV) });
-			}
-		}
-		AddBind(std::make_unique<VertexBuffer>(gfx, vertexs));
-	}
-
-
-	std::vector<unsigned short> indexs;
-
-	for (UINT i = 0; i < numU; i++) {
-		for (UINT j = 0; j < numV; j++) {
-			indexs.push_back(i * (numV + 1) + j);
-			indexs.push_back(i * (numV + 1) + j + 1);
-			indexs.push_back((i + 1) * (numV + 1) + j + 1);
-
-			indexs.push_back(i * (numV + 1) + j);
-			indexs.push_back((i + 1) * (numV + 1) + j + 1);
-			indexs.push_back((i + 1) * (numV + 1) + j);
-
-			indexs.push_back(i * (numV + 1) + j);
-			indexs.push_back((i + 1) * (numV + 1) + j + 1);
-			indexs.push_back(i * (numV + 1) + j + 1);
-
-			indexs.push_back(i * (numV + 1) + j);
-			indexs.push_back((i + 1) * (numV + 1) + j);
-			indexs.push_back((i + 1) * (numV + 1) + j + 1);
-		}
-	}
-
-	AddBind(std::make_unique<IndexBuffer>(gfx, indexs));
-}
-
-void Surface::generateImplicit(Graphics& gfx, float H(float, float, float), SURFACE_COLORING sc, Vector3f regionBegin, Vector3f regionEnd)
-{
-	constexpr int cubes = 60;
-	float minx = regionBegin.x;
-	float maxx = regionEnd.x;
-	float miny = regionBegin.y;
-	float maxy = regionEnd.y;
-	float minz = regionBegin.z;
-	float maxz = regionEnd.z;
-
-	_float4vector*** h = (_float4vector***)calloc(cubes + 1, sizeof(void**));
-	
-	for (int i = 0; i <= cubes; i++)
-	{
-		h[i] = (_float4vector**)calloc(cubes + 1, sizeof(void*));
-
-		for (int j = 0; j <= cubes; j++)
-		{
-			h[i][j] = (_float4vector*)calloc(cubes + 1, sizeof(_float4vector));
-
-			for (int k = 0; k <= cubes; k++)
-			{
-				float di = float(i) / cubes;
-				float dj = float(j) / cubes;
-				float dk = float(k) / cubes;
-
-				float x = minx * (1 - di) + maxx * di;
-				float y = miny * (1 - dj) + maxy * dj;
-				float z = minz * (1 - dk) + maxz * dk;
-				h[i][j][k] = { x , y , z , H(x, y, z) };
-			}
-		}
-	}
-
-	std::vector<Vertex> vertexs;
-	std::vector<unsigned short> indexs;
-
-	for (int i = 0; i < cubes; i++)
-	{
-		for (int j = 0; j < cubes; j++)
-		{
-			for (int k = 0; k < cubes; k++)
-			{
-				_float4vector cube[8] = { h[i][j][k] , h[i][j][k + 1] , h[i][j + 1][k + 1] , h[i][j + 1][k] , h[i + 1][j][k] , h[i + 1][j][k + 1] , h[i + 1][j + 1][k + 1] , h[i + 1][j + 1][k] };
-
-				addVertexsCube(cube, vertexs, indexs, sc);
-			}
-		}
-	}
-	
-	for (int i = 0; i <= cubes; i++)
-	{
-		for (int j = 0; j <= cubes; j++)
-		{
-			free(h[i][j]);
-		}
-		free(h[i]);
-	}
-	free(h);
-
-	AddBind(std::make_unique<VertexBuffer>(gfx, vertexs));
-	AddBind(std::make_unique<IndexBuffer>(gfx, indexs));
-}
-
-void Surface::generateImplicitPolar(Graphics& gfx, float H(float, float, float), SURFACE_COLORING sc, Vector3f regionBegin, Vector3f regionEnd)
-{
-	constexpr int cubes = 60;
-	float minx = regionBegin.x;
-	float maxx = regionEnd.x;
-	float miny = regionBegin.y;
-	float maxy = regionEnd.y;
-	float minz = regionBegin.z;
-	float maxz = regionEnd.z;
-
-	_float4vector*** h = (_float4vector***)calloc(cubes + 1, sizeof(void**));
-
-	for (int i = 0; i <= cubes; i++)
-	{
-		h[i] = (_float4vector**)calloc(cubes + 1, sizeof(void*));
-
-		for (int j = 0; j <= cubes; j++)
-		{
-			h[i][j] = (_float4vector*)calloc(cubes + 1, sizeof(_float4vector));
-
-			for (int k = 0; k <= cubes; k++)
-			{
-				float di = float(i) / cubes;
-				float dj = float(j) / cubes;
-				float dk = float(k) / cubes;
-
-				float x = minx * (1 - di) + maxx * di;
-				float y = miny * (1 - dj) + maxy * dj;
-				float z = minz * (1 - dk) + maxz * dk;
-				h[i][j][k] = { x , y , z , H(x, y, z) };
-			}
-		}
-	}
-
-	std::vector<Vertex> vertexs;
-	std::vector<unsigned short> indexs;
-
-	for (int i = 0; i < cubes; i++)
-	{
-		for (int j = 0; j < cubes; j++)
-		{
-			for (int k = 0; k < cubes; k++)
-			{
-				_float4vector cube[8] = { h[i][j][k] , h[i][j][k + 1] , h[i][j + 1][k + 1] , h[i][j + 1][k] , h[i + 1][j][k] , h[i + 1][j][k + 1] , h[i + 1][j + 1][k + 1] , h[i + 1][j + 1][k] };
-
-				addVertexsCube(cube, vertexs, indexs, sc, true);
-			}
-		}
-	}
-
-	for (int i = 0; i <= cubes; i++)
-	{
-		for (int j = 0; j <= cubes; j++)
-		{
-			free(h[i][j]);
-		}
-		free(h[i]);
-	}
-	free(h);
-
-	AddBind(std::make_unique<VertexBuffer>(gfx, vertexs));
-	AddBind(std::make_unique<IndexBuffer>(gfx, indexs));
-}
-
-void Surface::addOtherBinds(Graphics& gfx, SURFACE_COLORING sc)
+void Surface::addOtherBinds(Graphics& gfx)
 {
 	AddBind(std::make_unique<Topology>(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST));
 
@@ -868,7 +1682,6 @@ void Surface::addOtherBinds(Graphics& gfx, SURFACE_COLORING sc)
 
 	if (sc.Textured)
 	{
-		textured = true;
 		AddBind(std::make_unique<Texture>(*sc.texture));
 
 		if (sc.textureNight)
@@ -961,7 +1774,7 @@ Vector3f Surface::makePolar(Vector3f other)
 	return other.z * Vector3f(cosf(other.y) * cosf(other.x), cosf(other.y) * sinf(other.x), sinf(other.y));
 }
 
-void Surface::addVertexsCube(_float4vector cube[8], std::vector<Vertex>& vertexs, std::vector<unsigned short>& indexs, SURFACE_COLORING sc, bool polar)
+void Surface::addVertexsCube(_float4vector cube[8], std::vector<Vertex>& vertexs, std::vector<unsigned short>& indexs, bool polar)
 {
 	struct triangle {
 		unsigned short v0;

@@ -8,16 +8,18 @@ float IG_DATA::PHI = 0.f;
 
 Tester::Tester()
 	:window(640, 480, "Plotter"),
-	surf(window.graphics, _RADIAL_SPHERICAL, weirdRadius),
+	surf(window.graphics, { _EXPLICIT_SPHERICAL, weirdRadius }),
 	light(window.graphics, Color::Black, { 3.f , 0.f , 2.f }, 1.f),
 	curve(window.graphics, curveF, { 0.f ,2 * pi }, 1000, { Color::Red / 3, Color::Yellow / 3, Color::Green / 3, Color::Cyan / 3, Color::Blue / 3, Color::Purple / 3, Color::Red / 3 }),
-	Klein(window.graphics, _PARAMETRIC, KleinBottle, {}, false, Vector2f(0, 0), Vector2f(pi, 2 * pi)),
+	Klein(window.graphics, { _PARAMETRIC, KleinBottle, false, Vector2f(0, 0), Vector2f(pi, 2 * pi) }),
 	point(window.graphics, { 2.f,0.f,0.f }, 8.f),
-	impl(window.graphics, _IMPLICIT, sphere)
+	impl(window.graphics, { _IMPLICIT, sphere }),
+	test(window.graphics, SURFACE_SHAPE(_EXPLICIT, returnX))
 {
 	window.setFramerateLimit(60);
 	srand(143452);
 	surf.clearLights(window.graphics);
+	timer.reset();
 }
 
 int Tester::Run()
@@ -89,6 +91,7 @@ void Tester::eventManager()
 
 	if (IG_DATA::PHI < -3.1415f / 2.f)
 		IG_DATA::PHI = -3.1415f / 2.f;
+
 }
 
 void Tester::doFrame()
@@ -113,13 +116,19 @@ void Tester::doFrame()
 	curve.updateRotation(window.graphics, theta, phi);
 	Klein.updateRotation(window.graphics, theta, phi);
 	impl.updateRotation(window.graphics, theta, phi);
+	test.updateRotation(window.graphics, theta, phi);
 	//surf.Draw(window.graphics);
 	//light.Draw(window.graphics);
 	//curve.Draw(window.graphics);
 	//Klein.Draw(window.graphics);
 	//point.Draw(window.graphics);
+	//impl.Draw(window.graphics);
 
-	impl.Draw(window.graphics);
+	var = 3.f * cosf(timer.check());
+
+	test.updateShape(window.graphics, PARAM_SURFACE_SHAPE<float>(_EXPLICIT, SincFunction, var, false, { -5.f,-5.f }, { 5.f,5.f }));
+	test.Draw(window.graphics);
+
 
 	IG_Tester::render();
 	window.graphics.pushFrame();
@@ -164,11 +173,11 @@ float curveZ(float t)
 	return t / 5.f;
 }
 
-float SincFunction(float x, float y)
+float SincFunction(float x, float y, const float& n)
 {
 	if (x == 0.f && y == 0.f)
-		return 3;
-	return sinf(3 * sqrtf(x * x + y * y)) / sqrtf(x * x + y * y);
+		return n;
+	return sinf(n * sqrtf(x * x + y * y)) / sqrtf(x * x + y * y);
 }
 
 float constantRadius(float, float)
@@ -203,4 +212,9 @@ float sphere(float x, float y, float z)
 	//return (z + 1) * (z + 1) * (z + 1) - x * x * sqrt(z + 1) - y * y;
 	return y * y + z * z - expf(x) + 1;
 	return x * x + y * y + z * z - 1;
+}
+
+float weirdRadiusDynamic(float theta, float phi, const float& t)
+{
+	return 1.f + cosf(t * 3.f) * (sinf(theta + sinf(t)) * sinf(theta) * cosf(phi) + cosf(phi) * cosf(phi + sinf(t)) * sinf(phi)) * sinf(5 * theta) * cosf(3 * phi + sinf(t)) / 2.f;
 }

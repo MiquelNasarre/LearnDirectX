@@ -16,8 +16,9 @@ ImageEditor::ImageEditor()
 	image(initialImage()),
 	imageTex(window.graphics, image),
 	imageBG(window.graphics, imageTex),
-	imageSP(window.graphics, _RADIAL_SPHERICAL, Radius<1.5f>, imageTex, imageTex),
-	imageWD(window.graphics, _RADIAL_SPHERICAL, exampleRadius, imageTex, imageTex)
+	sc(&imageTex),
+	imageSP(window.graphics, _RADIAL_SPHERICAL, Radius<1.5f>, &sc),
+	imageWD(window.graphics, _RADIAL_SPHERICAL, exampleRadius, &sc)
 {
 	window.setFramerateLimit(60);
 }

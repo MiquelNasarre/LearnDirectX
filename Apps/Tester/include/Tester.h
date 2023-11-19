@@ -16,6 +16,7 @@ class Tester {
 
 private:
 	Window window;
+	Timer timer;
 
 	//	Add drawables you want to test here
 
@@ -28,6 +29,8 @@ private:
 
 	Surface Klein;
 
+	Surface test;
+
 	//	...
 
 	float scale = 250.f;
@@ -39,6 +42,8 @@ private:
 	bool dragging = false;
 	Vector2i initialDrag;
 	Vector2f initialDragAngles;
+
+	float var = 3.f;
 
 public:
 	Tester();
@@ -60,7 +65,7 @@ float curveY(float);
 
 float curveZ(float);
 
-float SincFunction(float, float);
+float SincFunction(float, float, const float&);
 
 float constantRadius(float, float);
 
@@ -73,3 +78,5 @@ float returnX(float, float);
 float returnY(float, float);
 
 float sphere(float, float, float);
+
+float weirdRadiusDynamic(float, float, const float&);

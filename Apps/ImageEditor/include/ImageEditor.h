@@ -36,6 +36,7 @@ private:
 
 	Image		image;
 	Texture		imageTex;
+	SURFACE_COLORING sc;
 
 	Background	imageBG;
 	Surface		imageSP;
