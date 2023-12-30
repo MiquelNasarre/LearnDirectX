@@ -14,7 +14,8 @@ Tester::Tester()
 	Klein(window.graphics, { _PARAMETRIC, KleinBottle, false, Vector2f(0, 0), Vector2f(pi, 2 * pi) }),
 	point(window.graphics, { 2.f,0.f,0.f }, 8.f),
 	impl(window.graphics, { _IMPLICIT, sphere }),
-	test(window.graphics, SURFACE_SHAPE(_EXPLICIT, returnX))
+	test(window.graphics, SURFACE_SHAPE(_EXPLICIT, returnX)),
+	shape(_EXPLICIT, SincFunction, var, false, { -5.f,-5.f }, { 5.f,5.f })
 {
 	window.setFramerateLimit(60);
 	srand(143452);
@@ -125,8 +126,9 @@ void Tester::doFrame()
 	//impl.Draw(window.graphics);
 
 	var = 3.f * cosf(timer.check());
+	shape.param = var;
 
-	test.updateShape(window.graphics, PARAM_SURFACE_SHAPE<float>(_EXPLICIT, SincFunction, var, false, { -5.f,-5.f }, { 5.f,5.f }));
+	test.updateShape(window.graphics, shape);
 	test.Draw(window.graphics);
 
 

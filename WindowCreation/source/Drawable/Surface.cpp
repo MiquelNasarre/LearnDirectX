@@ -973,38 +973,38 @@ void Surface::updateShape(Graphics& gfx, SURFACE_SHAPE ss)
 			auto F = ss.Explicit;
 
 			if (!sc.Textured) {
-				std::vector<Vertex> vertexs;
+				VertexArr vertexs((numX + 1) * (numY + 1));
 
 				for (UINT i = 0; i < numX + 1; i++) {
 					for (UINT j = 0; j < numY + 1; j++) {
 						float x = ((numX - i) * minRect.x + i * maxRect.x) / numX;
 						float y = ((numY - j) * minRect.y + j * maxRect.y) / numY;
-						vertexs.push_back({ Vector3f(x, y, F(x,y)) ,
-							-((Vector3f(x + epsilon, y, F(x + epsilon,y)) - Vector3f(x - epsilon, y, F(x - epsilon,y))) *
-							(Vector3f(x, y + epsilon, F(x,y + epsilon)) - Vector3f(x, y - epsilon, F(x,y - epsilon)))).normalize(),
-							sc.color });
+						vertexs.push_back(Vector3f(x, y, F(x, y)),
+							-((Vector3f(x + epsilon, y, F(x + epsilon, y)) - Vector3f(x - epsilon, y, F(x - epsilon, y))) *
+								(Vector3f(x, y + epsilon, F(x, y + epsilon)) - Vector3f(x, y - epsilon, F(x, y - epsilon)))).normalize(),
+							sc.color);
 					}
 				}
-				changeBind(std::make_unique<VertexBuffer>(gfx, vertexs), 0u);
+				changeBind(std::make_unique<VertexBuffer>(gfx, vertexs.data, vertexs.counter), 0u);
 			}
 
 			else {
-				std::vector<TexVertex> vertexs;
+				TexVertexArr vertexs((numX + 1) * (numY + 1));
 
 				for (UINT i = 0; i < numX + 1; i++) {
 					for (UINT j = 0; j < numY + 1; j++) {
 						float x = ((numX - i) * minRect.x + i * maxRect.x) / numX;
 						float y = ((numY - j) * minRect.y + j * maxRect.y) / numY;
-						vertexs.push_back({ Vector3f(x, y, F(x,y)) ,
-							-((Vector3f(x + epsilon, y, F(x + epsilon,y)) - Vector3f(x - epsilon, y, F(x - epsilon,y))) *
-							(Vector3f(x, y + epsilon, F(x,y + epsilon)) - Vector3f(x, y - epsilon, F(x,y - epsilon)))).normalize() ,
-							Vector2f((float)i / numX,(float)j / numY) });
+						vertexs.push_back(Vector3f(x, y, F(x, y)),
+							-((Vector3f(x + epsilon, y, F(x + epsilon, y)) - Vector3f(x - epsilon, y, F(x - epsilon, y))) *
+								(Vector3f(x, y + epsilon, F(x, y + epsilon)) - Vector3f(x, y - epsilon, F(x, y - epsilon)))).normalize(),
+							Vector2f((float)i / numX, (float)j / numY));
 					}
 				}
-				changeBind(std::make_unique<VertexBuffer>(gfx, vertexs), 0u);
+				changeBind(std::make_unique<VertexBuffer>(gfx, vertexs.data, vertexs.counter), 0u);
 			}
 
-			std::vector<unsigned short> indexs;
+			IndexArr indexs(12 * numX * numY);
 
 			for (UINT i = 0; i < numX; i++) {
 				for (UINT j = 0; j < numY; j++) {
@@ -1026,7 +1026,7 @@ void Surface::updateShape(Graphics& gfx, SURFACE_SHAPE ss)
 				}
 			}
 
-			changeBind(std::make_unique<IndexBuffer>(gfx, indexs), 1u);
+			changeBind(std::make_unique<IndexBuffer>(gfx, indexs.data, indexs.counter), 1u);
 		}
 
 		else throw std::exception("Found nullptr while trying to read Explicit function");
@@ -1043,47 +1043,47 @@ void Surface::updateShape(Graphics& gfx, SURFACE_SHAPE ss)
 			auto r = ss.Explicit;
 
 			if (!sc.Textured) {
-				std::vector<Vertex> vertexs;
+				VertexArr vertexs((numX + 1) * (numY + 1));
 
 				for (UINT i = 0; i < numX + 1; i++) {
 					for (UINT j = 0; j < numY + 1; j++) {
 						float theta = ((numX - i) * minRect.x + i * maxRect.x) / numX;
 						float phi = ((numY - j) * minRect.y + j * maxRect.y) / numY;
-						vertexs.push_back({ evalPolar(r,theta,phi) ,
+						vertexs.push_back(makePolar({ theta,phi, r(theta,phi) }),
 
-							-((evalPolar(r,theta + epsilon,phi) - evalPolar(r,theta - epsilon,phi)) *
-							((evalPolar(r,theta,phi + epsilon) - evalPolar(r,theta,phi - epsilon))))
+							-((makePolar({ theta + epsilon,phi, r(theta + epsilon,phi) }) - makePolar({ theta - epsilon,phi, r(theta - epsilon,phi) })) *
+								(makePolar({ theta,phi + epsilon, r(theta,phi + epsilon) }) - makePolar({ theta,phi - epsilon, r(theta,phi - epsilon) })))
 							.normalize(),
-							sc.color });
+							sc.color);
 						if (!j || j == numY)
-							vertexs[vertexs.size() - 1].norm = Vector3f(0.f, 0.f, 2.f * phi / pi);
+							vertexs.data[vertexs.counter - 1].norm = Vector3f(0.f, 0.f, 2.f * phi / pi);
 					}
 				}
-				changeBind(std::make_unique<VertexBuffer>(gfx, vertexs), 0u);
+				changeBind(std::make_unique<VertexBuffer>(gfx, vertexs.data, vertexs.counter), 0u);
 			}
 			else {
-				std::vector<TexVertex> vertexs;
+				TexVertexArr vertexs((numX + 1) * (numY + 1));
 
 				for (UINT i = 0; i < numX + 1; i++) {
 					for (UINT j = 0; j < numY + 1; j++) {
 						float theta = ((numX - i) * minRect.x + i * maxRect.x) / numX;
 						float phi = ((numY - j) * minRect.y + j * maxRect.y) / numY;
-						vertexs.push_back({ evalPolar(r,theta,phi) ,
+						vertexs.push_back(makePolar({ theta,phi, r(theta,phi) }),
 
-							-((evalPolar(r,theta + epsilon,phi) - evalPolar(r,theta - epsilon,phi)) *
-							((evalPolar(r,theta,phi + epsilon) - evalPolar(r,theta,phi - epsilon))))
-							.normalize() ,
+							-((makePolar({ theta + epsilon,phi, r(theta + epsilon,phi) }) - makePolar({ theta - epsilon,phi, r(theta - epsilon,phi) })) *
+								(makePolar({ theta,phi + epsilon, r(theta,phi + epsilon) }) - makePolar({ theta,phi - epsilon, r(theta,phi - epsilon) })))
+							.normalize(),
 
-							Vector2f((float)i / numX,(float)j / numY) });
+							Vector2f((float)i / numX, (float)j / numY));
 						if (!j || j == numY)
-							vertexs[vertexs.size() - 1].norm = Vector3f(0.f, 0.f, 2.f * phi / pi);
+							vertexs.data[vertexs.counter - 1].norm = Vector3f(0.f, 0.f, 2.f * phi / pi);
 					}
 				}
-				changeBind(std::make_unique<VertexBuffer>(gfx, vertexs), 0u);
+				changeBind(std::make_unique<VertexBuffer>(gfx, vertexs.data, vertexs.counter), 0u);
 			}
 
 
-			std::vector<unsigned short> indexs;
+			IndexArr indexs(12 * numX * numY);
 
 			for (UINT i = 0; i < numX; i++) {
 				for (UINT j = 0; j < numY; j++) {
@@ -1105,7 +1105,7 @@ void Surface::updateShape(Graphics& gfx, SURFACE_SHAPE ss)
 				}
 			}
 
-			changeBind(std::make_unique<IndexBuffer>(gfx, indexs), 1u);
+			changeBind(std::make_unique<IndexBuffer>(gfx, indexs.data, indexs.counter), 1u);
 		}
 
 		else throw std::exception("Found nullptr while trying to read Explicit function");
@@ -1117,7 +1117,6 @@ void Surface::updateShape(Graphics& gfx, SURFACE_SHAPE ss)
 			float epsilon = error_epsilon;
 			auto depth = ss.ICOSPHERE_DEPHT;
 			auto r = ss.Explicit;
-
 
 			std::vector<Vertex> vertexs;
 
@@ -1205,8 +1204,8 @@ void Surface::updateShape(Graphics& gfx, SURFACE_SHAPE ss)
 					v.norm = v.vector;
 				else
 					v.norm =
-					-((evalPolar(r, theta + epsilon, phi) - evalPolar(r, theta - epsilon, phi)) *
-						((evalPolar(r, theta, phi + epsilon) - evalPolar(r, theta, phi - epsilon))))
+					-((makePolar({ theta + epsilon, phi, r(theta + epsilon, phi) }) - makePolar({ theta - epsilon, phi, r(theta - epsilon, phi) })) *
+						(makePolar({ theta, phi + epsilon, r(theta, phi + epsilon) }) - makePolar({ theta, phi - epsilon, r(theta, phi - epsilon) })))
 					.normalize();
 
 				v.vector *= r(theta, phi);
@@ -1383,40 +1382,40 @@ void Surface::updateShape(Graphics& gfx, SURFACE_SHAPE ss)
 			auto P = ss.Parametric_V;
 
 			if (!sc.Textured) {
-				std::vector<Vertex> vertexs;
+				VertexArr vertexs((numU + 1) * (numV + 1));
 
 				for (UINT i = 0; i < numU + 1; i++) {
 					for (UINT j = 0; j < numV + 1; j++) {
 						float u = ((numU - i) * minRect.x + i * maxRect.x) / numU;
 						float v = ((numV - j) * minRect.y + j * maxRect.y) / numV;
-						vertexs.push_back({ P(u,v) ,
-							-((P(u + epsilon,v) - P(u - epsilon,v)) *
-							(P(u,v + epsilon) - P(u,v - epsilon)))
+						vertexs.push_back(P(u, v),
+							-((P(u + epsilon, v) - P(u - epsilon, v)) *
+								(P(u, v + epsilon) - P(u, v - epsilon)))
 							.normalize(),
-							sc.color });
+							sc.color);
 					}
 				}
-				changeBind(std::make_unique<VertexBuffer>(gfx, vertexs), 0u);
+				changeBind(std::make_unique<VertexBuffer>(gfx, vertexs.data, vertexs.counter), 0u);
 			}
 			else {
-				std::vector<TexVertex> vertexs;
+				TexVertexArr vertexs((numU + 1) * (numV + 1));
 
 				for (UINT i = 0; i < numU + 1; i++) {
 					for (UINT j = 0; j < numV + 1; j++) {
 						float u = ((numU - i) * minRect.x + i * maxRect.x) / numU;
 						float v = ((numV - j) * minRect.y + j * maxRect.y) / numV;
-						vertexs.push_back({ P(u,v) ,
-							-((P(u + epsilon,v) - P(u - epsilon,v)) *
-							(P(u,v + epsilon) - P(u,v - epsilon)))
+						vertexs.push_back(P(u, v),
+							-((P(u + epsilon, v) - P(u - epsilon, v)) *
+								(P(u, v + epsilon) - P(u, v - epsilon)))
 							.normalize(),
 
-							Vector2f((float)i / numU,(float)j / numV) });
+							Vector2f((float)i / numU, (float)j / numV));
 					}
 				}
-				changeBind(std::make_unique<VertexBuffer>(gfx, vertexs), 0u);
+				changeBind(std::make_unique<VertexBuffer>(gfx, vertexs.data, vertexs.counter), 0u);
 			}
 
-			std::vector<unsigned short> indexs;
+			IndexArr indexs(12 * numU * numV);
 
 			for (UINT i = 0; i < numU; i++) {
 				for (UINT j = 0; j < numV; j++) {
@@ -1438,7 +1437,7 @@ void Surface::updateShape(Graphics& gfx, SURFACE_SHAPE ss)
 				}
 			}
 
-			changeBind(std::make_unique<IndexBuffer>(gfx, indexs), 1u);
+			changeBind(std::make_unique<IndexBuffer>(gfx, indexs.data, indexs.counter), 1u);
 		}
 
 		else if (ss.Parametric_0 && ss.Parametric_1 && ss.Parametric_2)
@@ -1453,40 +1452,40 @@ void Surface::updateShape(Graphics& gfx, SURFACE_SHAPE ss)
 			auto z = ss.Parametric_2;
 
 			if (!sc.Textured) {
-				std::vector<Vertex> vertexs;
+				VertexArr vertexs((numU + 1) * (numV + 1));
 
 				for (UINT i = 0; i < numU + 1; i++) {
 					for (UINT j = 0; j < numV + 1; j++) {
 						float u = ((numU - i) * minRect.x + i * maxRect.x) / numU;
 						float v = ((numV - j) * minRect.y + j * maxRect.y) / numV;
-						vertexs.push_back({ Vector3f(x(u,v), y(u,v), z(u,v)) ,
-							-((Vector3f(x(u + epsilon,v), y(u + epsilon,v), z(u + epsilon,v)) - Vector3f(x(u - epsilon,v), y(u - epsilon,v), z(u - epsilon,v))) *
-							(Vector3f(x(u,v + epsilon), y(u,v + epsilon), z(u,v + epsilon)) - Vector3f(x(u,v - epsilon), y(u,v - epsilon), z(u,v - epsilon))))
+						vertexs.push_back(Vector3f(x(u, v), y(u, v), z(u, v)),
+							-((Vector3f(x(u + epsilon, v), y(u + epsilon, v), z(u + epsilon, v)) - Vector3f(x(u - epsilon, v), y(u - epsilon, v), z(u - epsilon, v))) *
+								(Vector3f(x(u, v + epsilon), y(u, v + epsilon), z(u, v + epsilon)) - Vector3f(x(u, v - epsilon), y(u, v - epsilon), z(u, v - epsilon))))
 							.normalize(),
-							sc.color });
+							sc.color);
 					}
 				}
-				changeBind(std::make_unique<VertexBuffer>(gfx, vertexs), 0u);
+				changeBind(std::make_unique<VertexBuffer>(gfx, vertexs.data, vertexs.counter), 0u);
 			}
 			else {
-				std::vector<TexVertex> vertexs;
+				TexVertexArr vertexs((numU + 1) * (numV + 1));
 
 				for (UINT i = 0; i < numU + 1; i++) {
 					for (UINT j = 0; j < numV + 1; j++) {
 						float u = ((numU - i) * minRect.x + i * maxRect.x) / numU;
 						float v = ((numV - j) * minRect.y + j * maxRect.y) / numV;
-						vertexs.push_back({ Vector3f(x(u,v), y(u,v), z(u,v)) ,
-							-((Vector3f(x(u + epsilon,v), y(u + epsilon,v), z(u + epsilon,v)) - Vector3f(x(u - epsilon,v), y(u - epsilon,v), z(u - epsilon,v))) *
-							(Vector3f(x(u,v + epsilon), y(u,v + epsilon), z(u,v + epsilon)) - Vector3f(x(u,v - epsilon), y(u,v - epsilon), z(u,v - epsilon))))
+						vertexs.push_back(Vector3f(x(u, v), y(u, v), z(u, v)),
+							-((Vector3f(x(u + epsilon, v), y(u + epsilon, v), z(u + epsilon, v)) - Vector3f(x(u - epsilon, v), y(u - epsilon, v), z(u - epsilon, v))) *
+								(Vector3f(x(u, v + epsilon), y(u, v + epsilon), z(u, v + epsilon)) - Vector3f(x(u, v - epsilon), y(u, v - epsilon), z(u, v - epsilon))))
 							.normalize(),
 
-							Vector2f((float)i / numU,(float)j / numV) });
+							Vector2f((float)i / numU, (float)j / numV));
 					}
 				}
-				changeBind(std::make_unique<VertexBuffer>(gfx, vertexs), 0u);
+				changeBind(std::make_unique<VertexBuffer>(gfx, vertexs.data, vertexs.counter), 0u);
 			}
 
-			std::vector<unsigned short> indexs;
+			IndexArr indexs(12 * numU * numV);
 
 			for (UINT i = 0; i < numU; i++) {
 				for (UINT j = 0; j < numV; j++) {
@@ -1508,7 +1507,7 @@ void Surface::updateShape(Graphics& gfx, SURFACE_SHAPE ss)
 				}
 			}
 
-			changeBind(std::make_unique<IndexBuffer>(gfx, indexs), 1u);
+			changeBind(std::make_unique<IndexBuffer>(gfx, indexs.data, indexs.counter), 1u);
 		}
 
 		else throw std::exception("Found nullptr while trying to read Parametric function");
@@ -1525,43 +1524,43 @@ void Surface::updateShape(Graphics& gfx, SURFACE_SHAPE ss)
 			auto P = ss.Parametric_V;
 
 			if (!sc.Textured) {
-				std::vector<Vertex> vertexs;
+				VertexArr vertexs((numU + 1) * (numV + 1));
 
 				for (UINT i = 0; i < numU + 1; i++) {
 					for (UINT j = 0; j < numV + 1; j++) {
 						float u = ((numU - i) * minRect.x + i * maxRect.x) / numU;
 						float v = ((numV - j) * minRect.y + j * maxRect.y) / numV;
-						vertexs.push_back({ makePolar(P(u,v)) ,
+						vertexs.push_back(makePolar(P(u, v)),
 
-							-((makePolar(P(u + epsilon,v)) - makePolar(P(u - epsilon,v))) *
-							(makePolar(P(u,v + epsilon)) - makePolar(P(u,v - epsilon))))
+							-((makePolar(P(u + epsilon, v)) - makePolar(P(u - epsilon, v))) *
+								(makePolar(P(u, v + epsilon)) - makePolar(P(u, v - epsilon))))
 							.normalize(),
-							sc.color });
+							sc.color);
 					}
 				}
-				changeBind(std::make_unique<VertexBuffer>(gfx, vertexs), 0u);
+				changeBind(std::make_unique<VertexBuffer>(gfx, vertexs.data, vertexs.counter), 0u);
 			}
 			else {
-				std::vector<TexVertex> vertexs;
+				TexVertexArr vertexs((numU + 1) * (numV + 1));
 
 				for (UINT i = 0; i < numU + 1; i++) {
 					for (UINT j = 0; j < numV + 1; j++) {
 						float u = ((numU - i) * minRect.x + i * maxRect.x) / numU;
 						float v = ((numV - j) * minRect.y + j * maxRect.y) / numV;
-						vertexs.push_back({ makePolar(P(u,v)) ,
+						vertexs.push_back(makePolar(P(u, v)),
 
-							-((makePolar(P(u + epsilon,v)) - makePolar(P(u - epsilon,v))) *
-							(makePolar(P(u,v + epsilon)) - makePolar(P(u,v - epsilon))))
+							-((makePolar(P(u + epsilon, v)) - makePolar(P(u - epsilon, v))) *
+								(makePolar(P(u, v + epsilon)) - makePolar(P(u, v - epsilon))))
 							.normalize(),
 
-							Vector2f((float)i / numU,(float)j / numV) });
+							Vector2f((float)i / numU, (float)j / numV));
 					}
 				}
-				changeBind(std::make_unique<VertexBuffer>(gfx, vertexs), 0u);
+				changeBind(std::make_unique<VertexBuffer>(gfx, vertexs.data, vertexs.counter), 0u);
 			}
 
 
-			std::vector<unsigned short> indexs;
+			IndexArr indexs(12 * numU * numV);
 
 			for (UINT i = 0; i < numU; i++) {
 				for (UINT j = 0; j < numV; j++) {
@@ -1583,7 +1582,7 @@ void Surface::updateShape(Graphics& gfx, SURFACE_SHAPE ss)
 				}
 			}
 
-			changeBind(std::make_unique<IndexBuffer>(gfx, indexs), 1u);
+			changeBind(std::make_unique<IndexBuffer>(gfx, indexs.data, indexs.counter), 1u);
 		}
 
 		else if (ss.Parametric_0 && ss.Parametric_1 && ss.Parametric_2)
@@ -1598,48 +1597,47 @@ void Surface::updateShape(Graphics& gfx, SURFACE_SHAPE ss)
 			auto rad = ss.Parametric_2;
 
 			if (!sc.Textured) {
-				std::vector<Vertex> vertexs;
+				VertexArr vertexs((numU + 1) * (numV + 1));
 
 				for (UINT i = 0; i < numU + 1; i++) {
 					for (UINT j = 0; j < numV + 1; j++) {
 						float u = ((numU - i) * minRect.x + i * maxRect.x) / numU;
 						float v = ((numV - j) * minRect.y + j * maxRect.y) / numV;
-						vertexs.push_back({ makePolar({ theta(u,v), phi(u,v), rad(u,v) }),
+						vertexs.push_back(makePolar({ theta(u,v),phi(u,v),rad(u,v) }),
 
-							-((makePolar({ theta(u + epsilon,v), phi(u + epsilon,v), rad(u + epsilon,v) }) -
-							makePolar({ theta(u - epsilon,v), phi(u - epsilon,v), rad(u - epsilon,v) })) *
-							(makePolar({ theta(u,v + epsilon), phi(u,v + epsilon), rad(u,v + epsilon) }) -
-							makePolar({ theta(u,v - epsilon), phi(u,v - epsilon), rad(u,v - epsilon) })))
+							-((makePolar({ theta(u + epsilon,v),phi(u + epsilon,v),rad(u + epsilon,v) }) -
+								makePolar({ theta(u - epsilon,v),phi(u - epsilon,v),rad(u - epsilon,v) })) *
+								((makePolar({ theta(u,v + epsilon),phi(u,v + epsilon),rad(u,v + epsilon) }) -
+									makePolar({ theta(u,v - epsilon),phi(u,v - epsilon),rad(u,v - epsilon) }))))
 							.normalize(),
-
-							sc.color });
+							sc.color);
 					}
 				}
-				changeBind(std::make_unique<VertexBuffer>(gfx, vertexs), 0u);
+				changeBind(std::make_unique<VertexBuffer>(gfx, vertexs.data, vertexs.counter), 0u);
 			}
 			else {
-				std::vector<TexVertex> vertexs;
+				TexVertexArr vertexs((numU + 1) * (numV + 1));
 
 				for (UINT i = 0; i < numU + 1; i++) {
 					for (UINT j = 0; j < numV + 1; j++) {
 						float u = ((numU - i) * minRect.x + i * maxRect.x) / numU;
 						float v = ((numV - j) * minRect.y + j * maxRect.y) / numV;
-						vertexs.push_back({ makePolar({ theta(u,v), phi(u,v), rad(u,v) }),
+						vertexs.push_back(makePolar({ theta(u,v),phi(u,v),rad(u,v) }),
 
-							-((makePolar({ theta(u + epsilon,v), phi(u + epsilon,v), rad(u + epsilon,v) }) -
-							makePolar({ theta(u - epsilon,v), phi(u - epsilon,v), rad(u - epsilon,v) })) *
-							(makePolar({ theta(u,v + epsilon), phi(u,v + epsilon), rad(u,v + epsilon) }) -
-							makePolar({ theta(u,v - epsilon), phi(u,v - epsilon), rad(u,v - epsilon) })))
+							-((makePolar({ theta(u + epsilon,v),phi(u + epsilon,v),rad(u + epsilon,v) }) -
+								makePolar({ theta(u - epsilon,v),phi(u - epsilon,v),rad(u - epsilon,v) })) *
+								((makePolar({ theta(u,v + epsilon),phi(u,v + epsilon),rad(u,v + epsilon) }) -
+									makePolar({ theta(u,v - epsilon),phi(u,v - epsilon),rad(u,v - epsilon) }))))
 							.normalize(),
 
-							Vector2f((float)i / numU,(float)j / numV) });
+							Vector2f((float)i / numU, (float)j / numV));
 					}
 				}
-				changeBind(std::make_unique<VertexBuffer>(gfx, vertexs), 0u);
+				changeBind(std::make_unique<VertexBuffer>(gfx, vertexs.data, vertexs.counter), 0u);
 			}
 
 
-			std::vector<unsigned short> indexs;
+			IndexArr indexs(12 * numU * numV);
 
 			for (UINT i = 0; i < numU; i++) {
 				for (UINT j = 0; j < numV; j++) {
@@ -1661,7 +1659,7 @@ void Surface::updateShape(Graphics& gfx, SURFACE_SHAPE ss)
 				}
 			}
 
-			changeBind(std::make_unique<IndexBuffer>(gfx, indexs), 1u);
+			changeBind(std::make_unique<IndexBuffer>(gfx, indexs.data, indexs.counter), 1u);
 		}
 
 		else throw std::exception("Found nullptr while trying to read Parametric function");

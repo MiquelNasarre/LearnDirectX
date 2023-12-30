@@ -24,7 +24,9 @@ void* Drawable::AddBind(std::unique_ptr<Bindable> bind)
 
 void* Drawable::changeBind(std::unique_ptr<Bindable> bind, UINT N)
 {
+	binds[N].get()->Deletion();
 	binds[N].release();
+
 	if (typeid(*bind) == typeid(IndexBuffer))
 		pIndexBuffer = reinterpret_cast<IndexBuffer*>(bind.get());
 	binds[N] = std::move(bind);

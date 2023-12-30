@@ -10,7 +10,7 @@ float IG_DATA::SPEED = 0.f;
 $safeprojectname$::$safeprojectname$()
 	: window(640, 480, "$safeprojectname$", "", true),
 
-	example(window.graphics,_RADIAL_SPHERICAL,exampleRadius)
+	example(window.graphics, SURFACE_SHAPE(_EXPLICIT_SPHERICAL, exampleRadius))
 {
 	window.setFramerateLimit(60);
 }

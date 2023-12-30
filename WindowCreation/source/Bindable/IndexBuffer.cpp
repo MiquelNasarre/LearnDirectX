@@ -45,3 +45,8 @@ UINT IndexBuffer::GetCount() const noexcept
 {
 	return count;
 }
+
+void IndexBuffer::Deletion()
+{
+	pIndexBuffer->Release();
+}

@@ -12,6 +12,8 @@ public:
 
 	void Bind(Graphics& gfx) override;
 
+	void Deletion() override;
+
 private:
 	UINT stride;
 	pCom<ID3D11Buffer> pVertexBuffer;

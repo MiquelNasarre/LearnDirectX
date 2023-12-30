@@ -44,6 +44,7 @@ private:
 	Vector2f initialDragAngles;
 
 	float var = 3.f;
+	PARAM_SURFACE_SHAPE<float> shape;
 
 public:
 	Tester();

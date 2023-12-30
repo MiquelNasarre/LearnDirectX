@@ -131,7 +131,7 @@ void Navigation::Earth::create(Graphics& gfx)
 {
 	Texture tex(gfx, "resources/EarthTexture.jpg");
 	SURFACE_COLORING sc(tex, false);
-	unique.sphere = std::make_unique<Surface>(gfx, _PARAMETRIC_SPHERICAL, EarthShape, &sc);
+	unique.sphere = std::make_unique<Surface>(gfx, SURFACE_SHAPE(_PARAMETRIC_SPHERICAL, EarthShape), &sc);
 
 	for (UINT i = 0; i < numMer; i++)
 		unique.meridians.push_back(std::make_unique<Curve>(gfx, Meridian, Coordinate(0.f, 360.f / numMer * i, DEGREES), Vector2f{ 0.f,2.f * pi }, 1000u, Color::Gray));

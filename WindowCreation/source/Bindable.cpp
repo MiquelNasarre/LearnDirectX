@@ -1,5 +1,9 @@
 #include "Bindable.h"
 
+void Bindable::Deletion()
+{
+}
+
 ID3D11DeviceContext* Bindable::GetContext(Graphics& gfx) noexcept
 {
 	return gfx.pContext.Get();
