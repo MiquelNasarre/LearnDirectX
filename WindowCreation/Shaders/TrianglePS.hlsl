@@ -17,10 +17,10 @@ float dotprd(float3 v0, float3 v1)
 float4 main(float4 color : Color, float4 pos : PointPos, uint tid : SV_PrimitiveID) : SV_Target
 {
     float lightintensity            = 2.f;
-    float noexposurelightintensity  = 2.f;
+    float noexposurelightintensity  = 0.5f;
     float ambientlight              = 0.0f;
     
-    float3 lightsource = float3(0.f, 0.f, 0.f);
+    float3 lightsource = float3(2.f, 0.f, 0.f);
     
     float distance = normfloat3(lightsource - (float3)pos);
     float exposure = dotprd((float3)norm[tid], (lightsource - (float3)pos) / distance);

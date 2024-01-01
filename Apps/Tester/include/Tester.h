@@ -6,6 +6,7 @@
 #include "Drawable/PointLight.h"
 #include "Drawable/Curve.h"
 #include "Drawable/Point.h"
+#include "Drawable/Triangle.h"
 
 struct IG_DATA {
 	static float THETA;
@@ -30,6 +31,8 @@ private:
 	Surface Klein;
 
 	Surface test;
+
+	Triangle polihedron;
 
 	//	...
 

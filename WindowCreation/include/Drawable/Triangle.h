@@ -10,7 +10,7 @@ public:
 private:
 	struct VSconstBuffer {
 		_float4vector translation;
-		_float4matrix rotation;
+		Quaternion rotation;
 	}vscBuff;
 
 	struct PSconstBuffer {
@@ -21,8 +21,4 @@ private:
 	ConstantBuffer<VSconstBuffer>* pVSCB;
 	ConstantBuffer<PSconstBuffer>* pPSCB;
 
-	Vector3f Position		= Vector3f();
-	Vector3f Velocity		= Vector3f();
-	Vector3f Acceleration	= Vector3f();
-	Vector3f dA				= Vector3f();
 };

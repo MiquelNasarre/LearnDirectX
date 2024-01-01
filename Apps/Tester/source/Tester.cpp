@@ -15,7 +15,8 @@ Tester::Tester()
 	point(window.graphics, { 2.f,0.f,0.f }, 8.f),
 	impl(window.graphics, { _IMPLICIT, sphere }),
 	test(window.graphics, SURFACE_SHAPE(_EXPLICIT, returnX)),
-	shape(_EXPLICIT, SincFunction, var, false, { -5.f,-5.f }, { 5.f,5.f })
+	shape(_EXPLICIT, SincFunction, var, false, { -5.f,-5.f }, { 5.f,5.f }),
+	polihedron(window.graphics, Color::White)
 {
 	window.setFramerateLimit(60);
 	srand(143452);
@@ -118,18 +119,22 @@ void Tester::doFrame()
 	Klein.updateRotation(window.graphics, theta, phi);
 	impl.updateRotation(window.graphics, theta, phi);
 	test.updateRotation(window.graphics, theta, phi);
+	polihedron.Update(window.graphics, { -theta,-phi }, { 0,0,0 });
+
+	test.updateShape(window.graphics, shape);
+	test.Draw(window.graphics);
 	//surf.Draw(window.graphics);
 	//light.Draw(window.graphics);
 	//curve.Draw(window.graphics);
 	//Klein.Draw(window.graphics);
 	//point.Draw(window.graphics);
 	//impl.Draw(window.graphics);
+	polihedron.Draw(window.graphics);
 
 	var = 3.f * cosf(timer.check());
 	shape.param = var;
 
-	test.updateShape(window.graphics, shape);
-	test.Draw(window.graphics);
+
 
 
 	IG_Tester::render();

@@ -22,11 +22,13 @@
     <ClInclude Include="include\Math\Complex.h" />
     <ClInclude Include="include\Math\constants.h" />
     <ClInclude Include="include\Math\Matrix.h" />
+    <ClInclude Include="include\Math\Quaternion.h" />
     <ClInclude Include="include\Math\Vectors.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\Complex.cpp" />
     <ClCompile Include="source\Matrix.cpp" />
+    <ClCompile Include="source\Quaternion.cpp" />
     <ClCompile Include="source\Vectors.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

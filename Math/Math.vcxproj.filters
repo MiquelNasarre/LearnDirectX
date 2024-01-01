@@ -26,6 +26,9 @@
     <ClInclude Include="include\Math\constants.h">
       <Filter>Sources\Public</Filter>
     </ClInclude>
+    <ClInclude Include="include\Math\Quaternion.h">
+      <Filter>Sources\Public</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\Vectors.cpp">
@@ -35,6 +38,9 @@
       <Filter>Sources\Private</Filter>
     </ClCompile>
     <ClCompile Include="source\Matrix.cpp">
+      <Filter>Sources\Private</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Quaternion.cpp">
       <Filter>Sources\Private</Filter>
     </ClCompile>
   </ItemGroup>

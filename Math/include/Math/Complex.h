@@ -14,23 +14,23 @@ struct Complex {
 	Complex(float x, float y = 0.f, bool type = Rectangular);
 	Complex(int x, int y = 0);
 
-	Complex operator+(const Complex& other);
-	Complex operator-(const Complex& other);
-	Complex operator*(const Complex& other);
-	Complex operator/(const Complex& other);
-	Complex operator-();
-	Complex operator*(const int& other);
-	Complex operator*(const float& other);
-	Complex operator*(const double& other);
-	Complex operator+(const int& other);
-	Complex operator+(const float& other);
-	Complex operator+(const double& other);
+	Complex operator+(const Complex& other) const;
+	Complex operator-(const Complex& other) const;
+	Complex operator*(const Complex& other) const;
+	Complex operator/(const Complex& other) const;
+	Complex operator-() const;
+	Complex operator*(const int& other) const;
+	Complex operator*(const float& other) const;
+	Complex operator*(const double& other) const;
+	Complex operator+(const int& other) const;
+	Complex operator+(const float& other) const;
+	Complex operator+(const double& other) const;
 	Complex& operator+=(const Complex& other);
 
 	static Complex exp(const Complex& exponent);
 
-	float		abs();
-	std::string str();
+	float		abs() const;
+	std::string str() const;
 };
 
 Complex operator*(const int& lhs, const Complex& rhs);

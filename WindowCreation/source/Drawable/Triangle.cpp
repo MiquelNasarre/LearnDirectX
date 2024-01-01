@@ -3,8 +3,6 @@
 
 Triangle::Triangle(Graphics& gfx, Color color)
 {
-	Position = Vector3f(rand() / 4096.f - 4.f, rand() / 4096.f - 4.f, rand() / 4096.f - 4.f);
-	Velocity = Vector3f(rand() / 4096.f - 4.f, rand() / 4096.f - 4.f, rand() / 4096.f - 4.f);
 
 	struct Vertex {
 		Vector3f vector;
@@ -64,43 +62,32 @@ Triangle::Triangle(Graphics& gfx, Color color)
 	pPSCB = (ConstantBuffer<PSconstBuffer>*)AddBind(std::make_unique<ConstantBuffer<PSconstBuffer>>(gfx, PIXEL_CONSTANT_BUFFER_TYPE));
 }
 
-void Triangle::Update(Graphics& gfx, Vector2f ZXrotation, Vector3f position)
+Triangle::Triangle(Graphics& gfx, Vector3f* vertexs, Vector3i* triangles, UINT numV, UINT numT, Color* colors, bool vertexColor, bool smooth)
+{
+	AddBind(std::make_unique<VertexBuffer>(gfx, vertexs, numV));
+
+	auto pvs = (VertexShader*)AddBind(std::move(std::make_unique<VertexShader>(gfx, SHADERS_DIR + std::wstring(L"TriangleVS.cso"))));
+
+	AddBind(std::make_unique<PixelShader>(gfx, SHADERS_DIR + std::wstring(L"TrianglePS.cso")));
+
+	AddBind(std::make_unique<IndexBuffer>(gfx, triangles, numT));
+
+}
+
+void Triangle::updateRotation(Graphics& gfx, Vector2f ZXrotation, Vector3f position)
 {
 	Vector3f Translation = position;
-	Matrix Rotations = ZRotationMatrix(ZXrotation.x) * XRotationMatrix(ZXrotation.y);
+	Quaternion quaternion = rotationQuaternion({ 1,0,0 }, ZXrotation.y) * rotationQuaternion({ 0,0,1 }, ZXrotation.x);
 	
 	vscBuff = {
 		Translation.getVector4(),
-		Rotations.transpose().getMatrix4(),
+		quaternion
 	};
 
 	pVSCB->Update(gfx, vscBuff);
 
 	for (UINT i = 0; i < norms.size(); i++)
-		pscBuff.norm4[i] = (Rotations * norms[i]).getVector4();
-
-	pPSCB->Update(gfx, pscBuff);
-}
-
-void Triangle::Update(Graphics& gfx, Vector2f ZXrotation, float dt)
-{
-	Position += Velocity * dt;
-	Velocity += Acceleration * dt;
-	Acceleration += dA * dt;
-	dA = -Position - Velocity - Acceleration + Vector3f(rand() / 1024.f - 16.f, rand() / 1024.f - 16.f, rand() / 1024.f - 16.f);
-
-	Vector3f Translation = Position;
-	Matrix Rotations = ZRotationMatrix(ZXrotation.x) * XRotationMatrix(ZXrotation.y);
-
-	vscBuff = {
-		Translation.getVector4(),
-		Rotations.transpose().getMatrix4(),
-	};
-
-	pVSCB->Update(gfx, vscBuff);
-
-	for (UINT i = 0; i < norms.size(); i++)
-		pscBuff.norm4[i] = (Rotations * norms[i]).getVector4();
+		pscBuff.norm4[i] = (quaternion * norms[i] * quaternion.inv()).getVector4();
 
 	pPSCB->Update(gfx, pscBuff);
 }

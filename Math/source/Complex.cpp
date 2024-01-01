@@ -20,58 +20,58 @@ Complex::Complex(int x, int y)
 	b = float(y);
 }
 
-Complex Complex::operator+(const Complex& other)
+Complex Complex::operator+(const Complex& other) const
 {
 	return Complex(a + other.a, b + other.b);
 }
 
-Complex Complex::operator-(const Complex& other)
+Complex Complex::operator-(const Complex& other) const
 {
 	return Complex(a - other.a, b - other.b);
 }
 
-Complex Complex::operator*(const Complex& other)
+Complex Complex::operator*(const Complex& other) const
 {
 	return Complex(a * other.a - b * other.b, a * other.b + b * other.a);
 }
 
-Complex Complex::operator/(const Complex& other)
+Complex Complex::operator/(const Complex& other) const
 {
 	Complex inverse(other.a / (other.a * other.a + other.b * other.b), -other.b / (other.a * other.a + other.b * other.b));
 	return Complex(a * inverse.a - b * inverse.b, a * inverse.b + b * inverse.a);
 }
 
-Complex Complex::operator-()
+Complex Complex::operator-() const
 {
 	return Complex(-a, -b);
 }
 
-Complex Complex::operator*(const int& other)
+Complex Complex::operator*(const int& other) const
 {
 	return Complex(float(other) * a, float(other) * b);
 }
 
-Complex Complex::operator*(const float& other)
+Complex Complex::operator*(const float& other) const
 {
 	return Complex(other * a, other * b);
 }
 
-Complex Complex::operator*(const double& other)
+Complex Complex::operator*(const double& other) const
 {
 	return Complex(float(other) * a, float(other) * b);
 }
 
-Complex Complex::operator+(const int& other)
+Complex Complex::operator+(const int& other) const
 {
 	return Complex((float)other + a, b);
 }
 
-Complex Complex::operator+(const float& other)
+Complex Complex::operator+(const float& other) const
 {
 	return Complex(other + a, b);
 }
 
-Complex Complex::operator+(const double& other)
+Complex Complex::operator+(const double& other) const
 {
 	return Complex(float(other) + a, b);
 }
@@ -89,12 +89,12 @@ Complex Complex::exp(const Complex& exponent)
 	return Complex(r * cos(exponent.b), r * sin(exponent.b));
 }
 
-float Complex::abs()
+float Complex::abs() const
 {
 	return sqrt(a * a + b * b);
 }
 
-std::string Complex::str()
+std::string Complex::str() const
 {
 	std::string String;
 		String = std::to_string(a);
