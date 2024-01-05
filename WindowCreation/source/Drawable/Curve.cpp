@@ -114,10 +114,34 @@ Curve::Curve(Graphics& gfx, float X(float), float Y(float), float Z(float), Vect
 
 //	Public
 
-void Curve::updateRotation(Graphics& gfx, float rotationZ, float rotationX, Vector3f position)
+void Curve::updateRotation(Graphics& gfx, float rotationX, float rotationY, float rotationZ)
 {
-	vscBuff.rotattion = (ZRotationMatrix(rotationZ) * XRotationMatrix(rotationX)).transpose().getMatrix4();
-	vscBuff.traslation = position.getVector4();
+	vscBuff.rotation = rotationQuaternion({ 1,0,0 }, rotationX) * rotationQuaternion({ 0,1,0 }, rotationY) * rotationQuaternion({ 0,0,1 }, rotationZ);
+
+	pVSCB->Update(gfx, vscBuff);
+}
+
+void Curve::updateRotation(Graphics& gfx, Vector3f axis, float angle, bool multiplicative)
+{
+	if (!multiplicative)
+		vscBuff.rotation = rotationQuaternion(axis, angle);
+	else
+		vscBuff.rotation *= rotationQuaternion(axis, angle);
+
+	pVSCB->Update(gfx, vscBuff);
+}
+
+void Curve::updatePosition(Graphics& gfx, Vector3f position, bool additive)
+{
+	if (!additive)
+		vscBuff.translation = position.getVector4();
+	else
+	{
+		vscBuff.translation.x += position.x;
+		vscBuff.translation.y += position.y;
+		vscBuff.translation.z += position.z;
+	}
+
 	pVSCB->Update(gfx, vscBuff);
 }
 
@@ -136,11 +160,6 @@ void Curve::addDefaultBinds(Graphics& gfx)
 
 	AddBind(std::make_unique<InputLayout>(gfx, ied, pvs->GetBytecode()));
 	AddBind(std::make_unique<Topology>(D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP));
-
-	vscBuff = {
-		Matrix::Identity.getMatrix4(),
-		Vector3f().getVector4()
-	};
 
 	pVSCB = (ConstantBuffer<VSconstBuffer>*)AddBind(std::make_unique<ConstantBuffer<VSconstBuffer>>(gfx, vscBuff, VERTEX_CONSTANT_BUFFER_TYPE));
 }

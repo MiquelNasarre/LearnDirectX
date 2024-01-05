@@ -18,3 +18,8 @@ float4 qRot(float4 q, float4 pos)
 {
     return qMul(q, pos, float4(q.r, -q.g, -q.b, -q.a));
 }
+
+float4 Q2V(float4 q)
+{
+    return float4(q.g, q.b, q.a, 1.f);
+}

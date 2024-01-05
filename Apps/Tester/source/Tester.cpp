@@ -15,13 +15,40 @@ Tester::Tester()
 	point(window.graphics, { 2.f,0.f,0.f }, 8.f),
 	impl(window.graphics, { _IMPLICIT, sphere }),
 	test(window.graphics, SURFACE_SHAPE(_EXPLICIT, returnX)),
-	shape(_EXPLICIT, SincFunction, var, false, { -5.f,-5.f }, { 5.f,5.f }),
-	polihedron(window.graphics, Color::White)
+	shape(_EXPLICIT, SincFunction, var, false, { -5.f,-5.f }, { 5.f,5.f })
 {
 	window.setFramerateLimit(60);
 	srand(143452);
 	surf.clearLights(window.graphics);
 	timer.reset();
+
+	Vector3f vertexs[8] = {
+		Vector3f( 1.f, 1.f, 1.f),
+		Vector3f(-1.f, 1.f, 1.f),
+		Vector3f(-1.f,-1.f, 1.f),
+		Vector3f( 1.f,-1.f, 1.f),
+		Vector3f( 1.f, 1.f,-1.f),
+		Vector3f(-1.f, 1.f,-1.f),
+		Vector3f(-1.f,-1.f,-1.f),
+		Vector3f( 1.f,-1.f,-1.f),
+	};
+
+	Vector3i triangles[12] = {
+		Vector3i(0, 1, 2),
+		Vector3i(2, 3, 0),
+		Vector3i(4, 5, 6),
+		Vector3i(6, 7, 4),
+		Vector3i(0, 1, 4),
+		Vector3i(4, 5, 1),
+		Vector3i(2, 3, 6),
+		Vector3i(6, 7, 3),
+		Vector3i(0, 3, 4),
+		Vector3i(3, 4, 7),
+		Vector3i(1, 2, 5),
+		Vector3i(2, 5, 6),
+	};
+
+	poli.create(window.graphics, vertexs, triangles, 12);
 }
 
 int Tester::Run()
@@ -33,8 +60,6 @@ int Tester::Run()
 
 void Tester::eventManager()
 {
-	scale *= powf(1.1f, Mouse::getWheel() / 120.f);
-
 	if (Keyboard::isKeyPressed('W'))
 		center.y += 0.02f;
 	if (Keyboard::isKeyPressed('S'))
@@ -51,6 +76,8 @@ void Tester::eventManager()
 	if (Mouse::isButtonPressed(Mouse::Left) && !dragging) {
 		dragging = true;
 		initialDrag = Mouse::getPosition();
+		lastPos = Mouse::getPosition();
+		dangle = 0.f;
 		initialDragAngles = { theta, phi };
 	}
 	if (dragging && !Mouse::isButtonPressed(Mouse::Left))
@@ -72,8 +99,37 @@ void Tester::eventManager()
 			phi = -pi / 2.f + 0.0001f;
 			initialDrag.y = Mouse::getPosition().y - int((-pi / 2.f - initialDragAngles.y) * scale / 2.f);
 		}
+
+		movement = Mouse::getPosition() - lastPos;
+		lastPos = Mouse::getPosition();
+
+		if (!movement)
+		{
+			if (axis != window.graphics.getObserver())
+			{
+				axis = window.graphics.getObserver();
+				int wheel = Mouse::getWheel();
+				dangle = 0.f;
+			}
+
+			else
+				dangle += Mouse::getWheel() / 18000.f;
+		}
+		else
+		{
+			Vector3f obs = window.graphics.getObserver();
+			Vector3f ex = -(obs * Vector3f(0.f, 0.f, 1.f)).normalize();
+			Vector3f ey = (ex * obs).normalize();
+			axis = movement.y * ex - movement.x * ey;
+			dangle = movement.abs() / scale;
+		}
+
+
+
 	}
 	else {
+		scale *= powf(1.1f, Mouse::getWheel() / 120.f);
+
 		if (speed > 1.f) {
 			speed *= 0.99f;
 			if (speed < 1.f)
@@ -114,12 +170,19 @@ void Tester::doFrame()
 		surf.updateLight(window.graphics, 0, { 3 * rad, rad }, col, { 3.f , 0.f , 2.f });
 	}
 
-	surf.updateRotation(window.graphics, theta, phi);
-	curve.updateRotation(window.graphics, theta, phi);
-	Klein.updateRotation(window.graphics, theta, phi);
-	impl.updateRotation(window.graphics, theta, phi);
-	test.updateRotation(window.graphics, theta, phi);
-	polihedron.Update(window.graphics, { -theta,-phi }, { 0,0,0 });
+	//surf.updateRotation(window.graphics, -phi, 0.f, -theta);
+	//curve.updateRotation(window.graphics, -phi, 0.f, -theta);
+	//Klein.updateRotation(window.graphics, -phi, 0.f, -theta);
+	//impl.updateRotation(window.graphics, -phi, 0.f, -theta);
+	//test.updateRotation(window.graphics, -phi, 0.f, -theta);
+	//poli.updateRotation(window.graphics, -phi, 0.f, -theta);
+
+	surf.updateRotation(window.graphics, axis, dangle, true);
+	curve.updateRotation(window.graphics, axis, dangle, true);
+	Klein.updateRotation(window.graphics, axis, dangle, true);
+	impl.updateRotation(window.graphics, axis, dangle, true);
+	test.updateRotation(window.graphics, axis, dangle, true);
+	poli.updateRotation(window.graphics, axis, dangle, true);
 
 	test.updateShape(window.graphics, shape);
 	test.Draw(window.graphics);
@@ -129,7 +192,7 @@ void Tester::doFrame()
 	//Klein.Draw(window.graphics);
 	//point.Draw(window.graphics);
 	//impl.Draw(window.graphics);
-	polihedron.Draw(window.graphics);
+	//poli.Draw(window.graphics);
 
 	var = 3.f * cosf(timer.check());
 	shape.param = var;

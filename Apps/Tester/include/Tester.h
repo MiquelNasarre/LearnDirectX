@@ -32,9 +32,14 @@ private:
 
 	Surface test;
 
-	Triangle polihedron;
+	Triangle poli;
 
 	//	...
+
+	Vector3f axis = Vector3f(1.f,-1.f,1.f);
+	float dangle = 0.01f;
+
+	Vector2i lastPos;
 
 	float scale = 250.f;
 	float theta = 0.f;

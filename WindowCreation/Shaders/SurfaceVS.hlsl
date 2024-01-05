@@ -1,3 +1,4 @@
+#include "Quaternion.hlsli"
 
 cbuffer Cbuff0 : register(b0)
 {
@@ -7,8 +8,8 @@ cbuffer Cbuff0 : register(b0)
 
 cbuffer Cbuff1 : register(b1)
 {
-    matrix rotation;
     float4 traslation;
+    float4 quaternion;
 };
 
 struct VSOut
@@ -22,10 +23,13 @@ struct VSOut
 VSOut main(float3 pos : Position, float3 norm : Normal, float4 color : Color)
 {
     VSOut vso;
-    vso.R3pos = mul(float4(pos, 1.f), rotation) + traslation;
+    
+    vso.norm = Q2V(qRot(quaternion, float4(0, norm)));
+    vso.R3pos = Q2V(qRot(quaternion, float4(0, pos))) + traslation;
+    
     float4 test = mul(vso.R3pos - center, projection);
     vso.SCpos = float4(test.x, test.y, test.z / 10000000.f + 0.5f, 1.f);
-    vso.norm = mul(float4(norm, 1.f), rotation);
     vso.color = color;
+    
     return vso;
 }

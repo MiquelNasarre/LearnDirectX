@@ -18,7 +18,9 @@ public:
 	template<typename C>
 	Curve(Graphics& gfx, float X(float, const C&), float Y(float, const C&), float Z(float, const C&), const C& param, Vector2f rangeT, UINT Npoints, std::vector<Color> colors);
 
-	void updateRotation(Graphics& gfx, float rotationZ, float rotationX, Vector3f position = Vector3f());
+	void updateRotation(Graphics& gfx, float rotationX, float rotationY, float rotationZ);
+	void updateRotation(Graphics& gfx, Vector3f axis, float angle, bool multiplicative = false);
+	void updatePosition(Graphics& gfx, Vector3f position, bool additive = false);
 
 private:
 
@@ -30,8 +32,8 @@ private:
 	};
 
 	struct VSconstBuffer {
-		_float4matrix rotattion;
-		_float4vector traslation;
+		_float4vector translation = { 0.f, 0.f, 0.f, 0.f };
+		Quaternion rotation = 1.f;
 	}vscBuff;
 
 	ConstantBuffer<VSconstBuffer>* pVSCB;

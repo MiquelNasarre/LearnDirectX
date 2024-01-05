@@ -116,7 +116,7 @@ Quaternion Quaternion::operator+=(const Quaternion& other)
 
 Quaternion Quaternion::operator*=(const Quaternion& other)
 {
-	*this = *this * other;
+	*this = other * *this;
 	return *this;
 }
 
@@ -224,6 +224,8 @@ Quaternion operator-(const double& lhs, const Quaternion& rhs)
 
 Quaternion rotationQuaternion(Vector3f axis, float angle)
 {
+	if (!axis) return 1.f;
+
 	axis.normalize();
 	float s = sinf(angle / 2.f);
 	return Quaternion(cosf(angle / 2.f), s * axis.x, s * axis.y, s * axis.z);

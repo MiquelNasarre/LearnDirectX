@@ -119,8 +119,8 @@ void ImageEditor::doFrame()
 
 	window.graphics.updatePerspective(observer, center, scale);
 
-	imageSP.updateRotation(window.graphics, IG_DATA::THETA, IG_DATA::PHI);
-	imageWD.updateRotation(window.graphics, IG_DATA::THETA, IG_DATA::PHI);
+	imageSP.updateRotation(window.graphics, -IG_DATA::PHI, 0.f, -IG_DATA::THETA);
+	imageWD.updateRotation(window.graphics, -IG_DATA::PHI, 0.f, -IG_DATA::THETA);
 
 	window.setTitle("ImageEditor  -  " + std::to_string(int(std::round(window.getFramerate()))) + "fps");
 

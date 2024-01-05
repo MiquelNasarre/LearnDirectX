@@ -95,10 +95,10 @@ void Navigation::doFrame()
 	Earth::update(window.graphics, IG_DATA::THETA, IG_DATA::PHI);
 	
 	for (auto& a : IG_DATA::POINTS)
-		a.point->updatePosition(window.graphics, a.pos.getVector() * ZRotationMatrix(IG_DATA::THETA) * XRotationMatrix(IG_DATA::PHI));
+		a.point->updatePosition(window.graphics, Vector3f(a.pos.getVector()) * ZRotationMatrix(IG_DATA::THETA) * XRotationMatrix(IG_DATA::PHI));
 
 	for (auto& b : IG_DATA::ROUTES)
-		b.route->updateRotation(window.graphics, IG_DATA::THETA, IG_DATA::PHI);
+		b.route->updateRotation(window.graphics, -IG_DATA::PHI, 0.f, -IG_DATA::THETA);
 
 	window.setTitle("Navigation  -  " + std::to_string(int(std::round(window.getFramerate()))) + "fps");
 
@@ -154,13 +154,13 @@ void Navigation::Earth::Draw(Graphics& gfx)
 
 void Navigation::Earth::update(Graphics& gfx, float theta, float phi)
 {
-	unique.sphere->updateRotation(gfx, theta, phi);
+	unique.sphere->updateRotation(gfx, -phi, 0.f, -theta);
 
 	for (auto& a : unique.meridians)
-		a->updateRotation(gfx, theta, phi);
+		a->updateRotation(gfx, -phi, 0.f, -theta);
 
 	for (auto& b : unique.parallels)
-		b->updateRotation(gfx, theta, phi);
+		b->updateRotation(gfx, -phi, 0.f, -theta);
 }
 
 Navigation::Waypoint::Waypoint(Graphics& gfx, const Coordinate& coor, Color color, std::string na)

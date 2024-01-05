@@ -334,7 +334,9 @@ public:
 
 	//	Public functions
 
-	void updateRotation(Graphics& gfx, float rotationZ, float rotationX, Vector3f position = Vector3f());
+	void updateRotation(Graphics& gfx, float rotationX, float rotationY, float rotationZ);
+	void updateRotation(Graphics& gfx, Vector3f axis, float angle, bool multiplicative = false);
+	void updatePosition(Graphics& gfx, Vector3f position, bool additive = false);
 	void updateTexture(Graphics& gfx, UINT id, std::string texture);
 	void updateTexture(Graphics& gfx, UINT id, Texture texture);
 	void updateTextures(Graphics& gfx, Texture texture0, Texture texture1);
@@ -352,8 +354,8 @@ private:
 	void addOtherBinds(Graphics& gfx);
 
 	struct VSconstBuffer {
-		_float4matrix rotattion;
-		_float4vector traslation;
+		_float4vector translation = { 0.f, 0.f, 0.f, 0.f };
+		Quaternion rotation = 1.f;
 	}vscBuff;
 
 	struct PSconstBuffer {

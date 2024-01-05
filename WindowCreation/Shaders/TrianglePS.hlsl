@@ -1,34 +1,38 @@
 
-cbuffer Cbuff
+struct Lightsource
 {
-    float4 norm[12];
+    float2 intensity;
+    //<-- theres a hidden float2 in here just for dramatic purpose
+    float4 color;
+    float3 position;
+    //<-- and a float here as well!!
 };
 
-float normfloat3(float3 v)
+cbuffer cBuff : register(b0)
 {
-    return sqrt(v.r * v.r + v.g * v.g + v.b * v.b);
-}
+    Lightsource lights[8];
+};
 
-float dotprd(float3 v0, float3 v1)
+float4 main(float4 color : Color, float3 pos : PointPos, float3 norm : Norm) : SV_Target
 {
-    return v0.r * v1.r + v0.g * v1.g + v0.b * v1.b;
-}
-
-float4 main(float4 color : Color, float4 pos : PointPos, uint tid : SV_PrimitiveID) : SV_Target
-{
-    float lightintensity            = 2.f;
-    float noexposurelightintensity  = 0.5f;
-    float ambientlight              = 0.0f;
     
-    float3 lightsource = float3(2.f, 0.f, 0.f);
+    float4 totalLight = float4(0.f, 0.f, 0.f, 0.f);
+    float dist = 0;
+    float exposure = 0;
     
-    float distance = normfloat3(lightsource - (float3)pos);
-    float exposure = dotprd((float3)norm[tid], (lightsource - (float3)pos) / distance);
+    for (int i = 0; i < 8; i++)
+    {
+        if (!lights[i].intensity.r && !lights[i].intensity.g)
+            continue;
+        
+        dist = distance(lights[i].position, pos);
+        exposure = dot(norm, (lights[i].position -  pos) / dist);
     
-    float light = noexposurelightintensity / distance / distance;
-    if(exposure > 0)
-        light += lightintensity * exposure / distance / distance;
+        float light = lights[i].intensity.g / dist / dist;
+        if (exposure > 0)
+            light += lights[i].intensity.r * exposure / dist / dist;
+        totalLight += light * lights[i].color, 1.f;
+    }
     
-    return color * (light + ambientlight);
-
+    return color * totalLight;
 }

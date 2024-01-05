@@ -34,8 +34,8 @@ EarthDemo::EarthDemo()
 	TexBackEarth		(window.graphics,	"Resources/EarthDemo/earthTextures/projected.jpg"		),
 	TexBackMoon			(window.graphics,	"Resources/EarthDemo/moonTextures/projected.jpg"		),
 
-	Earth	(window.graphics, _RADIAL_SPHERICAL, EarthRadius, SURFACE_COLORING(TexEarth, TexNEarth)),
-	Moon	(window.graphics, _RADIAL_SPHERICAL, MoonRadius, SURFACE_COLORING(TexMoon)),
+	Earth	(window.graphics, SURFACE_SHAPE(_EXPLICIT_SPHERICAL,EarthRadius), SURFACE_COLORING(TexEarth, TexNEarth).ptr()),
+	Moon	(window.graphics, SURFACE_SHAPE(_EXPLICIT_SPHERICAL, MoonRadius), SURFACE_COLORING(TexMoon).ptr()),
 	back	(window.graphics, TexBack, true, PT_AZIMUTHAL)
 {
 
@@ -192,8 +192,9 @@ void EarthDemo::doFrame()
 	back.updateObserver(window.graphics, observer);
 	back.updateWideness(window.graphics, IG_DATA::FOV, (Vector2f)window.getDimensions());
 
-	Earth.updateRotation(window.graphics, IG_DATA::EARTH_THETA, IG_DATA::EARTH_PHI);
-	Moon.updateRotation(window.graphics, -IG_DATA::MOON_POS, 0.f, Vector3f(10.f * cosf(IG_DATA::MOON_POS), 10.f * sinf(IG_DATA::MOON_POS), 0.f));
+	Earth.updateRotation(window.graphics, -IG_DATA::EARTH_PHI, 0.f, -IG_DATA::EARTH_THETA);
+	Moon.updateRotation(window.graphics, 0.f, 0.f, IG_DATA::MOON_POS);
+	Moon.updatePosition(window.graphics, Vector3f(10.f * cosf(IG_DATA::MOON_POS), 10.f * sinf(IG_DATA::MOON_POS), 0.f));
 
 	window.setTitle("Hello World  -  " + std::to_string(int(std::round(window.getFramerate()))) + "fps");
 

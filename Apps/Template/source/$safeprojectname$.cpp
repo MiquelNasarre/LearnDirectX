@@ -88,7 +88,7 @@ void $safeprojectname$::doFrame()
 
 	window.graphics.updatePerspective(observer, center, scale);
 
-	example.updateRotation(window.graphics, IG_DATA::THETA, IG_DATA::PHI);
+	example.updateRotation(window.graphics, -IG_DATA::PHI, 0.f, -IG_DATA::THETA);
 
 	window.setTitle("$safeprojectname$  -  " + std::to_string(int(std::round(window.getFramerate()))) + "fps");
 

@@ -888,10 +888,34 @@ Surface::Surface(Graphics& gfx, SURFACE_SHAPE ss, SURFACE_COLORING* psc)
 
 //	Public
 
-void Surface::updateRotation(Graphics& gfx, float rotationZ, float rotationX, Vector3f position)
+void Surface::updateRotation(Graphics& gfx, float rotationX, float rotationY, float rotationZ)
 {
-	vscBuff.rotattion = (ZRotationMatrix(rotationZ) * XRotationMatrix(rotationX)).transpose().getMatrix4();
-	vscBuff.traslation = position.getVector4();
+	vscBuff.rotation = rotationQuaternion({ 1,0,0 }, rotationX) * rotationQuaternion({ 0,1,0 }, rotationY) * rotationQuaternion({ 0,0,1 }, rotationZ);
+
+	pVSCB->Update(gfx, vscBuff);
+}
+
+void Surface::updateRotation(Graphics& gfx, Vector3f axis, float angle, bool multiplicative)
+{
+	if (!multiplicative)
+		vscBuff.rotation = rotationQuaternion(axis, angle);
+	else
+		vscBuff.rotation *= rotationQuaternion(axis, angle);
+
+	pVSCB->Update(gfx, vscBuff);
+}
+
+void Surface::updatePosition(Graphics& gfx, Vector3f position, bool additive)
+{
+	if (!additive)
+		vscBuff.translation = position.getVector4();
+	else
+	{
+		vscBuff.translation.x += position.x;
+		vscBuff.translation.y += position.y;
+		vscBuff.translation.z += position.z;
+	}
+
 	pVSCB->Update(gfx, vscBuff);
 }
 
@@ -1675,7 +1699,6 @@ void Surface::addOtherBinds(Graphics& gfx)
 {
 	AddBind(std::make_unique<Topology>(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST));
 
-	vscBuff = { Matrix::Identity.getMatrix4(), Vector3f().getVector4() };
 	pVSCB = (ConstantBuffer<VSconstBuffer>*)AddBind(std::make_unique<ConstantBuffer<VSconstBuffer>>(gfx, vscBuff, VERTEX_CONSTANT_BUFFER_TYPE));
 
 	if (sc.Textured)
@@ -1733,10 +1756,10 @@ void Surface::addOtherBinds(Graphics& gfx)
 			float unused = 0.f;
 			if (sc.DefaultInitialLights)
 				pscBuff = {
-					60.f,0.f,unused,unused,1.0f, 0.2f, 0.2f, 1.f , 0.f, 8.f, 8.f,unused,
-					60.f,0.f,unused,unused,0.0f, 1.0f, 0.0f, 1.f , 0.f,-8.f, 8.f,unused,
-					60.f,0.f,unused,unused,0.5f, 0.0f, 1.0f, 1.f ,-8.f, 0.f,-8.f,unused,
-					60.f,0.f,unused,unused,1.0f, 1.0f, 0.0f, 1.f , 8.f, 0.f, 8.f,unused,
+					60.f,10.f,unused,unused,1.0f, 0.2f, 0.2f, 1.f , 0.f, 8.f, 8.f,unused,
+					60.f,10.f,unused,unused,0.0f, 1.0f, 0.0f, 1.f , 0.f,-8.f, 8.f,unused,
+					60.f,10.f,unused,unused,0.5f, 0.0f, 1.0f, 1.f ,-8.f, 0.f,-8.f,unused,
+					60.f,10.f,unused,unused,1.0f, 1.0f, 0.0f, 1.f , 8.f, 0.f, 8.f,unused,
 			};
 			else {
 				for (int i = 0; i < 8; i++)

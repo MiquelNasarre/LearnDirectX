@@ -46,6 +46,8 @@ struct Vector2d {
 
 	Vector2d& normalize();
 	double operator^(const Vector2d& other) const;
+	operator bool() const;
+	bool operator!=(const Vector2d& other) const;
 
 	double		abs() const;
 	std::string str() const;
@@ -84,6 +86,8 @@ struct Vector2f {
 
 	Vector2f& normalize();
 	float operator^(const Vector2f& other) const;
+	operator bool() const;
+	bool operator!=(const Vector2f& other) const;
 
 	float		abs() const;
 	std::string str() const;
@@ -118,6 +122,8 @@ struct Vector2i {
 	Vector2i& operator-=(const Vector2i& other);
 
 	int operator^(const Vector2i& other) const;
+	operator bool() const;
+	bool operator!=(const Vector2i& other) const;
 
 	float		abs() const;
 	std::string str() const;
@@ -174,6 +180,8 @@ struct Vector3d {
 	Vector3d operator*(const Vector3d& other) const;
 	Vector3d& normalize();
 	double operator^(const Vector3d& other) const;
+	operator bool() const;
+	bool operator!=(const Vector3d& other) const;
 
 	double		abs() const;
 	std::string str() const;
@@ -214,6 +222,8 @@ struct Vector3f {
 	Vector3f operator*(const Vector3f& other) const;
 	Vector3f& normalize();
 	float operator^(const Vector3f& other) const;
+	operator bool() const;
+	bool operator!=(const Vector3f& other) const;
 
 	float		abs() const;
 	std::string str() const;
@@ -250,6 +260,8 @@ struct Vector3i {
 
 	Vector3i operator*(const Vector3i& other) const;
 	int operator^(const Vector3i& other) const;
+	operator bool() const;
+	bool operator!=(const Vector3i& other) const;
 
 	float		abs() const;
 	std::string str() const;
