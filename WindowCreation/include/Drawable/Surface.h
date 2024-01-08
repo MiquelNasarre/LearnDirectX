@@ -349,6 +349,9 @@ public:
 	template<typename C>
 	void updateShape(Graphics& gfx, PARAM_SURFACE_SHAPE<C> ss);
 
+	Quaternion getRotation();
+	Vector3f getPosition();
+
 private:
 
 	void addOtherBinds(Graphics& gfx);

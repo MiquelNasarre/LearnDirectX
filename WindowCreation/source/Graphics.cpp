@@ -209,7 +209,10 @@ Vector2i Graphics::getWindowDimensions()
 
 void Graphics::updatePerspective(Vector3f obs, Vector3f center, float scale)
 {
-	Observer = obs;
+	if (!obs)
+		throw std::exception("The observer must be a vector diferent than zero");
+
+	Observer = obs.normalize();
 	Center = center;
 	Scale = scale;
 

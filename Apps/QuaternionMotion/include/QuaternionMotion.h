@@ -2,15 +2,21 @@
 
 #include "Window.h"
 #include "Drawable/Surface.h"
+#include "Drawable/Triangle.h"
+
+enum DRAG_TYPE
+{
+	RIGID_PLANE,
+	RIGID_SPACE,
+	DYNAMIC_PLANE,
+	DYNAMIC_SPACE,
+};
 
 struct IG_DATA {
-	static float THETA;
-	static float PHI;
-	static float SPEED;
+	static DRAG_TYPE TYPE;
 };
 
 class QuaternionMotion {
-
 private:
 	Window window;
 
@@ -24,7 +30,19 @@ private:
 	Vector2i lastPos;
 	bool dragging;
 
-	Surface example;
+	//	Forced return
+
+	bool returning = false;
+	bool strict = false;
+
+	//	Magnet motion
+
+	bool magnetized = false;
+	Vector3f magnetPos = { 1.f, 0.f, 0.f };
+
+	Surface		shape_0;
+	Triangle	shape_1;
+	Triangle	shape_2;
 
 public:
 	QuaternionMotion();
@@ -34,6 +52,15 @@ public:
 
 	void eventManager();
 	void doFrame();
+
+private:
+	void magneticReturn();
+	void strictReturn();
+
+	void drag_rigid_plane();
+	void drag_rigid_space();
+	void drag_dynamic_plane();
+	void drag_dynamic_space();
 };
 
 //	Functions

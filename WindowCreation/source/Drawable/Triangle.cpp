@@ -203,6 +203,7 @@ void Triangle::updateRotation(Graphics& gfx, Vector3f axis, float angle, bool mu
 	else
 		vscBuff.rotation *= rotationQuaternion(axis, angle);
 
+	vscBuff.rotation.normalize();
 	pVSCB->Update(gfx, vscBuff);
 }
 
@@ -236,6 +237,16 @@ void Triangle::clearLights(Graphics& gfx)
 {
 	pscBuff = {};
 	pPSCB->Update(gfx, pscBuff);
+}
+
+Quaternion Triangle::getRotation()
+{
+	return vscBuff.rotation;
+}
+
+Vector3f Triangle::getPosition()
+{
+	return Vector3f(vscBuff.translation.x, vscBuff.translation.y, vscBuff.translation.z);
 }
 
 void Triangle::Draw(Graphics& gfx)

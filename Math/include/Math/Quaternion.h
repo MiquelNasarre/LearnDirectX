@@ -31,10 +31,11 @@ struct Quaternion
 	Quaternion operator+=(const Quaternion& other);
 	Quaternion operator*=(const Quaternion& other);
 
+	Quaternion	normalize();
 	Quaternion	inv() const;
 	float		abs() const;
-	std::string str() const;
-	Vector3f getVector() const;
+	std::string str(int decimals = 2u) const;
+	Vector3f	getVector() const;
 	_float4vector getVector4() const;
 };
 

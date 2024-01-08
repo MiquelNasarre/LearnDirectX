@@ -128,6 +128,7 @@ void Curve::updateRotation(Graphics& gfx, Vector3f axis, float angle, bool multi
 	else
 		vscBuff.rotation *= rotationQuaternion(axis, angle);
 
+	vscBuff.rotation.normalize();
 	pVSCB->Update(gfx, vscBuff);
 }
 
@@ -143,6 +144,16 @@ void Curve::updatePosition(Graphics& gfx, Vector3f position, bool additive)
 	}
 
 	pVSCB->Update(gfx, vscBuff);
+}
+
+Quaternion Curve::getRotation()
+{
+	return vscBuff.rotation;
+}
+
+Vector3f Curve::getPosition()
+{
+	return Vector3f(vscBuff.translation.x, vscBuff.translation.y, vscBuff.translation.z);
 }
 
 //	Private

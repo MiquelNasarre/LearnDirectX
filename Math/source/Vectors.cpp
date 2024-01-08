@@ -169,6 +169,11 @@ bool Vector2d::operator!=(const Vector2d& other) const
 	return x != other.x || y != other.y;
 }
 
+bool Vector2d::operator==(const Vector2d& other) const
+{
+	return x == other.x && y == other.y;
+}
+
 double Vector2d::abs() const
 {
 	return sqrt(x * x + y * y);
@@ -345,6 +350,11 @@ bool Vector2f::operator!=(const Vector2f& other) const
 	return x != other.x || y != other.y;
 }
 
+bool Vector2f::operator==(const Vector2f& other) const
+{
+	return x == other.x && y == other.y;
+}
+
 float Vector2f::abs() const
 {
 	return sqrtf(x * x + y * y);
@@ -490,6 +500,11 @@ Vector2i::operator bool() const
 bool Vector2i::operator!=(const Vector2i& other) const
 {
 	return x != other.x || y != other.y;
+}
+
+bool Vector2i::operator==(const Vector2i& other) const
+{
+	return x == other.x && y == other.y;
 }
 
 float Vector2i::abs() const
@@ -732,6 +747,11 @@ bool Vector3d::operator!=(const Vector3d& other) const
 	return x != other.x || y != other.y || z != other.z;
 }
 
+bool Vector3d::operator==(const Vector3d& other) const
+{
+	return x == other.x && y == other.y && z == other.z;
+}
+
 double Vector3d::abs() const
 {
 	return sqrt(x * x + y * y + z * z);
@@ -925,6 +945,11 @@ bool Vector3f::operator!=(const Vector3f& other) const
 	return x != other.x || y != other.y || z != other.z;
 }
 
+bool Vector3f::operator==(const Vector3f& other) const
+{
+	return x == other.x && y == other.y && z == other.z;
+}
+
 float Vector3f::abs() const
 {
 	return sqrtf(x * x + y * y + z * z);
@@ -1083,6 +1108,11 @@ Vector3i::operator bool() const
 bool Vector3i::operator!=(const Vector3i& other) const
 {
 	return x != other.x || y != other.y || z != other.z;
+}
+
+bool Vector3i::operator==(const Vector3i& other) const
+{
+	return x == other.x && y == other.y && z == other.z;
 }
 
 float Vector3i::abs() const

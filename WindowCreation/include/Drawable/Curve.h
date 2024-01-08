@@ -22,6 +22,9 @@ public:
 	void updateRotation(Graphics& gfx, Vector3f axis, float angle, bool multiplicative = false);
 	void updatePosition(Graphics& gfx, Vector3f position, bool additive = false);
 
+	Quaternion getRotation();
+	Vector3f getPosition();
+
 private:
 
 	void addDefaultBinds(Graphics& gfx);

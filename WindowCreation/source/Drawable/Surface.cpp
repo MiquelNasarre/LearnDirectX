@@ -902,6 +902,7 @@ void Surface::updateRotation(Graphics& gfx, Vector3f axis, float angle, bool mul
 	else
 		vscBuff.rotation *= rotationQuaternion(axis, angle);
 
+	vscBuff.rotation.normalize();
 	pVSCB->Update(gfx, vscBuff);
 }
 
@@ -1691,6 +1692,16 @@ void Surface::updateShape(Graphics& gfx, SURFACE_SHAPE ss)
 	default:
 		throw std::exception("The surface type specified is not supported");
 	}
+}
+
+Quaternion Surface::getRotation()
+{
+	return vscBuff.rotation;
+}
+
+Vector3f Surface::getPosition()
+{
+	return Vector3f(vscBuff.translation.x, vscBuff.translation.y, vscBuff.translation.z);
 }
 
 //	Private

@@ -18,6 +18,9 @@ public:
 	void updateLight(Graphics& gfx, UINT id, _float4vector intensity, _float4color color, _float4vector position);
 	void clearLights(Graphics& gfx);
 
+	Quaternion getRotation();
+	Vector3f getPosition();
+
 	void Draw(Graphics& gfx) override;
 	
 private:

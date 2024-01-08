@@ -120,6 +120,11 @@ Quaternion Quaternion::operator*=(const Quaternion& other)
 	return *this;
 }
 
+Quaternion Quaternion::normalize()
+{
+	return *this *= 1.f / abs();
+}
+
 Quaternion Quaternion::inv() const
 {
 	return Quaternion(r, -i, -j, -k) / (r * r + i * i + j * j + k * k);
@@ -130,24 +135,26 @@ float Quaternion::abs() const
 	return sqrtf(r * r + i * i + j * j + k * k);
 }
 
-std::string Quaternion::str() const
+std::string Quaternion::str(int decimals) const
 {
+	if (!decimals)decimals = -1;
+
 	std::string String;
-	String = std::to_string(r);
+	String = std::to_string(r).erase(2 + decimals, 6 - decimals);
 	if (i >= 0)
-		String = String + " + " + std::to_string(i) + " i";
+		String = String + " + " + std::to_string(i).erase(2 + decimals,6 - decimals) + " i";
 	else if (i < 0)
-		String = String + " - " + std::to_string(-i) + " i";
+		String = String + " - " + std::to_string(-i).erase(2 + decimals, 6 - decimals) + " i";
 
 	if (j >= 0)
-		String = String + " + " + std::to_string(j) + " i";
+		String = String + " + " + std::to_string(j).erase(2 + decimals, 6 - decimals) + " j";
 	else if (j < 0)
-		String = String + " - " + std::to_string(-j) + " i";
+		String = String + " - " + std::to_string(-j).erase(2 + decimals, 6 - decimals) + " j";
 
 	if (k >= 0)
-		String = String + " + " + std::to_string(k) + " i";
+		String = String + " + " + std::to_string(k).erase(2 + decimals, 6 - decimals) + " k";
 	else if (k < 0)
-		String = String + " - " + std::to_string(-k) + " i";
+		String = String + " - " + std::to_string(-k).erase(2 + decimals, 6 - decimals) + " k";
 
 	return String;
 }
