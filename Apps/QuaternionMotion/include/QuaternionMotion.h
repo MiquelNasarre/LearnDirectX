@@ -10,10 +10,33 @@ enum DRAG_TYPE
 	RIGID_SPACE,
 	DYNAMIC_PLANE,
 	DYNAMIC_SPACE,
+	MAGNETIC_MOUSE,
+};
+
+enum SHAPE
+{
+	SQUARE,
+	WEIRD_SHAPE,
+	OCTAHEDRON,
 };
 
 struct IG_DATA {
+
+	static float THETA;
+	static float PHI;
+
 	static DRAG_TYPE TYPE;
+	static SHAPE FIGURE;
+
+	struct lightsource {
+		bool is_on;
+		_float4vector intensities;
+		_float4color color;
+		_float4vector position;
+	};
+
+	static lightsource* LIGHTS;
+	static int UPDATE_LIGHT;
 };
 
 class QuaternionMotion {
@@ -61,6 +84,7 @@ private:
 	void drag_rigid_space();
 	void drag_dynamic_plane();
 	void drag_dynamic_space();
+	void drag_magnetic_mouse();
 };
 
 //	Functions

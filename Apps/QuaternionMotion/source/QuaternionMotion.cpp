@@ -3,8 +3,6 @@
 #include "Mouse.h"
 #include "IG_QuaternionMotion.h"
 
-DRAG_TYPE IG_DATA::TYPE = DYNAMIC_SPACE;
-
 QuaternionMotion::QuaternionMotion()
 	: window(640, 480, "QuaternionMotion", "", true),
 
@@ -12,15 +10,32 @@ QuaternionMotion::QuaternionMotion()
 {
 	window.setFramerateLimit(60);
 
+	IG_DATA::LIGHTS[0].is_on = true;
+	IG_DATA::LIGHTS[0].color = Color(255, 51, 51, 255).getColor4();
+	IG_DATA::LIGHTS[0].intensities = { 60.f,10.f };
+	IG_DATA::LIGHTS[0].position = { 0.f,8.f,8.f };
+	IG_DATA::LIGHTS[1].is_on = true;
+	IG_DATA::LIGHTS[1].color = Color(0, 255, 0, 255).getColor4();
+	IG_DATA::LIGHTS[1].intensities = { 60.f,10.f };
+	IG_DATA::LIGHTS[1].position = { 0.f,-8.f,8.f };
+	IG_DATA::LIGHTS[2].is_on = true;
+	IG_DATA::LIGHTS[2].color = Color(127, 0, 255, 255).getColor4();
+	IG_DATA::LIGHTS[2].intensities = { 60.f,10.f };
+	IG_DATA::LIGHTS[2].position = { -8.f,0.f,-8.f };
+	IG_DATA::LIGHTS[3].is_on = true;
+	IG_DATA::LIGHTS[3].color = Color(255, 255, 0, 255).getColor4();
+	IG_DATA::LIGHTS[3].intensities = { 60.f,10.f };
+	IG_DATA::LIGHTS[3].position = { 8.f,0.f,8.f };
+
 	Vector3f vertexs[8] = {
-	Vector3f(1.f, 1.f, 1.f),
+	Vector3f( 1.f, 1.f, 1.f),
 	Vector3f(-1.f, 1.f, 1.f),
 	Vector3f(-1.f,-1.f, 1.f),
-	Vector3f(1.f,-1.f, 1.f),
-	Vector3f(1.f, 1.f,-1.f),
+	Vector3f( 1.f,-1.f, 1.f),
+	Vector3f( 1.f, 1.f,-1.f),
 	Vector3f(-1.f, 1.f,-1.f),
 	Vector3f(-1.f,-1.f,-1.f),
-	Vector3f(1.f,-1.f,-1.f),
+	Vector3f( 1.f,-1.f,-1.f),
 	};
 
 	Vector3i triangles[12] = {
@@ -38,8 +53,35 @@ QuaternionMotion::QuaternionMotion()
 		Vector3i(2, 5, 6),
 	};
 
+	Vector3f vertexs0[8] = {
+		Vector3f(0.f, 0.f, 1.f),
+		Vector3f(cosf(2 * 3.14159f * 0 / 6) ,-sinf(2 * 3.14159f * 0 / 6), 0.f),
+		Vector3f(cosf(2 * 3.14159f * 1 / 6) ,-sinf(2 * 3.14159f * 1 / 6), 0.f),
+		Vector3f(cosf(2 * 3.14159f * 2 / 6) ,-sinf(2 * 3.14159f * 2 / 6), 0.f),
+		Vector3f(cosf(2 * 3.14159f * 3 / 6) ,-sinf(2 * 3.14159f * 3 / 6), 0.f),
+		Vector3f(cosf(2 * 3.14159f * 4 / 6) ,-sinf(2 * 3.14159f * 4 / 6), 0.f),
+		Vector3f(cosf(2 * 3.14159f * 5 / 6) ,-sinf(2 * 3.14159f * 5 / 6), 0.f),
+		Vector3f(0.f, 0.f,-1.f),
+	};
+
+	Vector3i triangles0[12] = {
+		Vector3i(0, 1, 2),
+		Vector3i(0, 2, 3),
+		Vector3i(0, 3, 4),
+		Vector3i(0, 4, 5),
+		Vector3i(0, 5, 6),
+		Vector3i(0, 6, 1),
+		Vector3i(7, 1, 2),
+		Vector3i(7, 2, 3),
+		Vector3i(7, 3, 4),
+		Vector3i(7, 4, 5),
+		Vector3i(7, 5, 6),
+		Vector3i(7, 6, 1),
+	};
+	
+
 	shape_1.create(window.graphics, vertexs, triangles, 12);
-	shape_2.create(window.graphics, vertexs, triangles, 12);
+	shape_2.create(window.graphics, vertexs0, triangles0, 12);
 	
 }
 
@@ -89,6 +131,9 @@ void QuaternionMotion::eventManager()
 		case DYNAMIC_SPACE:
 			drag_dynamic_space();
 			break;
+		case MAGNETIC_MOUSE:
+			drag_magnetic_mouse();
+			break;
 		default:
 			break;
 		}
@@ -96,6 +141,31 @@ void QuaternionMotion::eventManager()
 	else
 		scale *= powf(1.1f, Mouse::getWheel() / 120.f);
 
+	//	Calculate observer vector
+
+	observer = {
+			-cosf(IG_DATA::PHI) * cosf(IG_DATA::THETA) ,
+			-cosf(IG_DATA::PHI) * sinf(IG_DATA::THETA) ,
+			-sinf(IG_DATA::PHI)
+	};
+
+	//	Light updates
+	
+	int l = IG_DATA::UPDATE_LIGHT;
+	if (l == -2) {
+		for (int i = 0; i < 8; i++) {
+			shape_0.updateLight(window.graphics, i, IG_DATA::LIGHTS[i].intensities, IG_DATA::LIGHTS[i].color, IG_DATA::LIGHTS[i].position);
+			shape_1.updateLight(window.graphics, i, IG_DATA::LIGHTS[i].intensities, IG_DATA::LIGHTS[i].color, IG_DATA::LIGHTS[i].position);
+			shape_2.updateLight(window.graphics, i, IG_DATA::LIGHTS[i].intensities, IG_DATA::LIGHTS[i].color, IG_DATA::LIGHTS[i].position);
+		}
+		IG_DATA::UPDATE_LIGHT = -1;
+	}
+	if (l > -1) {
+		shape_0.updateLight(window.graphics, l, IG_DATA::LIGHTS[l].intensities, IG_DATA::LIGHTS[l].color, IG_DATA::LIGHTS[l].position);
+		shape_1.updateLight(window.graphics, l, IG_DATA::LIGHTS[l].intensities, IG_DATA::LIGHTS[l].color, IG_DATA::LIGHTS[l].position);
+		shape_2.updateLight(window.graphics, l, IG_DATA::LIGHTS[l].intensities, IG_DATA::LIGHTS[l].color, IG_DATA::LIGHTS[l].position);
+		IG_DATA::UPDATE_LIGHT = -1;
+	}
 }
 
 void QuaternionMotion::doFrame()
@@ -116,7 +186,21 @@ void QuaternionMotion::doFrame()
 
 	window.graphics.clearBuffer(Color::Black);
 
-	shape_1.Draw(window.graphics);
+	switch (IG_DATA::FIGURE)
+	{
+	case SQUARE:
+		shape_1.Draw(window.graphics);
+		break;
+	case WEIRD_SHAPE:
+		shape_0.Draw(window.graphics);
+		break;
+	case OCTAHEDRON:
+		shape_2.Draw(window.graphics);
+		break;
+	default:
+		break;
+	}
+	
 
 	//	ImGui crap
 
@@ -286,7 +370,7 @@ void QuaternionMotion::drag_dynamic_space()
 	if ((lastMouse ^ newMouse) > 1.f)dangle0 = 0.f;
 	if (lastMouse == newMouse) dangle0 = 0.f;
 
-	constexpr float s = 1.f / 2.f;
+	constexpr float s = 1.f / 1.5f;
 
 	Quaternion newRot = rotationQuaternion(newMouse, Mouse::getWheel() / 18000.f) * rotationQuaternion(axis0, dangle0) * rotationQuaternion(axis, (dangle * (1 - s + fabs(axis ^ newMouse) * s)));
 	
@@ -294,6 +378,46 @@ void QuaternionMotion::drag_dynamic_space()
 	axis = newRot.getVector();
 	if (!axis)axis = newMouse;
 	axis.normalize();
+}
+
+void QuaternionMotion::drag_magnetic_mouse()
+{
+	Vector3f obs = window.graphics.getObserver();
+	Vector3f ex = -(obs * Vector3f(0.f, 0.f, 1.f)).normalize();
+	Vector3f ey = ex * obs;
+
+	lastPos = Mouse::getPosition();
+	Vector3f newMouse = (-obs + (ex * (lastPos.x - window.getDimensions().x / 2) + ey * (lastPos.y - window.getDimensions().y / 2)) / scale).normalize();
+
+	Quaternion rot = shape_0.getRotation();
+	Vector3f polePos = (rot * Quaternion(Vector3f(0.f, 1.f, 0.f)) * Quaternion(rot.r, -rot.i, -rot.j, -rot.k)).getVector();
+
+	Vector3f axis0 = newMouse * polePos;
+	if (!axis0) axis0 = newMouse;
+	axis0.normalize();
+
+	constexpr float max = 0.02f;
+	float dangle0 = acosf(polePos ^ newMouse);
+	if ((polePos ^ newMouse) > 1.f)dangle0 = 0.f;
+	if (polePos == newMouse) dangle0 = 0.f;
+	dangle0 /= 40.f;
+	if (dangle0 > max)
+		dangle0 = max;
+	else if (dangle0 < -max)
+		dangle0 = -max;
+
+	dangle *= 0.97f;
+
+	Quaternion newRot = rotationQuaternion(axis0, dangle0) * rotationQuaternion(axis, dangle);
+
+	dangle = 2 * acosf(newRot.r);
+	if (newRot.r > 1)
+		dangle = 0.f;
+	axis = newRot.getVector();
+	if (!axis)axis = newMouse;
+	axis.normalize();
+
+	Mouse::getWheel();
 }
 
 //	Functions
