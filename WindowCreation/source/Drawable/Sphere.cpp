@@ -2,6 +2,7 @@
 
 Sphere::Sphere(Graphics& gfx, Color color, UINT depth)
 {
+	isInit = true;
 
 	Model model = generateIcosphere(depth, color);
 
@@ -21,6 +22,8 @@ Sphere::Sphere(Graphics& gfx, Color color, UINT depth)
 	AddBind(std::make_unique<InputLayout>(gfx, ied, pvs->GetBytecode()));
 
 	AddBind(std::make_unique<Topology>(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST));
+
+	AddBind(std::make_unique<Rasterizer>(gfx, false));
 
 	pVSCB = (ConstantBuffer<VSconstBuffer>*)AddBind(std::make_unique<ConstantBuffer<VSconstBuffer>>(gfx, VERTEX_CONSTANT_BUFFER_TYPE));
 

@@ -9,6 +9,8 @@ public:
 	virtual void Draw(Graphics& gfx);
 
 protected:
+	bool isInit = false;
+
 	void _draw(Graphics& gfx) const;
 
 	void* AddBind(std::unique_ptr<Bindable> bind);

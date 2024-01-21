@@ -3,10 +3,10 @@
 #include "Mouse.h"
 #include "IG_QuaternionMotion.h"
 
-QuaternionMotion::QuaternionMotion()
-	: window(640, 480, "QuaternionMotion", "", true),
+#define DO(call) shape_0.call;shape_1.call;shape_2.call;shape_3.call
 
-	shape_0(window.graphics, SURFACE_SHAPE(_EXPLICIT_SPHERICAL, exampleRadius))
+QuaternionMotion::QuaternionMotion()
+	: window(640, 480, "QuaternionMotion", "", true)
 {
 	window.setFramerateLimit(60);
 
@@ -78,11 +78,19 @@ QuaternionMotion::QuaternionMotion()
 		Vector3i(7, 5, 6),
 		Vector3i(7, 6, 1),
 	};
-	
 
+	SURFACE_SHAPE ss0 = { _EXPLICIT_SPHERICAL, exampleRadius };
+	ss0.numU = 200u;
+	ss0.numV = 200u;
+
+	SURFACE_SHAPE ss1 = { _PARAMETRIC, KleinBottle, false, Vector2f(0, 0), Vector2f(pi, 2 * pi) };
+	ss1.numU = 200u;
+	ss1.numV = 200u;
+	
+	shape_0.create(window.graphics, ss0);
 	shape_1.create(window.graphics, vertexs, triangles, 12);
 	shape_2.create(window.graphics, vertexs0, triangles0, 12);
-	
+	shape_3.create(window.graphics, ss1);
 }
 
 int QuaternionMotion::Run()
@@ -154,16 +162,12 @@ void QuaternionMotion::eventManager()
 	int l = IG_DATA::UPDATE_LIGHT;
 	if (l == -2) {
 		for (int i = 0; i < 8; i++) {
-			shape_0.updateLight(window.graphics, i, IG_DATA::LIGHTS[i].intensities, IG_DATA::LIGHTS[i].color, IG_DATA::LIGHTS[i].position);
-			shape_1.updateLight(window.graphics, i, IG_DATA::LIGHTS[i].intensities, IG_DATA::LIGHTS[i].color, IG_DATA::LIGHTS[i].position);
-			shape_2.updateLight(window.graphics, i, IG_DATA::LIGHTS[i].intensities, IG_DATA::LIGHTS[i].color, IG_DATA::LIGHTS[i].position);
+			DO(updateLight(window.graphics, i, IG_DATA::LIGHTS[i].intensities, IG_DATA::LIGHTS[i].color, IG_DATA::LIGHTS[i].position));
 		}
 		IG_DATA::UPDATE_LIGHT = -1;
 	}
 	if (l > -1) {
-		shape_0.updateLight(window.graphics, l, IG_DATA::LIGHTS[l].intensities, IG_DATA::LIGHTS[l].color, IG_DATA::LIGHTS[l].position);
-		shape_1.updateLight(window.graphics, l, IG_DATA::LIGHTS[l].intensities, IG_DATA::LIGHTS[l].color, IG_DATA::LIGHTS[l].position);
-		shape_2.updateLight(window.graphics, l, IG_DATA::LIGHTS[l].intensities, IG_DATA::LIGHTS[l].color, IG_DATA::LIGHTS[l].position);
+		DO(updateLight(window.graphics, l, IG_DATA::LIGHTS[l].intensities, IG_DATA::LIGHTS[l].color, IG_DATA::LIGHTS[l].position));
 		IG_DATA::UPDATE_LIGHT = -1;
 	}
 }
@@ -176,9 +180,7 @@ void QuaternionMotion::doFrame()
 
 	window.graphics.updatePerspective(observer, center, scale);
 
-	shape_0.updateRotation(window.graphics, axis, dangle, true);
-	shape_1.updateRotation(window.graphics, axis, dangle, true);
-	shape_2.updateRotation(window.graphics, axis, dangle, true);
+	DO(updateRotation(window.graphics, axis, dangle, true));
 
 	window.setTitle(shape_0.getRotation().str() + "  -  " + std::to_string(int(std::round(window.getFramerate()))) + "fps");
 
@@ -197,6 +199,8 @@ void QuaternionMotion::doFrame()
 	case OCTAHEDRON:
 		shape_2.Draw(window.graphics);
 		break;
+	case KLEIN:
+		shape_3.Draw(window.graphics);
 	default:
 		break;
 	}
@@ -424,5 +428,18 @@ void QuaternionMotion::drag_magnetic_mouse()
 
 float exampleRadius(float theta, float phi)
 {
-	return 1.f + (sinf(theta) * sinf(theta) * cosf(phi) + cosf(phi) * cosf(phi) * sinf(phi)) * sinf(5 * theta) * cosf(3 * phi) / 2.f;
+	return 1.f + (sinf(theta) * sinf(theta) + cosf(phi) * sinf(phi)) * sinf(5 * theta) * cosf(3 * phi) * cosf(phi) / 2.f;
+}
+
+Vector3f KleinBottle(float u, float v)
+{
+	float c_u = cosf(u);
+	float s_u = sinf(u);
+	float c_v = cosf(v);
+	float s_v = sinf(v);
+
+	float x = -2.f / 15.f * c_u * (3 * c_v - 30 * s_u + 90 * powf(c_u, 4.f) * s_u - 60 * powf(c_u, 6.f) * s_u + 5 * c_u * c_v * s_u);
+	float y = -1.f / 15.f * s_u * (3 * c_v - 3 * c_u * c_u * c_v - 48 * powf(c_u, 4.f) * c_v + 48 * powf(c_u, 6.f) * c_v - 60 * s_u + 5 * c_u * c_v * s_u - 5 * powf(c_u, 3) * c_v * s_u - 80 * powf(c_u, 7.f) * c_v * s_u) - 1;
+	float z = 2.f / 15.f * (3 + 5 * c_u * s_u) * s_v;
+	return Vector3f(x, y, z);
 }

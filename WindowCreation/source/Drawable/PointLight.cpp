@@ -28,6 +28,7 @@ PointLight::PointLight(Graphics& gfx, Color color, Vector3f Position, float Radi
 
 	AddBind(std::make_unique<InputLayout>(gfx, ied, pvs->GetBytecode()));
 	AddBind(std::make_unique<Topology>(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST));
+	AddBind(std::make_unique<Rasterizer>(gfx, false));
 
 	vscBuff = { Position.getVector4(), gfx.getObserver().getVector4(), { Radius, 0.f, 0.f, 0.f } };
 	pscBuff = { color.getColor4() };

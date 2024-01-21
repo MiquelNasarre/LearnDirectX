@@ -194,6 +194,7 @@
     <ClCompile Include="source\Bindable\IndexBuffer.cpp" />
     <ClCompile Include="source\Bindable\InputLayout.cpp" />
     <ClCompile Include="source\Bindable\PixelShader.cpp" />
+    <ClCompile Include="source\Bindable\Rasterizer.cpp" />
     <ClCompile Include="source\Bindable\Sampler.cpp" />
     <ClCompile Include="source\Bindable\Texture.cpp" />
     <ClCompile Include="source\Bindable\Topology.cpp" />
@@ -224,6 +225,7 @@
     <ClInclude Include="include\Bindable\IndexBuffer.h" />
     <ClInclude Include="include\Bindable\InputLayout.h" />
     <ClInclude Include="include\Bindable\PixelShader.h" />
+    <ClInclude Include="include\Bindable\Rasterizer.h" />
     <ClInclude Include="include\Bindable\Sampler.h" />
     <ClInclude Include="include\Bindable\Texture.h" />
     <ClInclude Include="include\Bindable\Topology.h" />

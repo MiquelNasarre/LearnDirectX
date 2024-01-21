@@ -18,6 +18,7 @@ enum SHAPE
 	SQUARE,
 	WEIRD_SHAPE,
 	OCTAHEDRON,
+	KLEIN
 };
 
 struct IG_DATA {
@@ -66,6 +67,7 @@ private:
 	Surface		shape_0;
 	Triangle	shape_1;
 	Triangle	shape_2;
+	Surface		shape_3;
 
 public:
 	QuaternionMotion();
@@ -90,3 +92,5 @@ private:
 //	Functions
 
 float exampleRadius(float, float);
+
+Vector3f KleinBottle(float u, float v);

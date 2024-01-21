@@ -6,9 +6,9 @@ class Triangle : public Drawable
 public:
 
 	Triangle() {}
-	Triangle(Graphics& gfx, Vector3f* vertexs, Vector3i* triangles, UINT numT, Color* colors = NULL, bool vertexColor = false);
+	Triangle(Graphics& gfx, Vector3f* vertexs, Vector3i* triangles, UINT numT, Color* colors = NULL, bool vertexColor = false, bool doubleSided = true);
 
-	void create(Graphics& gfx, Vector3f* vertexs, Vector3i* triangles, UINT numT, Color* colors = NULL, bool vertexColor = false);
+	void create(Graphics& gfx, Vector3f* vertexs, Vector3i* triangles, UINT numT, Color* colors = NULL, bool vertexColor = false, bool doubleSided = true);
 
 	void updateShape(Graphics& gfx, Vector3f* vertexs, Vector3i* triangles, UINT numT, Color* colors = NULL, bool vertexColor = false);
 	void updateRotation(Graphics& gfx, float rotationX, float rotationY, float rotationZ);
@@ -20,8 +20,6 @@ public:
 
 	Quaternion getRotation();
 	Vector3f getPosition();
-
-	void Draw(Graphics& gfx) override;
 	
 private:
 	struct VSconstBuffer {

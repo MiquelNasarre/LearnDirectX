@@ -2,6 +2,21 @@
 
 Background::Background(Graphics& gfx, std::string filename, bool MakeDynamic, PROJECTION_TYPES ProjectionType)
 {
+	create(gfx, filename, MakeDynamic, ProjectionType);
+}
+
+Background::Background(Graphics& gfx, Texture texture, bool MakeDynamic, PROJECTION_TYPES ProjectionType)
+{
+	create(gfx, texture, MakeDynamic, ProjectionType);
+}
+
+void Background::create(Graphics& gfx, std::string filename, bool MakeDynamic, PROJECTION_TYPES ProjectionType)
+{
+	if (isInit)
+		throw std::exception("You cannot create a background over one that is already initialized");
+	else
+		isInit = true;
+
 	AddBind(std::make_unique<Texture>(gfx, filename));
 
 	AddBind(std::make_unique<Sampler>(gfx, D3D11_FILTER_MIN_MAG_MIP_LINEAR));
@@ -54,10 +69,17 @@ Background::Background(Graphics& gfx, std::string filename, bool MakeDynamic, PR
 	};
 
 	AddBind(std::make_unique<InputLayout>(gfx, ied, pvs->GetBytecode()));
+
+	AddBind(std::make_unique<Rasterizer>(gfx, false));
 }
 
-Background::Background(Graphics& gfx, Texture texture, bool MakeDynamic, PROJECTION_TYPES ProjectionType)
+void Background::create(Graphics& gfx, Texture texture, bool MakeDynamic, PROJECTION_TYPES ProjectionType)
 {
+	if (isInit)
+		throw std::exception("You cannot create a background over one that is already initialized");
+	else
+		isInit = true;
+
 	((Texture*)AddBind(std::make_unique<Texture>(texture)))->setSlot(0u);
 
 	AddBind(std::make_unique<Sampler>(gfx, D3D11_FILTER_MIN_MAG_MIP_LINEAR));
@@ -110,6 +132,8 @@ Background::Background(Graphics& gfx, Texture texture, bool MakeDynamic, PROJECT
 	};
 
 	AddBind(std::make_unique<InputLayout>(gfx, ied, pvs->GetBytecode()));
+
+	AddBind(std::make_unique<Rasterizer>(gfx, false));
 }
 
 void Background::updateTexture(Graphics& gfx, std::string filename)

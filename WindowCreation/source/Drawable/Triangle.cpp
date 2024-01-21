@@ -1,17 +1,19 @@
 #include "Drawable/Triangle.h"
 #include "Bindable/BindableBase.h"
 
-Triangle::Triangle(Graphics& gfx, Vector3f* vertexs, Vector3i* triangles, UINT numT, Color* colors, bool vertexColor)
+Triangle::Triangle(Graphics& gfx, Vector3f* vertexs, Vector3i* triangles, UINT numT, Color* colors, bool vertexColor, bool doubleSided)
 {
 
-	create(gfx, vertexs, triangles, numT, colors, vertexColor);
+	create(gfx, vertexs, triangles, numT, colors, vertexColor, doubleSided);
 
 }
 
-void Triangle::create(Graphics& gfx, Vector3f* vertexs, Vector3i* triangles, UINT numT, Color* colors, bool vertexColor)
+void Triangle::create(Graphics& gfx, Vector3f* vertexs, Vector3i* triangles, UINT numT, Color* colors, bool vertexColor, bool doubleSided)
 {
-	if (pVSCB)
+	if (isInit)
 		throw std::exception("You cannot create a polihedron over one that is already initialized");
+	else
+		isInit = true;
 
 	struct Vertex {
 		Vector3f vector;
@@ -19,72 +21,51 @@ void Triangle::create(Graphics& gfx, Vector3f* vertexs, Vector3i* triangles, UIN
 		Color color;
 	};
 
-	Vertex* V = (Vertex*)calloc(6 * numT, sizeof(Vertex));
+	Vertex* V = (Vertex*)calloc(3 * numT, sizeof(Vertex));
 
 	for (UINT i = 0; i < numT; i++)
 	{
 
-		V[6 * i].vector = vertexs[triangles[i].x];
-		V[6 * i + 1].vector = vertexs[triangles[i].y];
-		V[6 * i + 2].vector = vertexs[triangles[i].z];
-
-		V[6 * i + 3].vector = vertexs[triangles[i].y];
-		V[6 * i + 4].vector = vertexs[triangles[i].x];
-		V[6 * i + 5].vector = vertexs[triangles[i].z];
+		V[3 * i].vector = vertexs[triangles[i].x];
+		V[3 * i + 1].vector = vertexs[triangles[i].y];
+		V[3 * i + 2].vector = vertexs[triangles[i].z];
 
 		if (vertexColor && colors)
 		{
-			V[6 * i].color = colors[triangles[i].x];
-			V[6 * i + 1].color = colors[triangles[i].y];
-			V[6 * i + 2].color = colors[triangles[i].z];
-
-			V[6 * i + 3].color = colors[triangles[i].y];
-			V[6 * i + 4].color = colors[triangles[i].x];
-			V[6 * i + 5].color = colors[triangles[i].z];
+			V[3 * i].color = colors[triangles[i].x];
+			V[3 * i + 1].color = colors[triangles[i].y];
+			V[3 * i + 2].color = colors[triangles[i].z];
 		}
 
 		else if (colors)
 		{
-			V[6 * i].color = colors[i];
-			V[6 * i + 1].color = colors[i];
-			V[6 * i + 2].color = colors[i];
-
-			V[6 * i + 3].color = colors[i];
-			V[6 * i + 4].color = colors[i];
-			V[6 * i + 5].color = colors[i];
+			V[3 * i].color = colors[i];
+			V[3 * i + 1].color = colors[i];
+			V[3 * i + 2].color = colors[i];
 		}
 
 		else
 		{
-			V[6 * i].color = Color::White;
-			V[6 * i + 1].color = Color::White;
-			V[6 * i + 2].color = Color::White;
-
-			V[6 * i + 3].color = Color::White;
-			V[6 * i + 4].color = Color::White;
-			V[6 * i + 5].color = Color::White;
+			V[3 * i].color = Color::White;
+			V[3 * i + 1].color = Color::White;
+			V[3 * i + 2].color = Color::White;
 		}
 
-		Vector3f norm = ((V[6 * i + 1].vector - V[6 * i].vector) * (V[6 * i + 2].vector - V[6 * i].vector)).normalize();
-		V[6 * i].norm = norm;
-		V[6 * i + 1].norm = norm;
-		V[6 * i + 2].norm = norm;
-
-		V[6 * i + 3].norm = -norm;
-		V[6 * i + 4].norm = -norm;
-		V[6 * i + 5].norm = -norm;
+		Vector3f norm = ((V[3 * i + 1].vector - V[3 * i].vector) * (V[3 * i + 2].vector - V[3 * i].vector)).normalize();
+		V[3 * i].norm = norm;
+		V[3 * i + 1].norm = norm;
+		V[3 * i + 2].norm = norm;
 	}
 
-	AddBind(std::make_unique<VertexBuffer>(gfx, V, 6 * numT));
+	AddBind(std::make_unique<VertexBuffer>(gfx, V, 3 * numT));
 
 
-	unsigned short* indexs = (unsigned short*)calloc(6 * numT, sizeof(unsigned short));
+	unsigned short* indexs = (unsigned short*)calloc(3 * numT, sizeof(unsigned short));
 
-	for (UINT i = 0; i < 6 * numT; i++)
+	for (UINT i = 0; i < 3 * numT; i++)
 		indexs[i] = i;
 
-	AddBind(std::make_unique<IndexBuffer>(gfx, indexs, 6 * numT));
-
+	AddBind(std::make_unique<IndexBuffer>(gfx, indexs, 3 * numT));
 
 	auto pvs = (VertexShader*)AddBind(std::move(std::make_unique<VertexShader>(gfx, SHADERS_DIR + std::wstring(L"TriangleVS.cso"))));
 
@@ -100,6 +81,8 @@ void Triangle::create(Graphics& gfx, Vector3f* vertexs, Vector3i* triangles, UIN
 	AddBind(std::make_unique<InputLayout>(gfx, ied, pvs->GetBytecode()));
 
 	AddBind(std::make_unique<Topology>(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST));
+
+	AddBind(std::make_unique<Rasterizer>(gfx, doubleSided));
 
 	pVSCB = (ConstantBuffer<VSconstBuffer>*)AddBind(std::make_unique<ConstantBuffer<VSconstBuffer>>(gfx, VERTEX_CONSTANT_BUFFER_TYPE));
 
@@ -122,71 +105,51 @@ void Triangle::updateShape(Graphics& gfx, Vector3f* vertexs, Vector3i* triangles
 		Color color;
 	};
 
-	Vertex* V = (Vertex*)calloc(6 * numT, sizeof(Vertex));
+	Vertex* V = (Vertex*)calloc(3 * numT, sizeof(Vertex));
 
 	for (UINT i = 0; i < numT; i++)
 	{
 
-		V[6 * i].vector = vertexs[triangles[i].x];
-		V[6 * i + 1].vector = vertexs[triangles[i].y];
-		V[6 * i + 2].vector = vertexs[triangles[i].z];
-
-		V[6 * i + 3].vector = vertexs[triangles[i].y];
-		V[6 * i + 4].vector = vertexs[triangles[i].x];
-		V[6 * i + 5].vector = vertexs[triangles[i].z];
+		V[3 * i].vector = vertexs[triangles[i].x];
+		V[3 * i + 1].vector = vertexs[triangles[i].y];
+		V[3 * i + 2].vector = vertexs[triangles[i].z];
 
 		if (vertexColor && colors)
 		{
-			V[6 * i].color = colors[triangles[i].x];
-			V[6 * i + 1].color = colors[triangles[i].y];
-			V[6 * i + 2].color = colors[triangles[i].z];
-
-			V[6 * i + 3].color = colors[triangles[i].y];
-			V[6 * i + 4].color = colors[triangles[i].x];
-			V[6 * i + 5].color = colors[triangles[i].z];
+			V[3 * i].color = colors[triangles[i].x];
+			V[3 * i + 1].color = colors[triangles[i].y];
+			V[3 * i + 2].color = colors[triangles[i].z];
 		}
 
 		else if (colors)
 		{
-			V[6 * i].color = colors[i];
-			V[6 * i + 1].color = colors[i];
-			V[6 * i + 2].color = colors[i];
-
-			V[6 * i + 3].color = colors[i];
-			V[6 * i + 4].color = colors[i];
-			V[6 * i + 5].color = colors[i];
+			V[3 * i].color = colors[i];
+			V[3 * i + 1].color = colors[i];
+			V[3 * i + 2].color = colors[i];
 		}
 
 		else
 		{
-			V[6 * i].color = Color::White;
-			V[6 * i + 1].color = Color::White;
-			V[6 * i + 2].color = Color::White;
-
-			V[6 * i + 3].color = Color::White;
-			V[6 * i + 4].color = Color::White;
-			V[6 * i + 5].color = Color::White;
+			V[3 * i].color = Color::White;
+			V[3 * i + 1].color = Color::White;
+			V[3 * i + 2].color = Color::White;
 		}
 
-		Vector3f norm = ((V[6 * i + 1].vector - V[6 * i].vector) * (V[6 * i + 2].vector - V[6 * i].vector)).normalize();
-		V[6 * i].norm = norm;
-		V[6 * i + 1].norm = norm;
-		V[6 * i + 2].norm = norm;
-
-		V[6 * i + 3].norm = -norm;
-		V[6 * i + 4].norm = -norm;
-		V[6 * i + 5].norm = -norm;
+		Vector3f norm = ((V[3 * i + 1].vector - V[3 * i].vector) * (V[3 * i + 2].vector - V[3 * i].vector)).normalize();
+		V[3 * i].norm = norm;
+		V[3 * i + 1].norm = norm;
+		V[3 * i + 2].norm = norm;
 	}
 
-	changeBind(std::make_unique<VertexBuffer>(gfx, V, 6 * numT), 0u);
+	changeBind(std::make_unique<VertexBuffer>(gfx, V, 3 * numT), 0u);
 
 
-	unsigned short* indexs = (unsigned short*)calloc(6 * numT, sizeof(unsigned short));
+	unsigned short* indexs = (unsigned short*)calloc(3 * numT, sizeof(unsigned short));
 
-	for (UINT i = 0; i < 6 * numT; i++)
+	for (UINT i = 0; i < 3 * numT; i++)
 		indexs[i] = i;
 
-	changeBind(std::make_unique<IndexBuffer>(gfx, indexs, 6 * numT), 1u);
+	changeBind(std::make_unique<IndexBuffer>(gfx, indexs, 3 * numT), 1u);
 }
 
 void Triangle::updateRotation(Graphics& gfx, float rotationX, float rotationY, float rotationZ)
@@ -247,12 +210,4 @@ Quaternion Triangle::getRotation()
 Vector3f Triangle::getPosition()
 {
 	return Vector3f(vscBuff.translation.x, vscBuff.translation.y, vscBuff.translation.z);
-}
-
-void Triangle::Draw(Graphics& gfx)
-{
-	if (!pVSCB)
-		throw std::exception("You cannot draw a polihedron that hasn't yet been created");
-
-	_draw(gfx);
 }

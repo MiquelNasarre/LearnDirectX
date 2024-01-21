@@ -106,6 +106,9 @@ void IG_QuaternionMotion::render()
 				if (ImGui::MenuItem("Octahedron"))
 					IG_DATA::FIGURE = OCTAHEDRON;
 
+				if (ImGui::MenuItem("Klein Bottle"))
+					IG_DATA::FIGURE = KLEIN;
+
 				ImGui::EndMenu();
 			}
 

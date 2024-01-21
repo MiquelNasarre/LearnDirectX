@@ -19,8 +19,10 @@ cbuffer cBuff : register(b0)
     Lightsource lights[8];
 };
 
-float4 main(float2 tc : TexCoord, float3 pos : PointPos, float3 norm : Norm) : SV_Target
+float4 main(float2 tc : TexCoord, float3 pos : PointPos, float3 norm : Norm, bool front : SV_IsFrontFace) : SV_Target
 {
+    if (!front)
+        norm = -norm;
     
     float4 totalLight = float4(0.f, 0.f, 0.f, 0.f);
     float dist = 0;

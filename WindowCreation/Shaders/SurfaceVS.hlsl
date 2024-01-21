@@ -24,6 +24,8 @@ VSOut main(float3 pos : Position, float3 norm : Normal, float4 color : Color)
 {
     VSOut vso;
     
+    
+    
     vso.norm = Q2V(qRot(quaternion, float4(0, norm)));
     vso.R3pos = Q2V(qRot(quaternion, float4(0, pos))) + traslation;
     

@@ -3,6 +3,9 @@
 
 void Drawable::Draw(Graphics& gfx)
 {
+	if (!isInit)
+		throw std::exception("You cannot issue a draw call if the drawable has not been initialized");
+
 	_draw(gfx);
 }
 

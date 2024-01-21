@@ -4,6 +4,21 @@
 
 Curve::Curve(Graphics& gfx, Vector3f F(float), Vector2f rangeT, UINT Npoints, Color color)
 {
+	create(gfx, F, rangeT, Npoints, color);
+}
+
+Curve::Curve(Graphics& gfx, Vector3f F(float), Vector2f rangeT, UINT Npoints, std::vector<Color> colors)
+{
+	create(gfx, F, rangeT, Npoints, colors);
+}
+
+void Curve::create(Graphics& gfx, Vector3f F(float), Vector2f rangeT, UINT Npoints, Color color)
+{
+	if (isInit)
+		throw std::exception("You cannot create a curve over one that is already initialized");
+	else
+		isInit = true;
+
 	std::vector<Vertex> vertexs;
 
 	for (UINT i = 0; i <= Npoints; i++)
@@ -20,8 +35,13 @@ Curve::Curve(Graphics& gfx, Vector3f F(float), Vector2f rangeT, UINT Npoints, Co
 	addDefaultBinds(gfx);
 }
 
-Curve::Curve(Graphics& gfx, Vector3f F(float), Vector2f rangeT, UINT Npoints, std::vector<Color> colors)
+void Curve::create(Graphics& gfx, Vector3f F(float), Vector2f rangeT, UINT Npoints, std::vector<Color> colors)
 {
+	if (isInit)
+		throw std::exception("You cannot create a curve over one that is already initialized");
+	else
+		isInit = true;
+
 	if (!colors.size())
 		throw std::exception("The color vector for a curve must have at least one color!!");
 
@@ -51,34 +71,30 @@ Curve::Curve(Graphics& gfx, Vector3f F(float), Vector2f rangeT, UINT Npoints, st
 	addDefaultBinds(gfx);
 }
 
-Curve::Curve(Graphics& gfx, float X(float), float Y(float), float Z(float), Vector2f rangeT, UINT Npoints, Color color)
+void Curve::updateShape(Graphics& gfx, Vector3f F(float), Vector2f rangeT, UINT Npoints, Color color)
 {
+	if (!isInit)
+		throw std::exception("You cannot update the shape of a curve if you havent initialized it first");
+
 	std::vector<Vertex> vertexs;
 
 	for (UINT i = 0; i <= Npoints; i++)
-		vertexs.push_back(Vertex(
-			Vector3f(
-				X(rangeT.x + float(i) / Npoints * (rangeT.y - rangeT.x)), 
-				Y(rangeT.x + float(i) / Npoints * (rangeT.y - rangeT.x)), 
-				Z(rangeT.x + float(i) / Npoints * (rangeT.y - rangeT.x))
-			).getVector4(),
-
-			color.getColor4()
-		));
+		vertexs.push_back(Vertex(F(rangeT.x + float(i) / Npoints * (rangeT.y - rangeT.x)).getVector4(), color.getColor4()));
 
 	std::vector<unsigned short> indexs;
 
 	for (UINT i = 0; i <= Npoints; i++)
 		indexs.push_back(i);
 
-	AddBind(std::make_unique<VertexBuffer>(gfx, vertexs));
-	AddBind(std::make_unique<IndexBuffer>(gfx, indexs));
-
-	addDefaultBinds(gfx);
+	changeBind(std::make_unique<VertexBuffer>(gfx, vertexs), 0u);
+	changeBind(std::make_unique<IndexBuffer>(gfx, indexs), 1u);
 }
 
-Curve::Curve(Graphics& gfx, float X(float), float Y(float), float Z(float), Vector2f rangeT, UINT Npoints, std::vector<Color> colors)
+void Curve::updateShape(Graphics& gfx, Vector3f F(float), Vector2f rangeT, UINT Npoints, std::vector<Color> colors)
 {
+	if (!isInit)
+		throw std::exception("You cannot update the shape of a curve if you havent initialized it first");
+
 	if (!colors.size())
 		throw std::exception("The color vector for a curve must have at least one color!!");
 
@@ -91,25 +107,19 @@ Curve::Curve(Graphics& gfx, float X(float), float Y(float), float Z(float), Vect
 		c -= C0;
 
 		vertexs.push_back(Vertex(
-			Vector3f(
-				X(rangeT.x + float(i) / Npoints * (rangeT.y - rangeT.x)),
-				Y(rangeT.x + float(i) / Npoints * (rangeT.y - rangeT.x)),
-				Z(rangeT.x + float(i) / Npoints * (rangeT.y - rangeT.x))
-			).getVector4(),
-
+			F(rangeT.x + float(i) / Npoints * (rangeT.y - rangeT.x)).getVector4(),
 			(colors[C0] * (1 - c) + colors[C1] * c).getColor4()
 		));
 	}
+
 
 	std::vector<unsigned short> indexs;
 
 	for (UINT i = 0; i <= Npoints; i++)
 		indexs.push_back(i);
 
-	AddBind(std::make_unique<VertexBuffer>(gfx, vertexs));
-	AddBind(std::make_unique<IndexBuffer>(gfx, indexs));
-
-	addDefaultBinds(gfx);
+	changeBind(std::make_unique<VertexBuffer>(gfx, vertexs), 0u);
+	changeBind(std::make_unique<IndexBuffer>(gfx, indexs), 1u);
 }
 
 //	Public

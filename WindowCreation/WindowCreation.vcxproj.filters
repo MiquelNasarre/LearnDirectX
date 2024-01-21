@@ -120,6 +120,9 @@
     <ClCompile Include="source\Drawable\Point.cpp">
       <Filter>Sources\Private\Drawable</Filter>
     </ClCompile>
+    <ClCompile Include="source\Bindable\Rasterizer.cpp">
+      <Filter>Sources\Private\Bindable</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\Bindable.h">
@@ -208,6 +211,9 @@
     </ClInclude>
     <ClInclude Include="include\Drawable\Point.h">
       <Filter>Sources\Public\Drawable</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Bindable\Rasterizer.h">
+      <Filter>Sources\Public\Bindable</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
