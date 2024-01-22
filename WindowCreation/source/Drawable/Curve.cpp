@@ -2,17 +2,17 @@
 
 //	Constructors
 
-Curve::Curve(Graphics& gfx, Vector3f F(float), Vector2f rangeT, UINT Npoints, Color color)
+Curve::Curve(Graphics& gfx, Vector3f F(float), Vector2f rangeT, UINT Npoints, Color color, bool transparency)
 {
 	create(gfx, F, rangeT, Npoints, color);
 }
 
-Curve::Curve(Graphics& gfx, Vector3f F(float), Vector2f rangeT, UINT Npoints, std::vector<Color> colors)
+Curve::Curve(Graphics& gfx, Vector3f F(float), Vector2f rangeT, UINT Npoints, std::vector<Color> colors, bool transparency)
 {
 	create(gfx, F, rangeT, Npoints, colors);
 }
 
-void Curve::create(Graphics& gfx, Vector3f F(float), Vector2f rangeT, UINT Npoints, Color color)
+void Curve::create(Graphics& gfx, Vector3f F(float), Vector2f rangeT, UINT Npoints, Color color, bool transparency)
 {
 	if (isInit)
 		throw std::exception("You cannot create a curve over one that is already initialized");
@@ -32,10 +32,10 @@ void Curve::create(Graphics& gfx, Vector3f F(float), Vector2f rangeT, UINT Npoin
 	AddBind(std::make_unique<VertexBuffer>(gfx, vertexs));
 	AddBind(std::make_unique<IndexBuffer>(gfx, indexs));
 
-	addDefaultBinds(gfx);
+	addDefaultBinds(gfx, transparency);
 }
 
-void Curve::create(Graphics& gfx, Vector3f F(float), Vector2f rangeT, UINT Npoints, std::vector<Color> colors)
+void Curve::create(Graphics& gfx, Vector3f F(float), Vector2f rangeT, UINT Npoints, std::vector<Color> colors, bool transparency)
 {
 	if (isInit)
 		throw std::exception("You cannot create a curve over one that is already initialized");
@@ -68,7 +68,7 @@ void Curve::create(Graphics& gfx, Vector3f F(float), Vector2f rangeT, UINT Npoin
 	AddBind(std::make_unique<VertexBuffer>(gfx, vertexs));
 	AddBind(std::make_unique<IndexBuffer>(gfx, indexs));
 
-	addDefaultBinds(gfx);
+	addDefaultBinds(gfx, transparency);
 }
 
 void Curve::updateShape(Graphics& gfx, Vector3f F(float), Vector2f rangeT, UINT Npoints, Color color)
@@ -168,7 +168,7 @@ Vector3f Curve::getPosition()
 
 //	Private
 
-void Curve::addDefaultBinds(Graphics& gfx)
+void Curve::addDefaultBinds(Graphics& gfx, bool transparency)
 {
 	auto pvs = (VertexShader*)AddBind(std::move(std::make_unique<VertexShader>(gfx, SHADERS_DIR + std::wstring(L"CurveVS.cso"))));
 	AddBind(std::make_unique<PixelShader>(gfx, SHADERS_DIR + std::wstring(L"CurvePS.cso")));
@@ -181,6 +181,7 @@ void Curve::addDefaultBinds(Graphics& gfx)
 
 	AddBind(std::make_unique<InputLayout>(gfx, ied, pvs->GetBytecode()));
 	AddBind(std::make_unique<Topology>(D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP));
+	AddBind(std::make_unique<Blender>(gfx, transparency));
 
 	pVSCB = (ConstantBuffer<VSconstBuffer>*)AddBind(std::make_unique<ConstantBuffer<VSconstBuffer>>(gfx, vscBuff, VERTEX_CONSTANT_BUFFER_TYPE));
 }

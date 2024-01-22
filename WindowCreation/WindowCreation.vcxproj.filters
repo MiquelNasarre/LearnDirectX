@@ -123,6 +123,9 @@
     <ClCompile Include="source\Bindable\Rasterizer.cpp">
       <Filter>Sources\Private\Bindable</Filter>
     </ClCompile>
+    <ClCompile Include="source\Bindable\Blender.cpp">
+      <Filter>Sources\Private\Bindable</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\Bindable.h">
@@ -213,6 +216,9 @@
       <Filter>Sources\Public\Drawable</Filter>
     </ClInclude>
     <ClInclude Include="include\Bindable\Rasterizer.h">
+      <Filter>Sources\Public\Bindable</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Bindable\Blender.h">
       <Filter>Sources\Public\Bindable</Filter>
     </ClInclude>
   </ItemGroup>

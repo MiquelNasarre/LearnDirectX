@@ -1,14 +1,14 @@
 #include "Drawable/Triangle.h"
 #include "Bindable/BindableBase.h"
 
-Triangle::Triangle(Graphics& gfx, Vector3f* vertexs, Vector3i* triangles, UINT numT, Color* colors, bool vertexColor, bool doubleSided)
+Triangle::Triangle(Graphics& gfx, Vector3f* vertexs, Vector3i* triangles, UINT numT, Color* colors, bool vertexColor, bool transparency, bool doubleSided)
 {
 
-	create(gfx, vertexs, triangles, numT, colors, vertexColor, doubleSided);
+	create(gfx, vertexs, triangles, numT, colors, vertexColor, transparency, doubleSided);
 
 }
 
-void Triangle::create(Graphics& gfx, Vector3f* vertexs, Vector3i* triangles, UINT numT, Color* colors, bool vertexColor, bool doubleSided)
+void Triangle::create(Graphics& gfx, Vector3f* vertexs, Vector3i* triangles, UINT numT, Color* colors, bool vertexColor, bool transparency, bool doubleSided)
 {
 	if (isInit)
 		throw std::exception("You cannot create a polihedron over one that is already initialized");
@@ -83,6 +83,8 @@ void Triangle::create(Graphics& gfx, Vector3f* vertexs, Vector3i* triangles, UIN
 	AddBind(std::make_unique<Topology>(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST));
 
 	AddBind(std::make_unique<Rasterizer>(gfx, doubleSided));
+
+	AddBind(std::make_unique<Blender>(gfx, transparency));
 
 	pVSCB = (ConstantBuffer<VSconstBuffer>*)AddBind(std::make_unique<ConstantBuffer<VSconstBuffer>>(gfx, VERTEX_CONSTANT_BUFFER_TYPE));
 

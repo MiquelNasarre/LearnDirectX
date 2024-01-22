@@ -5,21 +5,21 @@ class Curve : public Drawable
 {
 public:
 	Curve() {}
-	Curve(Graphics& gfx, Vector3f F(float), Vector2f rangeT, UINT Npoints, Color color = Color::White);
-	Curve(Graphics& gfx, Vector3f F(float), Vector2f rangeT, UINT Npoints, std::vector<Color> colors);
+	Curve(Graphics& gfx, Vector3f F(float), Vector2f rangeT, UINT Npoints, Color color = Color::White, bool transparency = false);
+	Curve(Graphics& gfx, Vector3f F(float), Vector2f rangeT, UINT Npoints, std::vector<Color> colors, bool transparency = false);
 
 	template<typename C>
-	Curve(Graphics& gfx, Vector3f F(float, const C&), const C& param, Vector2f rangeT, UINT Npoints, Color color = Color::White);
+	Curve(Graphics& gfx, Vector3f F(float, const C&), const C& param, Vector2f rangeT, UINT Npoints, Color color = Color::White, bool transparency = false);
 	template<typename C>
-	Curve(Graphics& gfx, Vector3f F(float, const C&), const C& param, Vector2f rangeT, UINT Npoints, std::vector<Color> colors);
+	Curve(Graphics& gfx, Vector3f F(float, const C&), const C& param, Vector2f rangeT, UINT Npoints, std::vector<Color> colors, bool transparency = false);
 
-	void create(Graphics& gfx, Vector3f F(float), Vector2f rangeT, UINT Npoints, Color color = Color::White);
-	void create(Graphics& gfx, Vector3f F(float), Vector2f rangeT, UINT Npoints, std::vector<Color> colors);
+	void create(Graphics& gfx, Vector3f F(float), Vector2f rangeT, UINT Npoints, Color color = Color::White, bool transparency = false);
+	void create(Graphics& gfx, Vector3f F(float), Vector2f rangeT, UINT Npoints, std::vector<Color> colors, bool transparency = false);
 
 	template<typename C>
-	void create(Graphics& gfx, Vector3f F(float, const C&), const C& param, Vector2f rangeT, UINT Npoints, Color color = Color::White);
+	void create(Graphics& gfx, Vector3f F(float, const C&), const C& param, Vector2f rangeT, UINT Npoints, Color color = Color::White, bool transparency = false);
 	template<typename C>
-	void create(Graphics& gfx, Vector3f F(float, const C&), const C& param, Vector2f rangeT, UINT Npoints, std::vector<Color> colors);
+	void create(Graphics& gfx, Vector3f F(float, const C&), const C& param, Vector2f rangeT, UINT Npoints, std::vector<Color> colors, bool transparency = false);
 
 	void updateShape(Graphics& gfx, Vector3f F(float), Vector2f rangeT, UINT Npoints, Color color = Color::White);
 	void updateShape(Graphics& gfx, Vector3f F(float), Vector2f rangeT, UINT Npoints, std::vector<Color> colors);
@@ -38,7 +38,7 @@ public:
 
 private:
 
-	void addDefaultBinds(Graphics& gfx);
+	void addDefaultBinds(Graphics& gfx, bool transparency);
 
 	struct Vertex {
 		_float4vector position;
@@ -54,19 +54,19 @@ private:
 };
 
 template<typename C>
-Curve::Curve(Graphics& gfx, Vector3f F(float, const C&), const C& param, Vector2f rangeT, UINT Npoints, Color color)
+Curve::Curve(Graphics& gfx, Vector3f F(float, const C&), const C& param, Vector2f rangeT, UINT Npoints, Color color, bool transparency)
 {
 	create(gfx, F, param, rangeT, Npoints, color);
 }
 
 template<typename C>
-Curve::Curve(Graphics& gfx, Vector3f F(float, const C&), const C& param, Vector2f rangeT, UINT Npoints, std::vector<Color> colors)
+Curve::Curve(Graphics& gfx, Vector3f F(float, const C&), const C& param, Vector2f rangeT, UINT Npoints, std::vector<Color> colors, bool transparency)
 {
 	create(gfx, F, param, rangeT, Npoints, colors);
 }
 
 template<typename C>
-void Curve::create(Graphics& gfx, Vector3f F(float, const C&), const C& param, Vector2f rangeT, UINT Npoints, Color color)
+void Curve::create(Graphics& gfx, Vector3f F(float, const C&), const C& param, Vector2f rangeT, UINT Npoints, Color color, bool transparency)
 {
 	if (isInit)
 		throw std::exception("You cannot create a curve over one that is already initialized");
@@ -86,11 +86,11 @@ void Curve::create(Graphics& gfx, Vector3f F(float, const C&), const C& param, V
 	AddBind(std::make_unique<VertexBuffer>(gfx, vertexs));
 	AddBind(std::make_unique<IndexBuffer>(gfx, indexs));
 
-	addDefaultBinds(gfx);
+	addDefaultBinds(gfx, transparency);
 }
 
 template<typename C>
-void Curve::create(Graphics& gfx, Vector3f F(float, const C&), const C& param, Vector2f rangeT, UINT Npoints, std::vector<Color> colors)
+void Curve::create(Graphics& gfx, Vector3f F(float, const C&), const C& param, Vector2f rangeT, UINT Npoints, std::vector<Color> colors, bool transparency)
 {
 	if (isInit)
 		throw std::exception("You cannot create a curve over one that is already initialized");
@@ -123,7 +123,7 @@ void Curve::create(Graphics& gfx, Vector3f F(float, const C&), const C& param, V
 	AddBind(std::make_unique<VertexBuffer>(gfx, vertexs));
 	AddBind(std::make_unique<IndexBuffer>(gfx, indexs));
 
-	addDefaultBinds(gfx);
+	addDefaultBinds(gfx, transparency);
 }
 
 template<typename C>

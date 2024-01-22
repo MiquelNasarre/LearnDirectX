@@ -91,6 +91,7 @@ Point::Point(Graphics& gfx, Vector3f position, float radius, Color color)
 	AddBind(std::make_unique<InputLayout>(gfx, ied, pvs->GetBytecode()));
 	AddBind(std::make_unique<Topology>(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST));
 	AddBind(std::make_unique<Rasterizer>(gfx, false));
+	AddBind(std::make_unique<Blender>(gfx, color.A != 255));
 
 	vscBuff = { position.getVector4(), radius, gfx.getScale() };
 	pscBuff = { color.getColor4() };

@@ -25,6 +25,8 @@ Sphere::Sphere(Graphics& gfx, Color color, UINT depth)
 
 	AddBind(std::make_unique<Rasterizer>(gfx, false));
 
+	AddBind(std::make_unique<Blender>(gfx, color.A != 255));
+
 	pVSCB = (ConstantBuffer<VSconstBuffer>*)AddBind(std::make_unique<ConstantBuffer<VSconstBuffer>>(gfx, VERTEX_CONSTANT_BUFFER_TYPE));
 
 	pPSCB = (ConstantBuffer<_float4vector>*)AddBind(std::make_unique<ConstantBuffer<_float4vector>>(gfx, PIXEL_CONSTANT_BUFFER_TYPE));

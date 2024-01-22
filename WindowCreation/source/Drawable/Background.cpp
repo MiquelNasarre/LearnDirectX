@@ -71,6 +71,8 @@ void Background::create(Graphics& gfx, std::string filename, bool MakeDynamic, P
 	AddBind(std::make_unique<InputLayout>(gfx, ied, pvs->GetBytecode()));
 
 	AddBind(std::make_unique<Rasterizer>(gfx, false));
+
+	AddBind(std::make_unique<Blender>(gfx, false));
 }
 
 void Background::create(Graphics& gfx, Texture texture, bool MakeDynamic, PROJECTION_TYPES ProjectionType)
@@ -134,6 +136,8 @@ void Background::create(Graphics& gfx, Texture texture, bool MakeDynamic, PROJEC
 	AddBind(std::make_unique<InputLayout>(gfx, ied, pvs->GetBytecode()));
 
 	AddBind(std::make_unique<Rasterizer>(gfx, false));
+
+	AddBind(std::make_unique<Blender>(gfx, false));
 }
 
 void Background::updateTexture(Graphics& gfx, std::string filename)

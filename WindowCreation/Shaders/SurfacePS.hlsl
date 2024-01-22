@@ -36,5 +36,6 @@ float4 main(float4 color : Color, float3 pos : PointPos, float3 norm : Norm, boo
         totalLight += light * lights[i].color, 1.f;
     }
     
-    return color * totalLight;
+    float4 col = color * totalLight;
+    return float4(col.r, col.g, col.b, color.a);
 }

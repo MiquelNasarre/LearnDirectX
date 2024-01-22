@@ -53,6 +53,21 @@ QuaternionMotion::QuaternionMotion()
 		Vector3i(2, 5, 6),
 	};
 
+	Color colors[12] = {
+		Color(255,255,255, 127),
+		Color(255,255,255, 127),
+		Color(255,255,255, 127),
+		Color(255,255,255, 127),
+		Color(255,255,255, 127),
+		Color(255,255,255, 127),
+		Color(255,255,255, 127),
+		Color(255,255,255, 127),
+		Color(255,255,255, 127),
+		Color(255,255,255, 127),
+		Color(255,255,255, 127),
+		Color(255,255,255, 127),
+	};
+
 	Vector3f vertexs0[8] = {
 		Vector3f(0.f, 0.f, 1.f),
 		Vector3f(cosf(2 * 3.14159f * 0 / 6) ,-sinf(2 * 3.14159f * 0 / 6), 0.f),
@@ -83,14 +98,19 @@ QuaternionMotion::QuaternionMotion()
 	ss0.numU = 200u;
 	ss0.numV = 200u;
 
+	SURFACE_COLORING sc = {};
+
+	sc.color = Color(255, 255, 255, 127);
+	sc.transparency = true;
+
 	SURFACE_SHAPE ss1 = { _PARAMETRIC, KleinBottle, false, Vector2f(0, 0), Vector2f(pi, 2 * pi) };
 	ss1.numU = 200u;
 	ss1.numV = 200u;
 	
-	shape_0.create(window.graphics, ss0);
-	shape_1.create(window.graphics, vertexs, triangles, 12);
-	shape_2.create(window.graphics, vertexs0, triangles0, 12);
-	shape_3.create(window.graphics, ss1);
+	shape_0.create(window.graphics, ss0, &sc);
+	shape_1.create(window.graphics, vertexs, triangles, 12, colors);
+	shape_2.create(window.graphics, vertexs0, triangles0, 12, colors);
+	shape_3.create(window.graphics, ss1, &sc);
 }
 
 int QuaternionMotion::Run()

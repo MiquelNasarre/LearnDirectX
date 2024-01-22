@@ -6,9 +6,9 @@ class Triangle : public Drawable
 public:
 
 	Triangle() {}
-	Triangle(Graphics& gfx, Vector3f* vertexs, Vector3i* triangles, UINT numT, Color* colors = NULL, bool vertexColor = false, bool doubleSided = true);
+	Triangle(Graphics& gfx, Vector3f* vertexs, Vector3i* triangles, UINT numT, Color* colors = NULL, bool vertexColor = false, bool transparency = true, bool doubleSided = true);
 
-	void create(Graphics& gfx, Vector3f* vertexs, Vector3i* triangles, UINT numT, Color* colors = NULL, bool vertexColor = false, bool doubleSided = true);
+	void create(Graphics& gfx, Vector3f* vertexs, Vector3i* triangles, UINT numT, Color* colors = NULL, bool vertexColor = false, bool transparency = true, bool doubleSided = true);
 
 	void updateShape(Graphics& gfx, Vector3f* vertexs, Vector3i* triangles, UINT numT, Color* colors = NULL, bool vertexColor = false);
 	void updateRotation(Graphics& gfx, float rotationX, float rotationY, float rotationZ);

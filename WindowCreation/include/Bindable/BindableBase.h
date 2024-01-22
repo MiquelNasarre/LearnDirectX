@@ -10,3 +10,4 @@
 #include "Bindable/Texture.h"
 #include "Bindable/Sampler.h"
 #include "Bindable/Rasterizer.h"
+#include "Bindable/Blender.h"

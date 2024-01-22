@@ -187,7 +187,7 @@ void Tester::doFrame()
 	test.updateShape(window.graphics, shape);
 	test.Draw(window.graphics);
 	//surf.Draw(window.graphics);
-	//light.Draw(window.graphics);
+	light.Draw(window.graphics);
 	//curve.Draw(window.graphics);
 	//Klein.Draw(window.graphics);
 	//point.Draw(window.graphics);

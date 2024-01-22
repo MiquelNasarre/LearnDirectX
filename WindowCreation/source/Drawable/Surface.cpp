@@ -1625,6 +1625,8 @@ void Surface::addOtherBinds(Graphics& gfx)
 
 	AddBind(std::make_unique<Rasterizer>(gfx, true));
 
+	AddBind(std::make_unique<Blender>(gfx, sc.transparency));
+
 	pVSCB = (ConstantBuffer<VSconstBuffer>*)AddBind(std::make_unique<ConstantBuffer<VSconstBuffer>>(gfx, vscBuff, VERTEX_CONSTANT_BUFFER_TYPE));
 
 	if (sc.Textured)

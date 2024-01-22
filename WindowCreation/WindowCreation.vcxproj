@@ -190,6 +190,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="source\Bindable.cpp" />
+    <ClCompile Include="source\Bindable\Blender.cpp" />
     <ClCompile Include="source\Bindable\ConstantBuffers.cpp" />
     <ClCompile Include="source\Bindable\IndexBuffer.cpp" />
     <ClCompile Include="source\Bindable\InputLayout.cpp" />
@@ -221,6 +222,7 @@
   <ItemGroup>
     <ClInclude Include="include\Bindable.h" />
     <ClInclude Include="include\Bindable\BindableBase.h" />
+    <ClInclude Include="include\Bindable\Blender.h" />
     <ClInclude Include="include\Bindable\ConstantBuffers.h" />
     <ClInclude Include="include\Bindable\IndexBuffer.h" />
     <ClInclude Include="include\Bindable\InputLayout.h" />

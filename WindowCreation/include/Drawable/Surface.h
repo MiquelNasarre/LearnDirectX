@@ -260,6 +260,7 @@ struct SURFACE_COLORING
 
 	bool Lighted = true;
 	bool DefaultInitialLights = true;
+	bool transparency = false;
 
 	struct LIGHTSOURCE {
 		_float4vector intensity = { 0.f,0.f,0.f,0.f };

@@ -33,8 +33,9 @@ float4 main(float4 color : Color, float3 pos : PointPos, float3 norm : Norm, boo
         float light = lights[i].intensity.g / dist / dist;
         if (exposure > 0)
             light += lights[i].intensity.r * exposure / dist / dist;
-        totalLight += light * lights[i].color, 1.f;
+        totalLight += light * lights[i].color;
     }
     
-    return color * totalLight;
+    float4 col = color * totalLight;
+    return float4(col.r, col.g, col.b, color.a);
 }
