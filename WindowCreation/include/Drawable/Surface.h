@@ -353,6 +353,7 @@ public:
 	void updateLight(Graphics& gfx, UINT id, _float4vector intensity, _float4color color, _float4vector position);
 	void clearLights(Graphics& gfx);
 	void updateShape(Graphics& gfx, SURFACE_SHAPE ss);
+	void updateColor(Graphics& gfx, Color color);
 
 	template<typename C>
 	void updateShape(Graphics& gfx, PARAM_SURFACE_SHAPE<C> ss);
@@ -373,14 +374,18 @@ private:
 		SURFACE_COLORING::LIGHTSOURCE lightsource[8];
 	}pscBuff;
 
+	struct PSconstBufferColor {
+		_float4color color;
+	}pscBuffc;
+
 	ConstantBuffer<VSconstBuffer>* pVSCB = NULL;
 	ConstantBuffer<PSconstBuffer>* pPSCB = NULL;
+	ConstantBuffer<PSconstBufferColor>* pPSCBc = NULL;
 	SURFACE_COLORING sc;
 
 	struct Vertex {
 		Vector3f vector;
 		Vector3f norm;
-		Color color;
 	};
 
 	struct TexVertex {
@@ -404,14 +409,13 @@ private:
 			//maxcount = max;
 		}
 
-		void push_back(Vector3f v, Vector3f norm, Color col)
+		void push_back(Vector3f v, Vector3f norm)
 		{
 			//if (counter == maxcount)
 			//	throw std::exception("you reached the limit of vector space");
 
 			data[counter].vector = v;
 			data[counter].norm = norm;
-			data[counter].color = col;
 			++counter;
 		}
 
@@ -530,10 +534,11 @@ void Surface::create(Graphics& gfx, PARAM_SURFACE_SHAPE<C> ss, SURFACE_COLORING*
 					for (UINT j = 0; j < numY + 1; j++) {
 						float x = ((numX - i) * minRect.x + i * maxRect.x) / numX;
 						float y = ((numY - j) * minRect.y + j * maxRect.y) / numY;
-						vertexs.push_back(Vector3f(x, y, F(x, y, ss.param)),
+						vertexs.push_back(
+							Vector3f(x, y, F(x, y, ss.param)),
 							((Vector3f(x + epsilon, y, F(x + epsilon, y, ss.param)) - Vector3f(x - epsilon, y, F(x - epsilon, y, ss.param))) *
-								(Vector3f(x, y + epsilon, F(x, y + epsilon, ss.param)) - Vector3f(x, y - epsilon, F(x, y - epsilon, ss.param)))).normalize(),
-							sc.color);
+							(Vector3f(x, y + epsilon, F(x, y + epsilon, ss.param)) - Vector3f(x, y - epsilon, F(x, y - epsilon, ss.param)))).normalize()
+						);
 					}
 				}
 				AddBind(std::make_unique<VertexBuffer>(gfx, vertexs.data, vertexs.counter));
@@ -546,10 +551,12 @@ void Surface::create(Graphics& gfx, PARAM_SURFACE_SHAPE<C> ss, SURFACE_COLORING*
 					for (UINT j = 0; j < numY + 1; j++) {
 						float x = ((numX - i) * minRect.x + i * maxRect.x) / numX;
 						float y = ((numY - j) * minRect.y + j * maxRect.y) / numY;
-						vertexs.push_back(Vector3f(x, y, F(x, y, ss.param)),
+						vertexs.push_back(
+							Vector3f(x, y, F(x, y, ss.param)),
 							((Vector3f(x + epsilon, y, F(x + epsilon, y, ss.param)) - Vector3f(x - epsilon, y, F(x - epsilon, y, ss.param))) *
-								(Vector3f(x, y + epsilon, F(x, y + epsilon, ss.param)) - Vector3f(x, y - epsilon, F(x, y - epsilon, ss.param)))).normalize(),
-							Vector2f((float)i / numX, (float)j / numY));
+							(Vector3f(x, y + epsilon, F(x, y + epsilon, ss.param)) - Vector3f(x, y - epsilon, F(x, y - epsilon, ss.param)))).normalize(),
+							Vector2f((float)i / numX, (float)j / numY)
+						);
 					}
 				}
 				AddBind(std::make_unique<VertexBuffer>(gfx, vertexs.data, vertexs.counter));
@@ -592,12 +599,11 @@ void Surface::create(Graphics& gfx, PARAM_SURFACE_SHAPE<C> ss, SURFACE_COLORING*
 					for (UINT j = 0; j < numY + 1; j++) {
 						float theta = ((numX - i) * minRect.x + i * maxRect.x) / numX;
 						float phi = ((numY - j) * minRect.y + j * maxRect.y) / numY;
-						vertexs.push_back(makePolar({ theta,phi, r(theta,phi,ss.param) }),
-
+						vertexs.push_back(
+							makePolar({ theta,phi, r(theta,phi,ss.param) }),
 							((makePolar({ theta + epsilon,phi, r(theta + epsilon,phi,ss.param) }) - makePolar({ theta - epsilon,phi, r(theta - epsilon,phi,ss.param) })) *
-								(makePolar({ theta,phi + epsilon, r(theta,phi + epsilon,ss.param) }) - makePolar({ theta,phi - epsilon, r(theta,phi - epsilon,ss.param) })))
-							.normalize(),
-							sc.color);
+							(makePolar({ theta,phi + epsilon, r(theta,phi + epsilon,ss.param) }) - makePolar({ theta,phi - epsilon, r(theta,phi - epsilon,ss.param) }))).normalize()
+						);
 						if (!j || j == numY)
 							vertexs.data[vertexs.counter - 1].norm = Vector3f(0.f, 0.f, 2.f * phi / pi);
 					}
@@ -611,13 +617,12 @@ void Surface::create(Graphics& gfx, PARAM_SURFACE_SHAPE<C> ss, SURFACE_COLORING*
 					for (UINT j = 0; j < numY + 1; j++) {
 						float theta = ((numX - i) * minRect.x + i * maxRect.x) / numX;
 						float phi = ((numY - j) * minRect.y + j * maxRect.y) / numY;
-						vertexs.push_back(makePolar({ theta,phi, r(theta,phi,ss.param) }),
-
+						vertexs.push_back(
+							makePolar({ theta,phi, r(theta,phi,ss.param) }),
 							((makePolar({ theta + epsilon,phi, r(theta + epsilon,phi,ss.param) }) - makePolar({ theta - epsilon,phi, r(theta - epsilon,phi,ss.param) })) *
-								(makePolar({ theta,phi + epsilon, r(theta,phi + epsilon,ss.param) }) - makePolar({ theta,phi - epsilon, r(theta,phi - epsilon,ss.param) })))
-							.normalize(),
-
-							Vector2f((float)i / numX, (float)j / numY));
+							(makePolar({ theta,phi + epsilon, r(theta,phi + epsilon,ss.param) }) - makePolar({ theta,phi - epsilon, r(theta,phi - epsilon,ss.param) }))).normalize(),
+							Vector2f((float)i / numX, (float)j / numY)
+						);
 						if (!j || j == numY)
 							vertexs.data[vertexs.counter - 1].norm = Vector3f(0.f, 0.f, 2.f * phi / pi);
 					}
@@ -740,8 +745,7 @@ void Surface::create(Graphics& gfx, PARAM_SURFACE_SHAPE<C> ss, SURFACE_COLORING*
 				else
 					v.norm =
 					((makePolar({ theta + epsilon, phi, r(theta + epsilon, phi, ss.param) }) - makePolar({ theta - epsilon, phi, r(theta - epsilon, phi, ss.param) })) *
-						(makePolar({ theta, phi + epsilon, r(theta, phi + epsilon, ss.param) }) - makePolar({ theta, phi - epsilon, r(theta, phi - epsilon, ss.param) })))
-					.normalize();
+					(makePolar({ theta, phi + epsilon, r(theta, phi + epsilon, ss.param) }) - makePolar({ theta, phi - epsilon, r(theta, phi - epsilon, ss.param) }))).normalize();
 
 				v.vector *= r(theta, phi, ss.param);
 				texCoord.push_back({ theta / 2.f / pi,(pi / 2.f - phi) / pi });
@@ -923,11 +927,11 @@ void Surface::create(Graphics& gfx, PARAM_SURFACE_SHAPE<C> ss, SURFACE_COLORING*
 					for (UINT j = 0; j < numV + 1; j++) {
 						float u = ((numU - i) * minRect.x + i * maxRect.x) / numU;
 						float v = ((numV - j) * minRect.y + j * maxRect.y) / numV;
-						vertexs.push_back(P(u, v, ss.param),
+						vertexs.push_back(
+							P(u, v, ss.param),
 							-((P(u + epsilon, v, ss.param) - P(u - epsilon, v, ss.param)) *
-								(P(u, v + epsilon, ss.param) - P(u, v - epsilon, ss.param)))
-							.normalize(),
-							sc.color);
+							(P(u, v + epsilon, ss.param) - P(u, v - epsilon, ss.param))).normalize()
+						);
 					}
 				}
 				AddBind(std::make_unique<VertexBuffer>(gfx, vertexs.data, vertexs.counter));
@@ -939,12 +943,12 @@ void Surface::create(Graphics& gfx, PARAM_SURFACE_SHAPE<C> ss, SURFACE_COLORING*
 					for (UINT j = 0; j < numV + 1; j++) {
 						float u = ((numU - i) * minRect.x + i * maxRect.x) / numU;
 						float v = ((numV - j) * minRect.y + j * maxRect.y) / numV;
-						vertexs.push_back(P(u, v, ss.param),
+						vertexs.push_back(
+							P(u, v, ss.param),
 							-((P(u + epsilon, v, ss.param) - P(u - epsilon, v, ss.param)) *
-								(P(u, v + epsilon, ss.param) - P(u, v - epsilon, ss.param)))
-							.normalize(),
-
-							Vector2f((float)i / numU, (float)j / numV));
+							(P(u, v + epsilon, ss.param) - P(u, v - epsilon, ss.param))).normalize(),
+							Vector2f((float)i / numU, (float)j / numV)
+						);
 					}
 				}
 				AddBind(std::make_unique<VertexBuffer>(gfx, vertexs.data, vertexs.counter));
@@ -985,11 +989,11 @@ void Surface::create(Graphics& gfx, PARAM_SURFACE_SHAPE<C> ss, SURFACE_COLORING*
 					for (UINT j = 0; j < numV + 1; j++) {
 						float u = ((numU - i) * minRect.x + i * maxRect.x) / numU;
 						float v = ((numV - j) * minRect.y + j * maxRect.y) / numV;
-						vertexs.push_back(Vector3f(x(u, v, ss.param), y(u, v, ss.param), z(u, v, ss.param)),
+						vertexs.push_back(
+							Vector3f(x(u, v, ss.param), y(u, v, ss.param), z(u, v, ss.param)),
 							-((Vector3f(x(u + epsilon, v, ss.param), y(u + epsilon, v, ss.param), z(u + epsilon, v, ss.param)) - Vector3f(x(u - epsilon, v, ss.param), y(u - epsilon, v, ss.param), z(u - epsilon, v, ss.param))) *
-								(Vector3f(x(u, v + epsilon, ss.param), y(u, v + epsilon, ss.param), z(u, v + epsilon, ss.param)) - Vector3f(x(u, v - epsilon, ss.param), y(u, v - epsilon, ss.param), z(u, v - epsilon, ss.param))))
-							.normalize(),
-							sc.color);
+							(Vector3f(x(u, v + epsilon, ss.param), y(u, v + epsilon, ss.param), z(u, v + epsilon, ss.param)) - Vector3f(x(u, v - epsilon, ss.param), y(u, v - epsilon, ss.param), z(u, v - epsilon, ss.param)))).normalize()
+						);
 					}
 				}
 				AddBind(std::make_unique<VertexBuffer>(gfx, vertexs.data, vertexs.counter));
@@ -1001,12 +1005,12 @@ void Surface::create(Graphics& gfx, PARAM_SURFACE_SHAPE<C> ss, SURFACE_COLORING*
 					for (UINT j = 0; j < numV + 1; j++) {
 						float u = ((numU - i) * minRect.x + i * maxRect.x) / numU;
 						float v = ((numV - j) * minRect.y + j * maxRect.y) / numV;
-						vertexs.push_back(Vector3f(x(u, v, ss.param), y(u, v, ss.param), z(u, v, ss.param)),
+						vertexs.push_back(
+							Vector3f(x(u, v, ss.param), y(u, v, ss.param), z(u, v, ss.param)),
 							-((Vector3f(x(u + epsilon, v, ss.param), y(u + epsilon, v, ss.param), z(u + epsilon, v, ss.param)) - Vector3f(x(u - epsilon, v, ss.param), y(u - epsilon, v, ss.param), z(u - epsilon, v, ss.param))) *
-								(Vector3f(x(u, v + epsilon, ss.param), y(u, v + epsilon, ss.param), z(u, v + epsilon, ss.param)) - Vector3f(x(u, v - epsilon, ss.param), y(u, v - epsilon, ss.param), z(u, v - epsilon, ss.param))))
-							.normalize(),
-
-							Vector2f((float)i / numU, (float)j / numV));
+							(Vector3f(x(u, v + epsilon, ss.param), y(u, v + epsilon, ss.param), z(u, v + epsilon, ss.param)) - Vector3f(x(u, v - epsilon, ss.param), y(u, v - epsilon, ss.param), z(u, v - epsilon, ss.param)))).normalize(),
+							Vector2f((float)i / numU, (float)j / numV)
+						);
 					}
 				}
 				AddBind(std::make_unique<VertexBuffer>(gfx, vertexs.data, vertexs.counter));
@@ -1049,12 +1053,11 @@ void Surface::create(Graphics& gfx, PARAM_SURFACE_SHAPE<C> ss, SURFACE_COLORING*
 					for (UINT j = 0; j < numV + 1; j++) {
 						float u = ((numU - i) * minRect.x + i * maxRect.x) / numU;
 						float v = ((numV - j) * minRect.y + j * maxRect.y) / numV;
-						vertexs.push_back(makePolar(P(u, v, ss.param)),
-
+						vertexs.push_back(
+							makePolar(P(u, v, ss.param)),
 							-((makePolar(P(u + epsilon, v, ss.param)) - makePolar(P(u - epsilon, v, ss.param))) *
-								(makePolar(P(u, v + epsilon, ss.param)) - makePolar(P(u, v - epsilon, ss.param))))
-							.normalize(),
-							sc.color);
+							(makePolar(P(u, v + epsilon, ss.param)) - makePolar(P(u, v - epsilon, ss.param)))).normalize()
+						);
 					}
 				}
 				AddBind(std::make_unique<VertexBuffer>(gfx, vertexs.data, vertexs.counter));
@@ -1066,13 +1069,12 @@ void Surface::create(Graphics& gfx, PARAM_SURFACE_SHAPE<C> ss, SURFACE_COLORING*
 					for (UINT j = 0; j < numV + 1; j++) {
 						float u = ((numU - i) * minRect.x + i * maxRect.x) / numU;
 						float v = ((numV - j) * minRect.y + j * maxRect.y) / numV;
-						vertexs.push_back(makePolar(P(u, v, ss.param)),
-
+						vertexs.push_back(
+							makePolar(P(u, v, ss.param)),
 							-((makePolar(P(u + epsilon, v, ss.param)) - makePolar(P(u - epsilon, v, ss.param))) *
-								(makePolar(P(u, v + epsilon, ss.param)) - makePolar(P(u, v - epsilon, ss.param))))
-							.normalize(),
-
-							Vector2f((float)i / numU, (float)j / numV));
+							(makePolar(P(u, v + epsilon, ss.param)) - makePolar(P(u, v - epsilon, ss.param)))).normalize(),
+							Vector2f((float)i / numU, (float)j / numV)
+						);
 					}
 				}
 				AddBind(std::make_unique<VertexBuffer>(gfx, vertexs.data, vertexs.counter));
@@ -1114,14 +1116,13 @@ void Surface::create(Graphics& gfx, PARAM_SURFACE_SHAPE<C> ss, SURFACE_COLORING*
 					for (UINT j = 0; j < numV + 1; j++) {
 						float u = ((numU - i) * minRect.x + i * maxRect.x) / numU;
 						float v = ((numV - j) * minRect.y + j * maxRect.y) / numV;
-						vertexs.push_back(makePolar({ theta(u,v,ss.param),phi(u,v,ss.param),rad(u,v,ss.param) }),
-
+						vertexs.push_back(
+							makePolar({ theta(u,v,ss.param),phi(u,v,ss.param),rad(u,v,ss.param) }),
 							-((makePolar({ theta(u + epsilon,v,ss.param),phi(u + epsilon,v,ss.param),rad(u + epsilon,v,ss.param) }) -
-								makePolar({ theta(u - epsilon,v,ss.param),phi(u - epsilon,v,ss.param),rad(u - epsilon,v,ss.param) })) *
-								((makePolar({ theta(u,v + epsilon,ss.param),phi(u,v + epsilon,ss.param),rad(u,v + epsilon,ss.param) }) -
-									makePolar({ theta(u,v - epsilon,ss.param),phi(u,v - epsilon,ss.param),rad(u,v - epsilon,ss.param) }))))
-							.normalize(),
-							sc.color);
+							makePolar({ theta(u - epsilon,v,ss.param),phi(u - epsilon,v,ss.param),rad(u - epsilon,v,ss.param) })) *
+							((makePolar({ theta(u,v + epsilon,ss.param),phi(u,v + epsilon,ss.param),rad(u,v + epsilon,ss.param) }) -
+							makePolar({ theta(u,v - epsilon,ss.param),phi(u,v - epsilon,ss.param),rad(u,v - epsilon,ss.param) })))).normalize()
+						);
 					}
 				}
 				AddBind(std::make_unique<VertexBuffer>(gfx, vertexs.data, vertexs.counter));
@@ -1133,15 +1134,14 @@ void Surface::create(Graphics& gfx, PARAM_SURFACE_SHAPE<C> ss, SURFACE_COLORING*
 					for (UINT j = 0; j < numV + 1; j++) {
 						float u = ((numU - i) * minRect.x + i * maxRect.x) / numU;
 						float v = ((numV - j) * minRect.y + j * maxRect.y) / numV;
-						vertexs.push_back(makePolar({ theta(u,v,ss.param),phi(u,v,ss.param),rad(u,v,ss.param) }),
-
+						vertexs.push_back(
+							makePolar({ theta(u,v,ss.param),phi(u,v,ss.param),rad(u,v,ss.param) }),
 							-((makePolar({ theta(u + epsilon,v,ss.param),phi(u + epsilon,v,ss.param),rad(u + epsilon,v,ss.param) }) -
-								makePolar({ theta(u - epsilon,v,ss.param),phi(u - epsilon,v,ss.param),rad(u - epsilon,v,ss.param) })) *
-								((makePolar({ theta(u,v + epsilon,ss.param),phi(u,v + epsilon,ss.param),rad(u,v + epsilon,ss.param) }) -
-									makePolar({ theta(u,v - epsilon,ss.param),phi(u,v - epsilon,ss.param),rad(u,v - epsilon,ss.param) }))))
-							.normalize(),
-
-							Vector2f((float)i / numU, (float)j / numV));
+							makePolar({ theta(u - epsilon,v,ss.param),phi(u - epsilon,v,ss.param),rad(u - epsilon,v,ss.param) })) *
+							((makePolar({ theta(u,v + epsilon,ss.param),phi(u,v + epsilon,ss.param),rad(u,v + epsilon,ss.param) }) -
+							makePolar({ theta(u,v - epsilon,ss.param),phi(u,v - epsilon,ss.param),rad(u,v - epsilon,ss.param) })))).normalize(),
+							Vector2f((float)i / numU, (float)j / numV)
+						);
 					}
 				}
 				AddBind(std::make_unique<VertexBuffer>(gfx, vertexs.data, vertexs.counter));
@@ -1197,10 +1197,11 @@ void Surface::updateShape(Graphics& gfx, PARAM_SURFACE_SHAPE<C> ss)
 					for (UINT j = 0; j < numY + 1; j++) {
 						float x = ((numX - i) * minRect.x + i * maxRect.x) / numX;
 						float y = ((numY - j) * minRect.y + j * maxRect.y) / numY;
-						vertexs.push_back( Vector3f(x, y, F(x,y, ss.param)) ,
+						vertexs.push_back(
+							Vector3f(x, y, F(x,y, ss.param)),
 							((Vector3f(x + epsilon, y, F(x + epsilon,y, ss.param)) - Vector3f(x - epsilon, y, F(x - epsilon,y, ss.param))) *
-							(Vector3f(x, y + epsilon, F(x,y + epsilon, ss.param)) - Vector3f(x, y - epsilon, F(x,y - epsilon, ss.param)))).normalize(),
-							sc.color );
+							(Vector3f(x, y + epsilon, F(x,y + epsilon, ss.param)) - Vector3f(x, y - epsilon, F(x,y - epsilon, ss.param)))).normalize()
+						);
 					}
 				}
 				changeBind(std::make_unique<VertexBuffer>(gfx, vertexs.data, vertexs.counter), 0u);
@@ -1213,10 +1214,12 @@ void Surface::updateShape(Graphics& gfx, PARAM_SURFACE_SHAPE<C> ss)
 					for (UINT j = 0; j < numY + 1; j++) {
 						float x = ((numX - i) * minRect.x + i * maxRect.x) / numX;
 						float y = ((numY - j) * minRect.y + j * maxRect.y) / numY;
-						vertexs.push_back( Vector3f(x, y, F(x,y, ss.param)) ,
+						vertexs.push_back(
+							Vector3f(x, y, F(x,y, ss.param)),
 							((Vector3f(x + epsilon, y, F(x + epsilon,y, ss.param)) - Vector3f(x - epsilon, y, F(x - epsilon,y, ss.param))) *
-							(Vector3f(x, y + epsilon, F(x,y + epsilon, ss.param)) - Vector3f(x, y - epsilon, F(x,y - epsilon, ss.param)))).normalize() ,
-							Vector2f((float)i / numX,(float)j / numY) );
+							(Vector3f(x, y + epsilon, F(x,y + epsilon, ss.param)) - Vector3f(x, y - epsilon, F(x,y - epsilon, ss.param)))).normalize(),
+							Vector2f((float)i / numX,(float)j / numY)
+						);
 					}
 				}
 				changeBind(std::make_unique<VertexBuffer>(gfx, vertexs.data, vertexs.counter), 0u);
@@ -1259,12 +1262,11 @@ void Surface::updateShape(Graphics& gfx, PARAM_SURFACE_SHAPE<C> ss)
 					for (UINT j = 0; j < numY + 1; j++) {
 						float theta = ((numX - i) * minRect.x + i * maxRect.x) / numX;
 						float phi = ((numY - j) * minRect.y + j * maxRect.y) / numY;
-						vertexs.push_back( makePolar({theta,phi, r(theta,phi,ss.param)}) ,
-
+						vertexs.push_back(
+							makePolar({theta,phi, r(theta,phi,ss.param)}),
 							((makePolar({theta + epsilon,phi, r(theta + epsilon,phi,ss.param)}) - makePolar({theta - epsilon,phi, r(theta - epsilon,phi,ss.param)})) *
-							(makePolar({theta,phi + epsilon, r(theta,phi + epsilon,ss.param)}) - makePolar({theta,phi - epsilon, r(theta,phi - epsilon,ss.param)})))
-							.normalize(),
-							sc.color );
+							(makePolar({theta,phi + epsilon, r(theta,phi + epsilon,ss.param)}) - makePolar({theta,phi - epsilon, r(theta,phi - epsilon,ss.param)}))).normalize()
+						);
 						if (!j || j == numY)
 							vertexs.data[vertexs.counter - 1].norm = Vector3f(0.f, 0.f, 2.f * phi / pi);
 					}
@@ -1278,13 +1280,12 @@ void Surface::updateShape(Graphics& gfx, PARAM_SURFACE_SHAPE<C> ss)
 					for (UINT j = 0; j < numY + 1; j++) {
 						float theta = ((numX - i) * minRect.x + i * maxRect.x) / numX;
 						float phi = ((numY - j) * minRect.y + j * maxRect.y) / numY;
-						vertexs.push_back( makePolar({theta,phi, r(theta,phi,ss.param)}) ,
-
+						vertexs.push_back(
+							makePolar({theta,phi, r(theta,phi,ss.param)}),
 							((makePolar({theta + epsilon,phi, r(theta + epsilon,phi,ss.param)}) - makePolar({theta - epsilon,phi, r(theta - epsilon,phi,ss.param)})) *
-							(makePolar({theta,phi + epsilon, r(theta,phi + epsilon,ss.param)}) - makePolar({theta,phi - epsilon, r(theta,phi - epsilon,ss.param)})))
-							.normalize() ,
-
-							Vector2f((float)i / numX,(float)j / numY) );
+							(makePolar({theta,phi + epsilon, r(theta,phi + epsilon,ss.param)}) - makePolar({theta,phi - epsilon, r(theta,phi - epsilon,ss.param)}))).normalize(),
+							Vector2f((float)i / numX,(float)j / numY)
+						);
 						if (!j || j == numY)
 							vertexs.data[vertexs.counter - 1].norm = Vector3f(0.f, 0.f, 2.f * phi / pi);
 					}
@@ -1590,11 +1591,11 @@ void Surface::updateShape(Graphics& gfx, PARAM_SURFACE_SHAPE<C> ss)
 					for (UINT j = 0; j < numV + 1; j++) {
 						float u = ((numU - i) * minRect.x + i * maxRect.x) / numU;
 						float v = ((numV - j) * minRect.y + j * maxRect.y) / numV;
-						vertexs.push_back( P(u,v, ss.param) ,
+						vertexs.push_back(
+							P(u,v, ss.param),
 							-((P(u + epsilon,v, ss.param) - P(u - epsilon,v, ss.param)) *
-							(P(u,v + epsilon, ss.param) - P(u,v - epsilon, ss.param)))
-							.normalize(),
-							sc.color );
+							(P(u,v + epsilon, ss.param) - P(u,v - epsilon, ss.param))).normalize()
+						);
 					}
 				}
 				changeBind(std::make_unique<VertexBuffer>(gfx, vertexs.data, vertexs.counter), 0u);
@@ -1606,12 +1607,12 @@ void Surface::updateShape(Graphics& gfx, PARAM_SURFACE_SHAPE<C> ss)
 					for (UINT j = 0; j < numV + 1; j++) {
 						float u = ((numU - i) * minRect.x + i * maxRect.x) / numU;
 						float v = ((numV - j) * minRect.y + j * maxRect.y) / numV;
-						vertexs.push_back( P(u,v, ss.param) ,
+						vertexs.push_back(
+							P(u,v, ss.param),
 							-((P(u + epsilon,v, ss.param) - P(u - epsilon,v, ss.param)) *
-							(P(u,v + epsilon, ss.param) - P(u,v - epsilon, ss.param)))
-							.normalize(),
-
-							Vector2f((float)i / numU,(float)j / numV) );
+							(P(u,v + epsilon, ss.param) - P(u,v - epsilon, ss.param))).normalize(),
+							Vector2f((float)i / numU,(float)j / numV)
+						);
 					}
 				}
 				changeBind(std::make_unique<VertexBuffer>(gfx, vertexs.data, vertexs.counter), 0u);
@@ -1652,11 +1653,11 @@ void Surface::updateShape(Graphics& gfx, PARAM_SURFACE_SHAPE<C> ss)
 					for (UINT j = 0; j < numV + 1; j++) {
 						float u = ((numU - i) * minRect.x + i * maxRect.x) / numU;
 						float v = ((numV - j) * minRect.y + j * maxRect.y) / numV;
-						vertexs.push_back( Vector3f(x(u,v,ss.param), y(u,v,ss.param), z(u,v,ss.param)) ,
+						vertexs.push_back(
+							Vector3f(x(u,v,ss.param), y(u,v,ss.param), z(u,v,ss.param)),
 							-((Vector3f(x(u + epsilon,v,ss.param), y(u + epsilon,v,ss.param), z(u + epsilon,v,ss.param)) - Vector3f(x(u - epsilon,v,ss.param), y(u - epsilon,v,ss.param), z(u - epsilon,v,ss.param))) *
-							(Vector3f(x(u,v + epsilon,ss.param), y(u,v + epsilon,ss.param), z(u,v + epsilon,ss.param)) - Vector3f(x(u,v - epsilon,ss.param), y(u,v - epsilon,ss.param), z(u,v - epsilon,ss.param))))
-							.normalize(),
-							sc.color );
+							(Vector3f(x(u,v + epsilon,ss.param), y(u,v + epsilon,ss.param), z(u,v + epsilon,ss.param)) - Vector3f(x(u,v - epsilon,ss.param), y(u,v - epsilon,ss.param), z(u,v - epsilon,ss.param)))).normalize()
+						);
 					}
 				}
 				changeBind(std::make_unique<VertexBuffer>(gfx, vertexs.data, vertexs.counter), 0u);
@@ -1668,12 +1669,12 @@ void Surface::updateShape(Graphics& gfx, PARAM_SURFACE_SHAPE<C> ss)
 					for (UINT j = 0; j < numV + 1; j++) {
 						float u = ((numU - i) * minRect.x + i * maxRect.x) / numU;
 						float v = ((numV - j) * minRect.y + j * maxRect.y) / numV;
-						vertexs.push_back( Vector3f(x(u,v,ss.param), y(u,v,ss.param), z(u,v,ss.param)) ,
+						vertexs.push_back(
+							Vector3f(x(u,v,ss.param), y(u,v,ss.param), z(u,v,ss.param)),
 							-((Vector3f(x(u + epsilon,v,ss.param), y(u + epsilon,v,ss.param), z(u + epsilon,v,ss.param)) - Vector3f(x(u - epsilon,v,ss.param), y(u - epsilon,v,ss.param), z(u - epsilon,v,ss.param))) *
-							(Vector3f(x(u,v + epsilon,ss.param), y(u,v + epsilon,ss.param), z(u,v + epsilon,ss.param)) - Vector3f(x(u,v - epsilon,ss.param), y(u,v - epsilon,ss.param), z(u,v - epsilon,ss.param))))
-							.normalize(),
-
-							Vector2f((float)i / numU,(float)j / numV) );
+							(Vector3f(x(u,v + epsilon,ss.param), y(u,v + epsilon,ss.param), z(u,v + epsilon,ss.param)) - Vector3f(x(u,v - epsilon,ss.param), y(u,v - epsilon,ss.param), z(u,v - epsilon,ss.param)))).normalize(),
+							Vector2f((float)i / numU,(float)j / numV)
+						);
 					}
 				}
 				changeBind(std::make_unique<VertexBuffer>(gfx, vertexs.data, vertexs.counter), 0u);
@@ -1716,12 +1717,11 @@ void Surface::updateShape(Graphics& gfx, PARAM_SURFACE_SHAPE<C> ss)
 					for (UINT j = 0; j < numV + 1; j++) {
 						float u = ((numU - i) * minRect.x + i * maxRect.x) / numU;
 						float v = ((numV - j) * minRect.y + j * maxRect.y) / numV;
-						vertexs.push_back( makePolar(P(u,v,ss.param)) ,
-
+						vertexs.push_back(
+							makePolar(P(u,v,ss.param)),
 							-((makePolar(P(u + epsilon,v,ss.param)) - makePolar(P(u - epsilon,v,ss.param))) *
-							(makePolar(P(u,v + epsilon,ss.param)) - makePolar(P(u,v - epsilon,ss.param))))
-							.normalize(),
-							sc.color );
+							(makePolar(P(u,v + epsilon,ss.param)) - makePolar(P(u,v - epsilon,ss.param)))).normalize()
+						);
 					}
 				}
 				changeBind(std::make_unique<VertexBuffer>(gfx, vertexs.data, vertexs.counter), 0u);
@@ -1733,13 +1733,12 @@ void Surface::updateShape(Graphics& gfx, PARAM_SURFACE_SHAPE<C> ss)
 					for (UINT j = 0; j < numV + 1; j++) {
 						float u = ((numU - i) * minRect.x + i * maxRect.x) / numU;
 						float v = ((numV - j) * minRect.y + j * maxRect.y) / numV;
-						vertexs.push_back( makePolar(P(u,v,ss.param)) ,
-
+						vertexs.push_back(
+							makePolar(P(u,v,ss.param)),
 							-((makePolar(P(u + epsilon,v,ss.param)) - makePolar(P(u - epsilon,v,ss.param))) *
-							(makePolar(P(u,v + epsilon,ss.param)) - makePolar(P(u,v - epsilon,ss.param))))
-							.normalize(),
-
-							Vector2f((float)i / numU,(float)j / numV) );
+							(makePolar(P(u,v + epsilon,ss.param)) - makePolar(P(u,v - epsilon,ss.param)))).normalize(),
+							Vector2f((float)i / numU,(float)j / numV)
+						);
 					}
 				}
 				changeBind(std::make_unique<VertexBuffer>(gfx, vertexs.data, vertexs.counter), 0u);
@@ -1781,14 +1780,13 @@ void Surface::updateShape(Graphics& gfx, PARAM_SURFACE_SHAPE<C> ss)
 					for (UINT j = 0; j < numV + 1; j++) {
 						float u = ((numU - i) * minRect.x + i * maxRect.x) / numU;
 						float v = ((numV - j) * minRect.y + j * maxRect.y) / numV;
-						vertexs.push_back( makePolar({theta(u,v,ss.param),phi(u,v,ss.param),rad(u,v,ss.param)}) ,
-
+						vertexs.push_back(
+							makePolar({theta(u,v,ss.param),phi(u,v,ss.param),rad(u,v,ss.param)}),
 							-((makePolar({theta(u + epsilon,v,ss.param),phi(u + epsilon,v,ss.param),rad(u + epsilon,v,ss.param)}) -
 							makePolar({theta(u - epsilon,v,ss.param),phi(u - epsilon,v,ss.param),rad(u - epsilon,v,ss.param)})) *
 							((makePolar({theta(u,v + epsilon,ss.param),phi(u,v + epsilon,ss.param),rad(u,v + epsilon,ss.param)}) -
-							makePolar({theta(u,v - epsilon,ss.param),phi(u,v - epsilon,ss.param),rad(u,v - epsilon,ss.param)}))))
-							.normalize(),
-							sc.color );
+							makePolar({theta(u,v - epsilon,ss.param),phi(u,v - epsilon,ss.param),rad(u,v - epsilon,ss.param)})))).normalize()
+						);
 					}
 				}
 				changeBind(std::make_unique<VertexBuffer>(gfx, vertexs.data, vertexs.counter), 0u);
@@ -1800,15 +1798,14 @@ void Surface::updateShape(Graphics& gfx, PARAM_SURFACE_SHAPE<C> ss)
 					for (UINT j = 0; j < numV + 1; j++) {
 						float u = ((numU - i) * minRect.x + i * maxRect.x) / numU;
 						float v = ((numV - j) * minRect.y + j * maxRect.y) / numV;
-						vertexs.push_back( makePolar({theta(u,v,ss.param),phi(u,v,ss.param),rad(u,v,ss.param)}) ,
-
+						vertexs.push_back(
+							makePolar({theta(u,v,ss.param),phi(u,v,ss.param),rad(u,v,ss.param)}),
 							-((makePolar({theta(u + epsilon,v,ss.param),phi(u + epsilon,v,ss.param),rad(u + epsilon,v,ss.param)}) -
 							makePolar({theta(u - epsilon,v,ss.param),phi(u - epsilon,v,ss.param),rad(u - epsilon,v,ss.param)})) *
 							((makePolar({theta(u,v + epsilon,ss.param),phi(u,v + epsilon,ss.param),rad(u,v + epsilon,ss.param)}) -
-							makePolar({theta(u,v - epsilon,ss.param),phi(u,v - epsilon,ss.param),rad(u,v - epsilon,ss.param)}))))
-							.normalize() ,
-
-							Vector2f((float)i / numU,(float)j / numV) );
+							makePolar({theta(u,v - epsilon,ss.param),phi(u,v - epsilon,ss.param),rad(u,v - epsilon,ss.param)})))).normalize(),
+							Vector2f((float)i / numU,(float)j / numV)
+						);
 					}
 				}
 				changeBind(std::make_unique<VertexBuffer>(gfx, vertexs.data, vertexs.counter), 0u);

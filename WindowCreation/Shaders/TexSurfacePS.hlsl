@@ -19,6 +19,11 @@ cbuffer cBuff : register(b0)
     Lightsource lights[8];
 };
 
+cbuffer cBuffc : register(b1)
+{
+    float4 color;
+};
+
 float4 main(float2 tc : TexCoord, float3 pos : PointPos, float3 norm : Norm, bool front : SV_IsFrontFace) : SV_Target
 {
     if (!front)
@@ -51,5 +56,5 @@ float4 main(float2 tc : TexCoord, float3 pos : PointPos, float3 norm : Norm, boo
     else if (maxexposure < -0.1)
         return tex1.Sample(splr, tc) * totalLight;
     else
-        return totalLight * (tex1.Sample(splr, tc) * (0.1 - maxexposure) + tex0.Sample(splr, tc) * (0.1 + maxexposure)) * 5;
+        return totalLight * color * (tex1.Sample(splr, tc) * (0.1 - maxexposure) + tex0.Sample(splr, tc) * (0.1 + maxexposure)) * 5;
 }

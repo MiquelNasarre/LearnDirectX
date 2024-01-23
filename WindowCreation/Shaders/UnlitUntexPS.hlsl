@@ -1,5 +1,10 @@
 
-float4 main(float4 color : Color) : SV_Target
+cbuffer cBuffc : register(b1)
+{
+    float4 color;
+};
+
+float4 main() : SV_Target
 { 
     return color;
 }
