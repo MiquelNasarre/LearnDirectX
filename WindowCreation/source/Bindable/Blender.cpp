@@ -12,7 +12,7 @@ Blender::Blender(Graphics& gfx, bool blending, float* factors)
 	if (blending)
 	{
 		brt.BlendEnable = true;
-		brt.SrcBlend = D3D11_BLEND_SRC_ALPHA;
+		brt.SrcBlend = D3D11_BLEND_ONE;
 		brt.DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
 		brt.BlendOp = D3D11_BLEND_OP_ADD;
 		brt.SrcBlendAlpha = D3D11_BLEND_ZERO;
