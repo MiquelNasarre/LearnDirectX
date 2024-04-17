@@ -27,6 +27,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ImageEditor", "Apps\ImageEd
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "QuaternionMotion", "Apps\QuaternionMotion\QuaternionMotion.vcxproj", "{D57EEB9F-E0A6-48C6-9AB5-106882CE89B5}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Fourier", "Apps\Fourier\Fourier.vcxproj", "{47DECA59-F694-476B-93AF-85226C3EC69C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -123,6 +125,14 @@ Global
 		{D57EEB9F-E0A6-48C6-9AB5-106882CE89B5}.Release|x64.Build.0 = Release|x64
 		{D57EEB9F-E0A6-48C6-9AB5-106882CE89B5}.Release|x86.ActiveCfg = Release|Win32
 		{D57EEB9F-E0A6-48C6-9AB5-106882CE89B5}.Release|x86.Build.0 = Release|Win32
+		{47DECA59-F694-476B-93AF-85226C3EC69C}.Debug|x64.ActiveCfg = Debug|x64
+		{47DECA59-F694-476B-93AF-85226C3EC69C}.Debug|x64.Build.0 = Debug|x64
+		{47DECA59-F694-476B-93AF-85226C3EC69C}.Debug|x86.ActiveCfg = Debug|Win32
+		{47DECA59-F694-476B-93AF-85226C3EC69C}.Debug|x86.Build.0 = Debug|Win32
+		{47DECA59-F694-476B-93AF-85226C3EC69C}.Release|x64.ActiveCfg = Release|x64
+		{47DECA59-F694-476B-93AF-85226C3EC69C}.Release|x64.Build.0 = Release|x64
+		{47DECA59-F694-476B-93AF-85226C3EC69C}.Release|x86.ActiveCfg = Release|Win32
+		{47DECA59-F694-476B-93AF-85226C3EC69C}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -134,6 +144,7 @@ Global
 		{D6051E20-7E25-4D39-95FD-EC0B55A737D8} = {126DADA5-B017-4BA2-B741-9AE3681A611B}
 		{8B33200C-B4BF-4345-944A-13B17F38FD2A} = {126DADA5-B017-4BA2-B741-9AE3681A611B}
 		{D57EEB9F-E0A6-48C6-9AB5-106882CE89B5} = {126DADA5-B017-4BA2-B741-9AE3681A611B}
+		{47DECA59-F694-476B-93AF-85226C3EC69C} = {126DADA5-B017-4BA2-B741-9AE3681A611B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {44BADBEB-CFE3-4EFA-9579-9EEF9D834EBD}

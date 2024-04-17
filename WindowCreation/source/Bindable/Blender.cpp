@@ -11,7 +11,7 @@ Blender::Blender(Graphics& gfx, bool blending, float* factors)
 	auto& brt = blendDesc.RenderTarget[0];
 	if (blending)
 	{
-		brt.BlendEnable = true;
+		brt.BlendEnable = false;
 		brt.SrcBlend = D3D11_BLEND_ONE;
 		brt.DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
 		brt.BlendOp = D3D11_BLEND_OP_ADD;
