@@ -2,6 +2,8 @@
 
 #include "Window.h"
 #include "Drawable/Surface.h"
+#include "Drawable/Curve.h"
+#include "Drawable/Point.h"
 
 struct IG_DATA {
 	static float THETA;
@@ -11,7 +13,12 @@ struct IG_DATA {
 	static int L;
 	static int M;
 
+	static float theta;
+	static float phi;
+
 	static bool UPDATE;
+	static bool CURVES;
+	static bool UPDATE_CURVES;
 };
 
 class Fourier {
@@ -49,6 +56,11 @@ private:
 	Surface positive;
 	Surface negative;
 
+	Curve Yphi;
+	Curve Ytheta;
+
+	Point Ypos;
+
 public:
 	Fourier();
 
@@ -64,3 +76,5 @@ public:
 float exampleRadius(float, float);
 
 Vector3f Ylm(float phi, float theta);
+Vector3f Ylmphi(float theta);
+Vector3f Ylmtheta(float phi);

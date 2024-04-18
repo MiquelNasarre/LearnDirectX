@@ -15,14 +15,21 @@ class Functions
 		Triangle(Vector3f* V): V1 { V[0] }, V2{ V[1] }, V3{ V[2] } {}
 	};
 
+	struct Harmonic
+	{
+		float** Values;
+		Vector2i size;
+	};
+
 public:
 	static float Yfunc(int l, int m, float phi, float theta);
 	static float Psifunc(int l, int m, Vector3f Center);
 	static float Legendre(int l, int m, float x);
 
 	static int Factorial(int n);
-	static int DFactorial(int n);
-	static int DivFactorial(int n, int m);
+	static float DFactorial(int n);
+	static float DivFactorial(int n, int m);
+	static float efficientPow(float b, int e);
 
 	static Vector3f getCenter(Triangle T);
 	static float getArea(Triangle T);

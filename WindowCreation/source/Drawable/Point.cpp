@@ -93,7 +93,7 @@ Point::Point(Graphics& gfx, Vector3f position, float radius, Color color)
 	AddBind(std::make_unique<Rasterizer>(gfx, false));
 	AddBind(std::make_unique<Blender>(gfx, color.A != 255));
 
-	vscBuff = { position.getVector4(), radius, gfx.getScale() };
+	vscBuff = { position.getVector4(), 1.f, radius, gfx.getScale() };
 	pscBuff = { color.getColor4() };
 
 	pVSCB = (ConstantBuffer<VSconstBuffer>*)AddBind(std::make_unique<ConstantBuffer<VSconstBuffer>>(gfx, vscBuff, VERTEX_CONSTANT_BUFFER_TYPE));
@@ -116,6 +116,17 @@ void Point::updateColor(Graphics& gfx, Color col)
 {
 	pscBuff.color = col.getColor4();
 	pPSCB->Update(gfx, &pscBuff);
+}
+
+void Point::updateRotation(Graphics& gfx, Vector3f axis, float angle, bool multiplicative)
+{
+	if (!multiplicative)
+		vscBuff.rotation = rotationQuaternion(axis, angle);
+	else
+		vscBuff.rotation *= rotationQuaternion(axis, angle);
+
+	vscBuff.rotation.normalize();
+	pVSCB->Update(gfx, vscBuff);
 }
 
 void Point::Draw(Graphics& gfx)

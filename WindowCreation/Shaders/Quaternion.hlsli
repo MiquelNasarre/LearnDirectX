@@ -23,3 +23,8 @@ float4 Q2V(float4 q)
 {
     return float4(q.g, q.b, q.a, 1.f);
 }
+
+float4 V2Q(float4 v)
+{
+    return float4(0.f, v.r, v.g, v.b);
+}

@@ -9,12 +9,14 @@ public:
 	void updatePosition(Graphics& gfx, Vector3f position);
 	void updateRadius(Graphics& gfx, float radius);
 	void updateColor(Graphics& gfx, Color col);
+	void updateRotation(Graphics& gfx, Vector3f axis, float angle, bool multiplicative = false);
 
 	void Draw(Graphics& gfx) override;
 private:
 
 	struct VSconstBuffer {
 		_float4vector position;
+		Quaternion rotation;
 		float radius;
 		float scale;
 		Vector2f unused;

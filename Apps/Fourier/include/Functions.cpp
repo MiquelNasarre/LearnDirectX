@@ -25,7 +25,12 @@ float Functions::Legendre(int l, int m, float x)
 {
 	float sq = sqrtf(1 - x * x);
 	int lc = m;
-	float Plm = powf(-sq,m) * DFactorial(2*m-1);
+
+
+	float Plm = DFactorial(2 * m - 1);
+	
+	for (unsigned short i = 0; i < m; i++)
+		Plm *= -sq;
 
 	if (l == m)
 		return Plm;
@@ -53,10 +58,39 @@ int Functions::Factorial(int n)
 	return f;
 }
 
-int Functions::DFactorial(int n)
+float Functions::DFactorial(int n)
 {
+	switch (n)
+	{
+	case 1:
+		return 1.f;
+	case 3:
+		return 3.f;
+	case 5:
+		return 15.f;
+	case 7:
+		return 105.f;
+	case 9:
+		return 945.f;
+	case 11:
+		return 10395.f;
+	case 13:
+		return 135135.f;
+	case 15:
+		return 2027025.f;
+	case 17:
+		return 34459425.f;
+	case 19:
+		return 654729075.f;
+	case 21:
+		return 13749310575.f;
+
+	default:
+		break;
+	}
+
 	if (n < 1) return 1;
-	int f = n;
+	float f = float(n);
 	while (--n > 1) {
 		--n;
 		f *= n;
@@ -64,15 +98,23 @@ int Functions::DFactorial(int n)
 	return f;
 }
 
-int Functions::DivFactorial(int n, int m)
+float Functions::DivFactorial(int n, int m)
 {
 	if (!n || n <= m) return 1;
-	int f = n;
+	float f = float(n);
+
 	while (--n > m)
-	{
 		f *= n;
-	}
+
 	return f;
+}
+
+float Functions::efficientPow(float b, int e)
+{
+	float r = 1;
+	for (unsigned short i = 0; i < e; i++)
+		r *= b;
+	return r;
 }
 
 Vector3f Functions::getCenter(Triangle T)
