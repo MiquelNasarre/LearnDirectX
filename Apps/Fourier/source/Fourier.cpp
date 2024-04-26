@@ -2,7 +2,6 @@
 #include "Keyboard.h"
 #include "Mouse.h"
 #include "IG_Fourier.h"
-#include "Functions.h"
 
 float IG_DATA::THETA = 0.f;
 float IG_DATA::PHI   = 0.f;
@@ -24,11 +23,9 @@ Fourier::Fourier()
 {
 	window.setFramerateLimit(60);
 
-	testing.create(window.graphics, FourierSurface::FileManager::calculateCoefficients("Cube",25u), 676u);
-
-	testing.clearLights(window.graphics);
-	testing.updateLight(window.graphics, 0, { 600,320 }, Color::White, Vector3f(30, 10, 20));
-
+	harmonics.create(window.graphics, FourierSurface::FileManager::calculateCoefficients("Cube",25u), 676u);
+	harmonics.updateLight(window.graphics, 0, { 600,320 }, Color::White, Vector3f(30, 10, 20));
+	
 }
 
 int Fourier::Run()
@@ -67,7 +64,7 @@ void Fourier::drag_dynamic_space()
 
 void Fourier::magneticReturn()
 {
-	Quaternion rot = testing.getRotation();
+	Quaternion rot = harmonics.getRotation();
 	if (rot.r < 0)rot = -rot;
 	constexpr float pull = 0.03f;
 
@@ -87,7 +84,7 @@ void Fourier::magneticReturn()
 
 	if (fabs(angle) < 0.01f && fabs(dangle) < 0.005f)
 	{
-		testing.updateRotation(window.graphics, Vector3f(), 0.f);
+		harmonics.updateRotation(window.graphics, Vector3f(), 0.f);
 		returning = false;
 		dangle = 0.f;
 	}
@@ -97,7 +94,7 @@ void Fourier::strictReturn()
 {
 	dangle = 0;
 
-	Quaternion rot = testing.getRotation();
+	Quaternion rot = harmonics.getRotation();
 	if (rot.r < 0)rot = -rot;
 
 	float angle = 2 * acosf(rot.r);
@@ -108,7 +105,7 @@ void Fourier::strictReturn()
 
 	if (fabs(angle) < 0.01f)
 	{
-		testing.updateRotation(window.graphics, Vector3f(), 0.f);
+		harmonics.updateRotation(window.graphics, Vector3f(), 0.f);
 
 		strict = false;
 		dangle = 0.f;
@@ -161,7 +158,7 @@ void Fourier::eventManager()
 		C.L = (unsigned int)IG_DATA::L;
 		C.M = IG_DATA::M;
 
-		testing.updateShape(window.graphics, &C, 1u);
+		harmonics.updateShape(window.graphics, &C, 1u);
 
 		if (IG_DATA::CURVES)
 		{
@@ -187,18 +184,18 @@ void Fourier::doFrame()
 
 	window.graphics.updatePerspective(observer, center, scale);
 
-	testing.updateRotation(window.graphics, axis, dangle, true);
+	harmonics.updateRotation(window.graphics, axis, dangle, true);
 	Yphi.updateRotation(window.graphics, axis, dangle, true);
 	Ytheta.updateRotation(window.graphics, axis, dangle, true);
 	Ypos.updateRotation(window.graphics, axis, dangle, true);
 
-	window.setTitle(testing.getRotation().str() + "  -  " + std::to_string(int(std::round(window.getFramerate()))) + "fps");
+	window.setTitle(harmonics.getRotation().str() + "  -  " + std::to_string(int(std::round(window.getFramerate()))) + "fps");
 
 	//	Rendering
 
 	window.graphics.clearBuffer(Color::Black);
 
-	testing.Draw(window.graphics);
+	harmonics.Draw(window.graphics);
 
 	if (IG_DATA::CURVES)
 	{
@@ -229,7 +226,7 @@ Vector3f YlmD(float phi, float theta)
 	float sint = sinf(theta);
 	float cosp = cosf(phi);
 	float sinp = sinf(phi);
-	float Y = Functions::Yfunc(IG_DATA::L, IG_DATA::M, phi, theta);
+	float Y = FourierSurface::Functions::Ylm(IG_DATA::L, IG_DATA::M, phi, theta);
 
 	return Vector3f(Y * sint * cosp, Y * sint * sinp, Y * cost);
 }
@@ -240,7 +237,7 @@ Vector3f Ylm(float phi, float theta)
 	float sint = sinf(theta);
 	float cosp = cosf(phi);
 	float sinp = sinf(phi);
-	float Y = Functions::Yfunc(IG_DATA::L, IG_DATA::M, phi, theta);
+	float Y = FourierSurface::Functions::Ylm(IG_DATA::L, IG_DATA::M, phi, theta);
 	return Vector3f(Y * sint * cosp, Y * sint * sinp, Y * cost);
 }
 

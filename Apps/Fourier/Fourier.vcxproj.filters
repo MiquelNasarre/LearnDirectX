@@ -27,9 +27,6 @@
     <ClInclude Include="include\IG_Fourier.h">
       <Filter>Sources\Public</Filter>
     </ClInclude>
-    <ClInclude Include="include\Functions.h">
-      <Filter>Sources\Public</Filter>
-    </ClInclude>
     <ClInclude Include="include\FourierSurface.h">
       <Filter>Sources\Public</Filter>
     </ClInclude>
@@ -42,9 +39,6 @@
       <Filter>Sources\Private</Filter>
     </ClCompile>
     <ClCompile Include="source\IG_Fourier.cpp">
-      <Filter>Sources\Private</Filter>
-    </ClCompile>
-    <ClCompile Include="include\Functions.cpp">
       <Filter>Sources\Private</Filter>
     </ClCompile>
     <ClCompile Include="source\FourierSurface.cpp">

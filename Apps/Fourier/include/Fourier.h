@@ -58,7 +58,7 @@ private:
 
 	Point Ypos;
 
-	FourierSurface testing;
+	FourierSurface harmonics;
 	FourierSurface::Coefficient C = { (unsigned int)IG_DATA::L, IG_DATA::M, 1 };
 
 public:

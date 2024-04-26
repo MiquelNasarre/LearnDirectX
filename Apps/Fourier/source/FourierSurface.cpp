@@ -1,6 +1,5 @@
 #include "FourierSurface.h"
 #include "Bindable/BindableBase.h"
-#include "Functions.h"
 
 Vector3f*					FourierSurface::vertexsIcosphere = NULL;
 unsigned int				FourierSurface::depthIcosphere = 6u;
@@ -10,10 +9,226 @@ FourierSurface::infoVect*	FourierSurface::infoIcosphere = NULL;
 unsigned int	FourierSurface::ntriangles = 0;
 unsigned int	FourierSurface::nvertexs = 0;
 
-unsigned int	FourierSurface::maxL = MAX_L;
-float**			FourierSurface::Constants = NULL;
+unsigned int	FourierSurface::Functions::maxL = MAX_L;
+float**			FourierSurface::Functions::Constants = NULL;
 
-float FourierSurface::Ylm(Vector3f v, unsigned int l, int m)
+
+// File Manager Functions
+
+void** FourierSurface::FileManager::extractFigureFromFile(const char* filename)
+{
+	FILE* file = fopen((FIGURES_DIR + std::string(filename) + ".txt").c_str(), "r");
+	if (!file)
+		throw std::exception(("Unable to find or open file: " + std::string(filename)).c_str());
+
+	fscanf(file, "Vertexs:\n");
+	char s[100];
+	int nV = 0;
+	while (fgets(s, 100, file)[0] != 'T')nV++;
+
+	rewind(file);
+	fscanf(file, "Vertexs:\n");
+
+	Vector3f* vertexs = (Vector3f*)calloc(nV, sizeof(Vector3f));
+	for (int i = 0; i < nV; i++)
+		fscanf(file, "(%f,%f,%f)\n", &vertexs[i].x, &vertexs[i].y, &vertexs[i].z);
+
+	fscanf(file, "Triangles:\n");
+
+	int nT = 0;
+	while (fscanf(file, "%s\n", s) != EOF)nT++;
+
+	rewind(file);
+	fscanf(file, "Vertexs:\n");
+	while (fgets(s, 100, file)[0] != 'T');
+
+	Vector3i* triangles = (Vector3i*)calloc(nT, sizeof(Vector3i));
+
+	for (int i = 0; i < nT; i++)
+		fscanf(file, "%i,%i,%i", &triangles[i].x, &triangles[i].y, &triangles[i].z);
+
+	fclose(file);
+
+	void** figure = (void**)calloc(3, sizeof(void*));
+	int* nt = (int*)calloc(2, sizeof(int));
+	nt[0] = nT;
+	nt[1] = nV;
+	figure[0] = vertexs;
+	figure[1] = triangles;
+	figure[2] = nt;
+
+	return figure;
+}
+
+FourierSurface::Coefficient* FourierSurface::FileManager::calculateCoefficients(const char* filename, unsigned int maxL)
+{
+	void** figure = extractFigureFromFile(filename);
+
+	Vector3f* vertexs = (Vector3f*)figure[0];
+	Vector3i* triangles = (Vector3i*)figure[1];
+	int numT = ((int*)figure[2])[0];
+	int numV = ((int*)figure[2])[1];
+	free(figure[2]);
+	free(figure);
+
+	// Now we have the figure
+	// Lets calculate the coefficients
+
+	Vector3f* centerTriangles = (Vector3f*)calloc(numT, sizeof(Vector3f));
+	float* areaTriangles = (float*)calloc(numT, sizeof(float));
+	float* distanceTriangles = (float*)calloc(numT, sizeof(float));
+
+	for (int i = 0; i < numT; i++)
+	{
+		Vector3f V1 = vertexs[triangles[i].x];
+		Vector3f V2 = vertexs[triangles[i].y];
+		Vector3f V3 = vertexs[triangles[i].z];
+
+		Vector3f V12 = (V1 * V2 * V1).normalize();
+		Vector3f V13 = (V1 * V3 * V1).normalize();
+
+		float angle1 = acosf(V13 ^ V12);
+
+		Vector3f V21 = (V2 * V1 * V2).normalize();
+		Vector3f V23 = (V2 * V3 * V2).normalize();
+
+		float angle2 = acosf(V23 ^ V21);
+
+		Vector3f V32 = (V3 * V2 * V3).normalize();
+		Vector3f V31 = (V3 * V1 * V3).normalize();
+
+		float angle3 = acosf(V31 ^ V32);
+
+		centerTriangles[i] = (V1 + V2 + V3) / 3.f;
+		areaTriangles[i] = angle1 + angle2 + angle3 - pi;
+		distanceTriangles[i] = centerTriangles[i].abs();
+		centerTriangles[i].normalize();
+	}
+
+	Coefficient* Coef = (Coefficient*)calloc((maxL + 1) * (maxL + 1), sizeof(Coefficient));
+	for (unsigned int l = 0; l <= maxL; l++)
+	{
+		for (int m = -int(l); m <= int(l); m++)
+		{
+			Coef[l * l + m + l].L = l;
+			Coef[l * l + m + l].M = m;
+			Coef[l * l + m + l].C = 0.f;
+
+			for (int i = 0; i < numT; i++)
+			{
+				Coef[l * l + m + l].C += areaTriangles[i] * distanceTriangles[i] * Functions::Ylm(centerTriangles[i], l, m);
+			}
+			Coef[l * l + m + l].C *= 0.25f / pi;
+		}
+	}
+
+	free(vertexs);
+	free(triangles);
+	return Coef;
+
+}
+
+void FourierSurface::FileManager::saveCoefficients(Coefficient* coef, unsigned int ncoef, const char* filename)
+{
+	FILE* file = fopen((COEFFICIENTS_DIR + std::string(filename) + ".dat").c_str(), "w");
+	
+	fprintf(file, "Number of coefficients: %u", ncoef);
+	
+	for (unsigned int i = 0; i < ncoef; i++)
+		fprintf(file, "\nL: %i M: %i C: %.10f", coef[i].L, coef[i].M, coef[i].C);
+
+	fclose(file);
+}
+
+void createShape(const char* filename)
+{
+	int n = 21;
+	Vector3f* vertexs = (Vector3f*)calloc(n * n * 6, sizeof(Vector3f));
+
+	for (int m = 0; m < 6; m++)
+	{
+		for (int i = 0; i < n; i++)
+		{
+			for (int j = 0; j < n; j++)
+			{
+				float x = -1.f + 2.f * i / (n - 1.f);
+				float y = -1.f + 2.f * j / (n - 1.f);
+				switch (m)
+				{
+				case 0:
+					vertexs[n * n * m + n * i + j] = Vector3f(1.f, x, y);
+					break;
+				case 1:
+					vertexs[n * n * m + n * i + j] = Vector3f(-1.f, x, y);
+					break;
+				case 2:
+					vertexs[n * n * m + n * i + j] = Vector3f(x, 1.f, y);
+					break;
+				case 3:
+					vertexs[n * n * m + n * i + j] = Vector3f(x, -1.f, y);
+					break;
+				case 4:
+					vertexs[n * n * m + n * i + j] = Vector3f(x, y, 1.f);
+					break;
+				case 5:
+					vertexs[n * n * m + n * i + j] = Vector3f(x, y, -1.f);
+					break;
+				default:
+					break;
+				}
+			}
+		}
+	}
+
+	Vector3i* triangles = (Vector3i*)calloc((n - 1) * (n - 1) * 12, sizeof(Vector3i));
+
+	for (int m = 0; m < 6; m++)
+	{
+		for (int i = 0; i < n - 1; i++)
+		{
+			for (int j = 0; j < n - 1; j++)
+			{
+				triangles[2 * m * (n - 1) * (n - 1) + 2 * i * (n - 1) + 2 * j] = Vector3i(n * n * m + n * i + j, n * n * m + n * (i + 1) + j, n * n * m + n * i + (j + 1));
+				triangles[2 * m * (n - 1) * (n - 1) + 2 * i * (n - 1) + 2 * j + 1] = Vector3i(n * n * m + n * (i + 1) + (j + 1), n * n * m + n * (i + 1) + j, n * n * m + n * i + (j + 1));
+			}
+		}
+	}
+
+	FILE* file = fopen((FIGURES_DIR + std::string(filename) + ".dat").c_str(), "w");
+	if (!file)
+		throw std::exception("Couldn't create the file");
+
+	fprintf(file, "Vertexs:\n");
+
+	for (int i = 0; i < n * n * 6; i++)
+		fprintf(file, "(%f,%f,%f)\n", vertexs[i].x, vertexs[i].y, vertexs[i].z);
+
+	fprintf(file, "Triangles:");
+	for (int i = 0; i < (n - 1) * (n - 1) * 12; i++)
+		fprintf(file, "\n%i,%i,%i", triangles[i].x, triangles[i].y, triangles[i].z);
+
+	fclose(file);
+}
+
+// Math Functions
+
+float			FourierSurface::Functions::Ylm(int l, int m, float phi, float theta)
+{
+	float NonTheta;
+
+	if (m > 0)
+		NonTheta = sqrtf(2 * (2 * l + 1) / float(DivFactorial(l + m, l - m))) * cosf(m * phi);
+	else if (m == 0)
+		NonTheta = sqrtf(float(2 * l + 1));
+	else {
+		m = -m;
+		NonTheta = sqrtf(2 * (2 * l + 1) / float(DivFactorial(l + m, l - m))) * sinf(m * phi);
+	}
+
+	return NonTheta * Legendre(l, m, cosf(theta));
+}
+
+float			FourierSurface::Functions::Ylm(Vector3f v, unsigned int l, int m)
 {
 	v.normalize();
 	float costheta = v.z;
@@ -29,7 +244,7 @@ float FourierSurface::Ylm(Vector3f v, unsigned int l, int m)
 		return Klm(l, m) * Functions::Uchev(-m - 1, cosphi) * sinphi * Functions::Legendre(l, -m, costheta);
 }
 
-float FourierSurface::Ylm(unsigned int i, unsigned int l, int m)
+float			FourierSurface::Functions::Ylm(unsigned int i, unsigned int l, int m)
 {
 
 	if (m > 0)
@@ -41,7 +256,7 @@ float FourierSurface::Ylm(unsigned int i, unsigned int l, int m)
 
 }
 
-_float4vector FourierSurface::YlmDif(unsigned int i, unsigned int l, int m)
+_float4vector	FourierSurface::Functions::YlmDif(unsigned int i, unsigned int l, int m)
 {
 	_float4vector ylm;
 
@@ -107,7 +322,7 @@ _float4vector FourierSurface::YlmDif(unsigned int i, unsigned int l, int m)
 	return ylm;
 }
 
-Vector3f FourierSurface::Ylmdif(unsigned int i, unsigned int l, int m)
+Vector3f		FourierSurface::Functions::Ylmdif(unsigned int i, unsigned int l, int m)
 {
 	Vector3f ylm;
 
@@ -145,15 +360,217 @@ Vector3f FourierSurface::Ylmdif(unsigned int i, unsigned int l, int m)
 		float K = Klm(l, -m);
 
 		ylm.x = K * leg.x * sinmp;
-
 		ylm.y = -infoIcosphere[i].sintheta * K * leg.y * sinmp;
 		ylm.z = -K * leg.x * m * cosmp;
+
+
 
 		return ylm;
 	}
 }
 
-float FourierSurface::Klm(unsigned int l, int m)
+float			FourierSurface::Functions::Legendre(int l, int m, float x)
+{
+	float sq = sqrtf(1 - x * x);
+	int lc = m;
+
+
+	float Plm = DFactorial(2 * m - 1);
+
+	for (unsigned short i = 0; i < m; i++)
+		Plm *= -sq;
+
+	if (l == m)
+		return Plm;
+
+	float Pl1m = x * (2 * lc + 1) * Plm;
+	lc++;
+	float aux;
+
+	while (lc < l) {
+		aux = ((2 * lc + 1) * x * Pl1m - (lc + m) * Plm) / (lc - m + 1);
+		lc++;
+		Plm = Pl1m;
+		Pl1m = aux;
+	}
+
+	return Pl1m;
+}
+
+Vector2f		FourierSurface::Functions::LegendreDif(int l, int m, float x)
+{
+	Vector2f Plm;
+
+	if (x == 1.f || x == -1)
+	{
+		if (m == 0)
+		{
+			if (x == -1.f && l % 2)
+				Plm.x = -1.f;
+			else
+				Plm.x = 1.f;
+		}
+		else
+			Plm.x = 0.f;
+		Plm.y = l * (l + 1) * 0.5f;
+		return Plm;
+	}
+
+	if (l == 0)
+	{
+		Plm.x = 1.f;
+		Plm.y = 0.f;
+		return Plm;
+	}
+
+	float x12 = 1 - x * x;
+	float sq = sqrtf(x12);
+	int lc = m;
+
+
+	Plm.x = DFactorial(2 * m - 1);
+
+	for (unsigned short i = 0; i < m; i++)
+		Plm.x *= -sq;
+
+	if (l == m)
+	{
+		Plm.y = -x * l / x12 * Plm.x;
+		return Plm;
+	}
+
+
+	float aux = x * (2 * lc + 1) * Plm.x;
+	float Pl1m = Plm.x;
+	Plm.x = aux;
+	lc++;
+
+	while (lc < l) {
+		aux = ((2 * lc + 1) * x * Plm.x - (lc + m) * Pl1m) / (lc - m + 1);
+		lc++;
+		Pl1m = Plm.x;
+		Plm.x = aux;
+	}
+
+	Plm.y = ((l + m) * Pl1m - l * x * Plm.x) / x12;
+
+	return Plm;
+}
+
+float			FourierSurface::Functions::Tchev(int n, float x)
+{
+	if (!n)
+		return 1.f;
+	if (n == 1)
+		return x;
+
+	float Ti1 = 1.f;
+	float Ti = x;
+
+	int m = 1;
+	float temp;
+	while (m++ < n)
+	{
+		temp = 2 * x * Ti - Ti1;
+		Ti1 = Ti;
+		Ti = temp;
+	}
+	return Ti;
+}
+
+float			FourierSurface::Functions::Uchev(int n, float x)
+{
+	if (!n)
+		return 1.f;
+	if (n == 1)
+		return 2 * x;
+
+	float Ui1 = 1.f;
+	float Ui = 2 * x;
+
+	int m = 1;
+	float temp;
+	while (m++ < n)
+	{
+		temp = 2 * x * Ui - Ui1;
+		Ui1 = Ui;
+		Ui = temp;
+	}
+	return Ui;
+}
+
+int				FourierSurface::Functions::Factorial(int n)
+{
+	if (!n) return 1;
+	int f = n;
+	while (--n)
+		f *= n;
+	return f;
+}
+
+float			FourierSurface::Functions::DFactorial(int n)
+{
+	switch (n)
+	{
+	case 1:
+		return 1.f;
+	case 3:
+		return 3.f;
+	case 5:
+		return 15.f;
+	case 7:
+		return 105.f;
+	case 9:
+		return 945.f;
+	case 11:
+		return 10395.f;
+	case 13:
+		return 135135.f;
+	case 15:
+		return 2027025.f;
+	case 17:
+		return 34459425.f;
+	case 19:
+		return 654729075.f;
+	case 21:
+		return 13749310575.f;
+
+	default:
+		break;
+	}
+
+	if (n < 1) return 1;
+	float f = float(n);
+	while (--n > 1) {
+		--n;
+		f *= n;
+	}
+	return f;
+}
+	
+float			FourierSurface::Functions::DivFactorial(int n, int m)
+{
+	if (!n || n <= m) return 1;
+	float f = float(n);
+
+	while (--n > m)
+		f *= n;
+
+	return f;
+}
+	
+float			FourierSurface::Functions::sqDivFactorial(int n, int m)
+{
+	if (!n || n <= m) return 1;
+	float f = sqrtf(float(n));
+
+	while (--n > m)
+		f *= sqrtf(float(n));
+
+	return f;
+}
+
+float			FourierSurface::Functions::Klm(unsigned int l, int m)
 {
 	if (!Constants)
 		generateConstants();
@@ -161,7 +578,7 @@ float FourierSurface::Klm(unsigned int l, int m)
 	return m>=0 ? Constants[l][m] : Constants[l][-m];
 }
 
-void FourierSurface::generateConstants()
+void			FourierSurface::Functions::generateConstants()
 {
 	Constants = (float**)calloc(maxL + 1, sizeof(void*));
 	for (unsigned int l = 0; l <= maxL; l++)
@@ -174,7 +591,103 @@ void FourierSurface::generateConstants()
 	}
 }
 
-void FourierSurface::generateIcosphere()
+// Surface creation & stuff
+
+FourierSurface::FourierSurface(Graphics& gfx, Coefficient* coef, unsigned int ncoef)
+{
+	create(gfx, coef, ncoef);
+}
+
+void		FourierSurface::create(Graphics& gfx, Coefficient* coef, unsigned int ncoef)
+{
+
+	if (isInit)
+		throw std::exception("You cannot create a surface over one that is already initialized");
+	else
+		isInit = true;
+
+	Coef = coef;
+	Ncoef = ncoef;
+
+	if (!vertexsIcosphere)
+		generateIcosphere();
+
+	struct Vertex {
+		Vector3f vector;
+		Vector3f norm;
+		Color color;
+	};
+
+	Vertex* V = (Vertex*)calloc(nvertexs, sizeof(Vertex));
+	for (unsigned int i = 0; i < nvertexs; i++)
+	{
+		if (ncoef == 1)
+		{
+			_float4vector ylm = Functions::YlmDif(i, coef[0].L, coef[0].M);
+			if (ylm.w > 0)
+			{
+				V[i].vector = ylm.w * vertexsIcosphere[i];
+				V[i].color = Color::Blue;
+				V[i].norm = Vector3f(ylm.x, ylm.y, ylm.z).normalize();
+			}
+			else
+			{
+				V[i].vector = -ylm.w * vertexsIcosphere[i];
+				V[i].color = Color::Yellow;
+				V[i].norm = Vector3f(ylm.x, ylm.y, ylm.z).normalize();
+			}
+		}
+		else
+		{
+			Vector3f ylm(0.f, 0.f, 0.f);
+			for (unsigned int j = 0; j < ncoef; j++)
+				ylm += coef[j].C * Functions::Ylmdif(i, coef[j].L, coef[j].M);
+
+			V[i].vector = ylm.x * vertexsIcosphere[i];
+
+			if (i == 12)
+				V[i].norm = Vector3f(0.f, 0.f, 1.f);
+			else if (i == 17)
+				V[i].norm = Vector3f(0.f, 0.f, -1.f);
+			else
+				V[i].norm = (ylm.x * Vector3f(
+					-infoIcosphere[i].sintheta * infoIcosphere[i].costheta * infoIcosphere[i].cosphi * ylm.y + infoIcosphere[i].sinphi * ylm.z + infoIcosphere[i].sintheta * infoIcosphere[i].sintheta * infoIcosphere[i].cosphi * ylm.x,
+					-infoIcosphere[i].sintheta * infoIcosphere[i].costheta * infoIcosphere[i].sinphi * ylm.y - infoIcosphere[i].cosphi * ylm.z + infoIcosphere[i].sintheta * infoIcosphere[i].sintheta * infoIcosphere[i].sinphi * ylm.x,
+					infoIcosphere[i].sintheta * (infoIcosphere[i].sintheta * ylm.y + infoIcosphere[i].costheta * ylm.x)
+				)).normalize();
+
+			V[i].color = Color(rand() % 256, rand() % 256, rand() % 256);
+		}
+	}
+
+	AddBind(std::make_unique<VertexBuffer>(gfx, V, nvertexs));
+	free(V);
+
+	AddBind(std::make_unique<IndexBuffer>(gfx, trianglesIcosphere, 3 * ntriangles));
+
+	auto pvs = (VertexShader*)AddBind(std::move(std::make_unique<VertexShader>(gfx, SHADERS_DIR + std::wstring(L"VertexShader.cso"))));
+
+	AddBind(std::make_unique<PixelShader>(gfx, SHADERS_DIR + std::wstring(L"PixelShader.cso")));
+
+	std::vector<D3D11_INPUT_ELEMENT_DESC> ied =
+	{
+		{ "Position",0,DXGI_FORMAT_R32G32B32_FLOAT,0,0,D3D11_INPUT_PER_VERTEX_DATA,0 },
+		{ "Normal",0,DXGI_FORMAT_R32G32B32_FLOAT,0,D3D11_APPEND_ALIGNED_ELEMENT,D3D11_INPUT_PER_VERTEX_DATA,0 },
+		{ "Color",0,DXGI_FORMAT_B8G8R8A8_UNORM,0,D3D11_APPEND_ALIGNED_ELEMENT,D3D11_INPUT_PER_VERTEX_DATA,0 },
+	};
+
+	AddBind(std::make_unique<InputLayout>(gfx, ied, pvs->GetBytecode()));
+
+	AddBind(std::make_unique<Topology>(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST));
+
+	AddBind(std::make_unique<Rasterizer>(gfx, true));
+
+	pVSCB = (ConstantBuffer<VSconstBuffer>*)AddBind(std::make_unique<ConstantBuffer<VSconstBuffer>>(gfx, VERTEX_CONSTANT_BUFFER_TYPE));
+
+	pPSCB = (ConstantBuffer<PSconstBuffer>*)AddBind(std::make_unique<ConstantBuffer<PSconstBuffer>>(gfx, pscBuff, PIXEL_CONSTANT_BUFFER_TYPE));
+}
+
+void		FourierSurface::generateIcosphere()
 {
 	unsigned int depth = depthIcosphere;
 
@@ -385,103 +898,16 @@ void FourierSurface::generateIcosphere()
 		infoIcosphere[i].cosphi = vertexsIcosphere[i].x / infoIcosphere[i].sintheta;
 		infoIcosphere[i].sinphi = vertexsIcosphere[i].y / infoIcosphere[i].sintheta;
 	}
+	infoIcosphere[12].sinphi = 0.f;
+	infoIcosphere[12].cosphi = 1.f;
+	infoIcosphere[17].sinphi = 0.f;
+	infoIcosphere[17].cosphi = 1.f;
 
 	free(aristas);
 	free(triangles);
 }
 
-FourierSurface::FourierSurface(Graphics& gfx, Coefficient* coef, unsigned int ncoef)
-{
-	create(gfx, coef, ncoef);
-}
-
-void FourierSurface::create(Graphics& gfx, Coefficient* coef, unsigned int ncoef)
-{
-
-	if (isInit)
-		throw std::exception("You cannot create a surface over one that is already initialized");
-	else
-		isInit = true;
-
-	Coef = coef;
-	Ncoef = ncoef;
-
-	if (!vertexsIcosphere)
-		generateIcosphere();
-
-	struct Vertex {
-		Vector3f vector;
-		Vector3f norm;
-		Color color;
-	};
-
-	Vertex* V = (Vertex*)calloc(nvertexs, sizeof(Vertex));
-	for (unsigned int i = 0; i < nvertexs; i++)
-	{
-		if (ncoef == 1)
-		{
-			_float4vector ylm = YlmDif(i, coef[0].L, coef[0].M);
-			if (ylm.w > 0)
-			{
-				V[i].vector = ylm.w * vertexsIcosphere[i];
-				V[i].color = Color::Blue;
-				V[i].norm = Vector3f(ylm.x, ylm.y, ylm.z).normalize();
-			}
-			else
-			{
-				V[i].vector = -ylm.w * vertexsIcosphere[i];
-				V[i].color = Color::Yellow;
-				V[i].norm = Vector3f(ylm.x, ylm.y, ylm.z).normalize();
-			}
-		}
-		else
-		{
-			Vector3f ylm(0.f, 0.f, 0.f);
-			for (unsigned int j = 0; j < ncoef; j++)
-				ylm += coef[j].C * Ylmdif(i, coef[j].L, coef[j].M);
-
-			V[i].vector = ylm.x * vertexsIcosphere[i];
-
-			V[i].norm = (ylm.x * Vector3f(
-				-infoIcosphere[i].sintheta * infoIcosphere[i].costheta * infoIcosphere[i].cosphi * ylm.y + infoIcosphere[i].sinphi * ylm.z + infoIcosphere[i].sintheta * infoIcosphere[i].sintheta * infoIcosphere[i].cosphi * ylm.x,
-				-infoIcosphere[i].sintheta * infoIcosphere[i].costheta * infoIcosphere[i].sinphi * ylm.y - infoIcosphere[i].cosphi * ylm.z + infoIcosphere[i].sintheta * infoIcosphere[i].sintheta * infoIcosphere[i].sinphi * ylm.x,
-				infoIcosphere[i].sintheta * (infoIcosphere[i].sintheta * ylm.y + infoIcosphere[i].costheta * ylm.x)
-			)).normalize();
-
-
-
-			V[i].color = Color(rand() % 256, rand() % 256, rand() % 256);
-		}
-	}
-
-	AddBind(std::make_unique<VertexBuffer>(gfx, V, nvertexs));
-	free(V);
-
-	AddBind(std::make_unique<IndexBuffer>(gfx, trianglesIcosphere, 3 * ntriangles));
-
-	auto pvs = (VertexShader*)AddBind(std::move(std::make_unique<VertexShader>(gfx, SHADERS_DIR + std::wstring(L"VertexShader.cso"))));
-
-	AddBind(std::make_unique<PixelShader>(gfx, SHADERS_DIR + std::wstring(L"PixelShader.cso")));
-
-	std::vector<D3D11_INPUT_ELEMENT_DESC> ied =
-	{
-		{ "Position",0,DXGI_FORMAT_R32G32B32_FLOAT,0,0,D3D11_INPUT_PER_VERTEX_DATA,0 },
-		{ "Normal",0,DXGI_FORMAT_R32G32B32_FLOAT,0,D3D11_APPEND_ALIGNED_ELEMENT,D3D11_INPUT_PER_VERTEX_DATA,0 },
-		{ "Color",0,DXGI_FORMAT_B8G8R8A8_UNORM,0,D3D11_APPEND_ALIGNED_ELEMENT,D3D11_INPUT_PER_VERTEX_DATA,0 },
-	};
-
-	AddBind(std::make_unique<InputLayout>(gfx, ied, pvs->GetBytecode()));
-
-	AddBind(std::make_unique<Topology>(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST));
-
-	AddBind(std::make_unique<Rasterizer>(gfx, true));
-
-	pVSCB = (ConstantBuffer<VSconstBuffer>*)AddBind(std::make_unique<ConstantBuffer<VSconstBuffer>>(gfx, VERTEX_CONSTANT_BUFFER_TYPE));
-
-	pPSCB = (ConstantBuffer<PSconstBuffer>*)AddBind(std::make_unique<ConstantBuffer<PSconstBuffer>>(gfx, pscBuff, PIXEL_CONSTANT_BUFFER_TYPE));
-}
-
-void FourierSurface::updateShape(Graphics& gfx, Coefficient* coef, unsigned int ncoef)
+void		FourierSurface::updateShape(Graphics& gfx, Coefficient* coef, unsigned int ncoef)
 {
 	if (!isInit)
 		throw std::exception("You cannot update shape to an uninitialized surface");
@@ -503,7 +929,7 @@ void FourierSurface::updateShape(Graphics& gfx, Coefficient* coef, unsigned int 
 	{
 		if (ncoef == 1)
 		{
-			_float4vector ylm = YlmDif(i, coef[0].L, coef[0].M);
+			_float4vector ylm = Functions::YlmDif(i, coef[0].L, coef[0].M);
 			if (ylm.w > 0)
 			{
 				V[i].vector = ylm.w * vertexsIcosphere[i];
@@ -521,17 +947,20 @@ void FourierSurface::updateShape(Graphics& gfx, Coefficient* coef, unsigned int 
 		{
 			Vector3f ylm(0.f, 0.f, 0.f);
 			for (unsigned int j = 0; j < ncoef; j++)
-				ylm += coef[j].C * Ylmdif(i, coef[j].L, coef[j].M);
+				ylm += coef[j].C * Functions::Ylmdif(i, coef[j].L, coef[j].M);
 
 			V[i].vector = ylm.x * vertexsIcosphere[i];
 
-			V[i].norm = (ylm.x * Vector3f(
-				-infoIcosphere[i].sintheta * infoIcosphere[i].costheta * infoIcosphere[i].cosphi * ylm.y + infoIcosphere[i].sinphi * ylm.z + infoIcosphere[i].sintheta * infoIcosphere[i].sintheta * infoIcosphere[i].cosphi * ylm.x,
-				-infoIcosphere[i].sintheta * infoIcosphere[i].costheta * infoIcosphere[i].sinphi * ylm.y - infoIcosphere[i].cosphi * ylm.z + infoIcosphere[i].sintheta * infoIcosphere[i].sintheta * infoIcosphere[i].sinphi * ylm.x,
-				infoIcosphere[i].sintheta * (infoIcosphere[i].sintheta * ylm.y + infoIcosphere[i].costheta * ylm.x)
-			)).normalize();
-
-
+			if (i == 12)
+				V[i].norm = Vector3f(0.f, 0.f, 1.f);
+			else if (i == 17)
+				V[i].norm = Vector3f(0.f, 0.f, -1.f);
+			else
+				V[i].norm = (ylm.x * Vector3f(
+					-infoIcosphere[i].sintheta * infoIcosphere[i].costheta * infoIcosphere[i].cosphi * ylm.y + infoIcosphere[i].sinphi * ylm.z + infoIcosphere[i].sintheta * infoIcosphere[i].sintheta * infoIcosphere[i].cosphi * ylm.x,
+					-infoIcosphere[i].sintheta * infoIcosphere[i].costheta * infoIcosphere[i].sinphi * ylm.y - infoIcosphere[i].cosphi * ylm.z + infoIcosphere[i].sintheta * infoIcosphere[i].sintheta * infoIcosphere[i].sinphi * ylm.x,
+					infoIcosphere[i].sintheta * (infoIcosphere[i].sintheta * ylm.y + infoIcosphere[i].costheta * ylm.x)
+				)).normalize();
 
 			V[i].color = Color(rand() % 256, rand() % 256, rand() % 256);
 		}
@@ -542,25 +971,30 @@ void FourierSurface::updateShape(Graphics& gfx, Coefficient* coef, unsigned int 
 	free(V);
 }
 
-void FourierSurface::updateLight(Graphics& gfx, UINT id, Vector2f intensity, Color color, Vector3f position)
+void		FourierSurface::saveCoefficients(const char* filename)
+{
+	FileManager::saveCoefficients(Coef, Ncoef, filename);
+}
+
+void		FourierSurface::updateLight(Graphics& gfx, UINT id, Vector2f intensity, Color color, Vector3f position)
 {
 	pscBuff.lightsource[id] = { intensity.getVector4() , color.getColor4() , position.getVector4() };
 	pPSCB->Update(gfx, pscBuff);
 }
 
-void FourierSurface::updateLight(Graphics& gfx, UINT id, _float4vector intensity, _float4color color, _float4vector position)
+void		FourierSurface::updateLight(Graphics& gfx, UINT id, _float4vector intensity, _float4color color, _float4vector position)
 {
 	pscBuff.lightsource[id] = { intensity , color , position };
 	pPSCB->Update(gfx, pscBuff);
 }
 
-void FourierSurface::clearLights(Graphics& gfx)
+void		FourierSurface::clearLights(Graphics& gfx)
 {
 	pscBuff = {};
 	pPSCB->Update(gfx, pscBuff);
 }
 
-void FourierSurface::updateRotation(Graphics& gfx, Vector3f axis, float angle, bool multiplicative)
+void		FourierSurface::updateRotation(Graphics& gfx, Vector3f axis, float angle, bool multiplicative)
 {
 	if (!multiplicative)
 		vscBuff.rotation = rotationQuaternion(axis, angle);
@@ -571,192 +1005,7 @@ void FourierSurface::updateRotation(Graphics& gfx, Vector3f axis, float angle, b
 	pVSCB->Update(gfx, vscBuff);
 }
 
-Quaternion FourierSurface::getRotation()
+Quaternion	FourierSurface::getRotation()
 {
 	return vscBuff.rotation;
-}
-
-// File manager functions
-
-void** FourierSurface::FileManager::extractFigureFromFile(const char* filename)
-{
-	FILE* file = fopen((FIGURES_DIR + std::string(filename) + ".txt").c_str(), "r");
-	if (!file)
-		throw std::exception(("Unable to find or open file: " + std::string(filename)).c_str());
-
-	fscanf(file, "Vertexs:\n");
-	char s[100];
-	int nV = 0;
-	while (fgets(s, 100, file)[0] != 'T')nV++;
-
-	rewind(file);
-	fscanf(file, "Vertexs:\n");
-
-	Vector3f* vertexs = (Vector3f*)calloc(nV, sizeof(Vector3f));
-	for (int i = 0; i < nV; i++)
-		fscanf(file, "(%f,%f,%f)\n", &vertexs[i].x, &vertexs[i].y, &vertexs[i].z);
-
-	fscanf(file, "Triangles:\n");
-
-	int nT = 0;
-	while (fscanf(file, "%s\n", s) != EOF)nT++;
-
-	rewind(file);
-	fscanf(file, "Vertexs:\n");
-	while (fgets(s, 100, file)[0] != 'T');
-
-	Vector3i* triangles = (Vector3i*)calloc(nT, sizeof(Vector3i));
-
-	for (int i = 0; i < nT; i++)
-		fscanf(file, "%i,%i,%i", &triangles[i].x, &triangles[i].y, &triangles[i].z);
-
-	fclose(file);
-
-	void** figure = (void**)calloc(3, sizeof(void*));
-	int* nt = (int*)calloc(2, sizeof(int));
-	nt[0] = nT;
-	nt[1] = nV;
-	figure[0] = vertexs;
-	figure[1] = triangles;
-	figure[2] = nt;
-
-	return figure;
-}
-
-FourierSurface::Coefficient* FourierSurface::FileManager::calculateCoefficients(const char* filename, unsigned int maxL)
-{
-	void** figure = extractFigureFromFile(filename);
-
-	Vector3f* vertexs = (Vector3f*)figure[0];
-	Vector3i* triangles = (Vector3i*)figure[1];
-	int numT = ((int*)figure[2])[0];
-	int numV = ((int*)figure[2])[1];
-	free(figure[2]);
-	free(figure);
-
-	// Now we have the figure
-	// Lets calculate the coefficients
-
-	Vector3f* centerTriangles = (Vector3f*)calloc(numT, sizeof(Vector3f));
-	float* areaTriangles = (float*)calloc(numT, sizeof(float));
-	float* distanceTriangles = (float*)calloc(numT, sizeof(float));
-
-	for (int i = 0; i < numT; i++)
-	{
-		Vector3f V1 = vertexs[triangles[i].x];
-		Vector3f V2 = vertexs[triangles[i].y];
-		Vector3f V3 = vertexs[triangles[i].z];
-
-		Vector3f V12 = (V1 * V2 * V1).normalize();
-		Vector3f V13 = (V1 * V3 * V1).normalize();
-
-		float angle1 = acosf(V13 ^ V12);
-
-		Vector3f V21 = (V2 * V1 * V2).normalize();
-		Vector3f V23 = (V2 * V3 * V2).normalize();
-
-		float angle2 = acosf(V23 ^ V21);
-
-		Vector3f V32 = (V3 * V2 * V3).normalize();
-		Vector3f V31 = (V3 * V1 * V3).normalize();
-
-		float angle3 = acosf(V31 ^ V32);
-
-		centerTriangles[i] = (V1 + V2 + V3) / 3.f;
-		areaTriangles[i] = angle1 + angle2 + angle3 - pi;
-		distanceTriangles[i] = centerTriangles[i].abs();
-		centerTriangles[i].normalize();
-	}
-
-	Coefficient* Coef = (Coefficient*)calloc((maxL + 1) * (maxL + 1), sizeof(Coefficient));
-	for (unsigned int l = 0; l <= maxL; l++)
-	{
-		for (int m = -int(l); m <= int(l); m++)
-		{
-			Coef[l * l + m + l].L = l;
-			Coef[l * l + m + l].M = m;
-			Coef[l * l + m + l].C = 0.f;
-
-			for (int i = 0; i < numT; i++)
-			{
-				Coef[l * l + m + l].C += areaTriangles[i] * distanceTriangles[i] * Ylm(centerTriangles[i], l, m);
-			}
-			Coef[l * l + m + l].C *= 0.25f / pi;
-		}
-	}
-
-	free(vertexs);
-	free(triangles);
-	return Coef;
-
-}
-
-void FourierSurface::saveCoefficients(const char* filename)
-{
-	int n = 21;
-	Vector3f* vertexs = (Vector3f*)calloc(n * n * 6, sizeof(Vector3f));
-
-	for (int m = 0; m < 6; m++)
-	{
-		for (int i = 0; i < n; i++)
-		{
-			for (int j = 0; j < n; j++)
-			{
-				float x = -1.f + 2.f * i / (n - 1.f);
-				float y = -1.f + 2.f * j / (n - 1.f);
-				switch (m)
-				{
-				case 0:
-					vertexs[n * n * m + n * i + j] = Vector3f(1.f, x, y);
-					break;
-				case 1:
-					vertexs[n * n * m + n * i + j] = Vector3f(-1.f, x, y);
-					break;
-				case 2:
-					vertexs[n * n * m + n * i + j] = Vector3f(x, 1.f, y);
-					break;
-				case 3:
-					vertexs[n * n * m + n * i + j] = Vector3f(x, -1.f, y);
-					break;
-				case 4:
-					vertexs[n * n * m + n * i + j] = Vector3f(x, y, 1.f);
-					break;
-				case 5:
-					vertexs[n * n * m + n * i + j] = Vector3f(x, y, -1.f);
-					break;
-				default:
-					break;
-				}
-			}
-		}
-	}
-
-	Vector3i* triangles = (Vector3i*)calloc((n - 1) * (n - 1) * 12, sizeof(Vector3i));
-
-	for (int m = 0; m < 6; m++)
-	{
-		for (int i = 0; i < n-1; i++)
-		{
-			for (int j = 0; j < n-1; j++)
-			{
-				triangles[2 * m * (n - 1) * (n - 1) + 2 * i * (n - 1) + 2 * j] = Vector3i(n * n * m + n * i + j, n * n * m + n * (i + 1) + j, n * n * m + n * i + (j + 1));
-				triangles[2 * m * (n - 1) * (n - 1) + 2 * i * (n - 1) + 2 * j + 1] = Vector3i(n * n * m + n * (i + 1) + (j + 1), n * n * m + n * (i + 1) + j, n * n * m + n * i + (j + 1));
-			}
-		}
-	}
-
-	FILE* file = fopen(FIGURES_DIR "Cube.txt", "w");
-	if (!file)
-		throw std::exception("Couldn't create the file");
-
-	fprintf(file, "Vertexs:\n");
-
-	for (int i = 0; i < n * n * 6; i++)
-		fprintf(file, "(%f,%f,%f)\n", vertexs[i].x, vertexs[i].y, vertexs[i].z);
-
-	fprintf(file, "Triangles:");
-	for (int i = 0; i < (n - 1) * (n - 1) * 12; i++)
-		fprintf(file, "\n%i,%i,%i", triangles[i].x, triangles[i].y, triangles[i].z);
-
-	fclose(file);
 }

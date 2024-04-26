@@ -16,10 +16,34 @@ public:
 	public:
 		static void** extractFigureFromFile(const char* filename);
 		static Coefficient* calculateCoefficients(const char* filename, unsigned int maxL);
-
+		static void saveCoefficients(Coefficient* coef, unsigned int ncoef, const char* filename);
 	};
 
-	void saveCoefficients(const char* filename = "");
+	class Functions
+	{
+	public:
+		static float			Ylm(int l, int m, float phi, float theta);
+		static float			Ylm(Vector3f v, unsigned int l, int m);
+		static float			Ylm(unsigned int i, unsigned int l, int m);
+		static _float4vector	YlmDif(unsigned int i, unsigned int l, int m);
+		static Vector3f			Ylmdif(unsigned int i, unsigned int l, int m);
+
+		static float	Legendre(int l, int m, float x);
+		static Vector2f LegendreDif(int l, int m, float x);
+
+		static float Tchev(int n, float x);
+		static float Uchev(int n, float x);
+
+		static int Factorial(int n);
+		static float DFactorial(int n);
+		static float DivFactorial(int n, int m);
+		static float sqDivFactorial(int n, int m);
+
+		static unsigned int maxL;
+		static float** Constants;
+		static float Klm(unsigned int l, int m);
+		static void generateConstants();
+	};
 
 private:
 	struct infoVect
@@ -34,11 +58,6 @@ private:
 	Coefficient* Coef;
 	unsigned int Ncoef;
 
-	static float	Ylm(Vector3f v, unsigned int l, int m);
-	float			Ylm(unsigned int i, unsigned int l, int m);
-	_float4vector	YlmDif(unsigned int i, unsigned int l, int m);
-	Vector3f		Ylmdif(unsigned int i, unsigned int l, int m);
-
 	static Vector3f*		vertexsIcosphere;
 	static infoVect*		infoIcosphere;
 	static unsigned int		depthIcosphere;
@@ -47,11 +66,6 @@ private:
 	static unsigned int ntriangles;
 	static unsigned int nvertexs;
 
-	static unsigned int maxL;
-	static float** Constants;
-	static float Klm(unsigned int l, int m);
-
-	static void generateConstants();
 	static void generateIcosphere();
 
 public:
@@ -61,6 +75,7 @@ public:
 	void create(Graphics& gfx, Coefficient* coef, unsigned int ncoef);
 	void updateShape(Graphics& gfx, Coefficient* coef, unsigned int ncoef);
 
+	void saveCoefficients(const char* filename);
 	void updateLight(Graphics& gfx, UINT id, Vector2f intensity, Color color, Vector3f position);
 	void updateLight(Graphics& gfx, UINT id, _float4vector intensity, _float4color color, _float4vector position);
 	void clearLights(Graphics& gfx);
@@ -87,5 +102,6 @@ private:
 	ConstantBuffer<VSconstBuffer>* pVSCB;
 	ConstantBuffer<PSconstBuffer>* pPSCB;
 
-	
 };
+
+void createShape(const char* filename);

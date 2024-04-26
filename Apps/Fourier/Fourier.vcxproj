@@ -21,11 +21,9 @@
   <ItemGroup>
     <ClInclude Include="include\Fourier.h" />
     <ClInclude Include="include\FourierSurface.h" />
-    <ClInclude Include="include\Functions.h" />
     <ClInclude Include="include\IG_Fourier.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="include\Functions.cpp" />
     <ClCompile Include="source\Fourier.cpp" />
     <ClCompile Include="source\FourierSurface.cpp" />
     <ClCompile Include="source\IG_Fourier.cpp" />
@@ -137,7 +135,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>MAX_L=28;FIGURES_DIR=R"($(ProjectDir)dataFiles\figures\)";SHADERS_DIR=LR"($(ProjectDir)Shaders\)";_CRT_SECURE_NO_WARNINGS;IS_DEBUG=true;_DEBUG;WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>MAX_L=28;COEFFICIENTS_DIR=R"($(ProjectDir)dataFiles\coefficients\)";FIGURES_DIR=R"($(ProjectDir)dataFiles\figures\)";SHADERS_DIR=LR"($(ProjectDir)Shaders\)";_CRT_SECURE_NO_WARNINGS;IS_DEBUG=true;_DEBUG;WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(ProjectDir)include/;$(SolutionDir)WindowCreation/include/;$(SolutionDir)Math/include/;$(SolutionDir)Image/include/;$(SolutionDir)imGui/include/</AdditionalIncludeDirectories>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
@@ -156,7 +154,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>MAX_L=28;FIGURES_DIR=R"($(ProjectDir)dataFiles\figures\)";SHADERS_DIR=LR"($(ProjectDir)Shaders\)";_CRT_SECURE_NO_WARNINGS;IS_DEBUG=false;NDEBUG;WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>MAX_L=28;COEFFICIENTS_DIR=R"($(ProjectDir)dataFiles\coefficients\)";FIGURES_DIR=R"($(ProjectDir)dataFiles\figures\)";SHADERS_DIR=LR"($(ProjectDir)Shaders\)";_CRT_SECURE_NO_WARNINGS;IS_DEBUG=false;NDEBUG;WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(ProjectDir)include/;$(SolutionDir)WindowCreation/include/;$(SolutionDir)Math/include/;$(SolutionDir)Image/include/;$(SolutionDir)imGui/include/</AdditionalIncludeDirectories>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
@@ -175,7 +173,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>MAX_L=28;FIGURES_DIR=R"($(ProjectDir)dataFiles\figures\)";SHADERS_DIR=LR"($(ProjectDir)Shaders\)";_CRT_SECURE_NO_WARNINGS;IS_DEBUG=true;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>MAX_L=28;COEFFICIENTS_DIR=R"($(ProjectDir)dataFiles\coefficients\)";FIGURES_DIR=R"($(ProjectDir)dataFiles\figures\)";SHADERS_DIR=LR"($(ProjectDir)Shaders\)";_CRT_SECURE_NO_WARNINGS;IS_DEBUG=true;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(ProjectDir)include/;$(SolutionDir)WindowCreation/include/;$(SolutionDir)Math/include/;$(SolutionDir)Image/include/;$(SolutionDir)imGui/include/</AdditionalIncludeDirectories>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
@@ -194,7 +192,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>MAX_L=28;FIGURES_DIR=R"($(ProjectDir)dataFiles\figures\)";SHADERS_DIR=LR"($(ProjectDir)Shaders\)";_CRT_SECURE_NO_WARNINGS;IS_DEBUG=false;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>MAX_L=28;COEFFICIENTS_DIR=R"($(ProjectDir)dataFiles\coefficients\)";FIGURES_DIR=R"($(ProjectDir)dataFiles\figures\)";SHADERS_DIR=LR"($(ProjectDir)Shaders\)";_CRT_SECURE_NO_WARNINGS;IS_DEBUG=false;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(ProjectDir)include/;$(SolutionDir)WindowCreation/include/;$(SolutionDir)Math/include/;$(SolutionDir)Image/include/;$(SolutionDir)imGui/include/</AdditionalIncludeDirectories>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
