@@ -18,18 +18,16 @@ bool IG_DATA::CURVES = false;
 Fourier::Fourier()
 	: window(640, 480, "Fourier", "", true),
 
-	positive(window.graphics, SURFACE_SHAPE(_PARAMETRIC, Ylm, false, { 0.f,0.f }, { 2 * pi,pi }, 200u, 200u), SURFACE_COLORING(Color::Blue).ptr()),
-	negative(window.graphics, SURFACE_SHAPE(_PARAMETRIC, Ylm, false, { 0.f,pi }, { 2 * pi,2 * pi }, 200u, 200u), SURFACE_COLORING(Color::Yellow).ptr()),
 	Yphi(window.graphics, Ylmphi, Vector2f(0.f, pi), 200),
 	Ytheta(window.graphics, Ylmtheta, Vector2f(0.f, 2 * pi), 200),
-	Ypos(window.graphics, 1.005 * Ylm(IG_DATA::phi,IG_DATA::theta), 8.f, Color(100,100,100))
+	Ypos(window.graphics, 1.005 * Ylm(IG_DATA::phi,IG_DATA::theta), 8.f, Color(80,80,80))
 {
 	window.setFramerateLimit(60);
 
-	positive.clearLights(window.graphics);
-	positive.updateLight(window.graphics, 0, { 100,50 }, Color::White, Vector3f(10, 0, 10));
-	negative.clearLights(window.graphics);
-	negative.updateLight(window.graphics, 0, { 100,50 }, Color::White, Vector3f(10, 0, 10));
+	testing.create(window.graphics, &C, 1u);
+
+	testing.clearLights(window.graphics);
+	testing.updateLight(window.graphics, 0, { 100,50 }, Color::White, Vector3f(10, 0, 10));
 }
 
 int Fourier::Run()
@@ -68,7 +66,7 @@ void Fourier::drag_dynamic_space()
 
 void Fourier::magneticReturn()
 {
-	Quaternion rot = positive.getRotation();
+	Quaternion rot = testing.getRotation();
 	if (rot.r < 0)rot = -rot;
 	constexpr float pull = 0.03f;
 
@@ -88,8 +86,7 @@ void Fourier::magneticReturn()
 
 	if (fabs(angle) < 0.01f && fabs(dangle) < 0.005f)
 	{
-		positive.updateRotation(window.graphics, Vector3f(), 0.f);
-		negative.updateRotation(window.graphics, Vector3f(), 0.f);
+		testing.updateRotation(window.graphics, Vector3f(), 0.f);
 		returning = false;
 		dangle = 0.f;
 	}
@@ -99,7 +96,7 @@ void Fourier::strictReturn()
 {
 	dangle = 0;
 
-	Quaternion rot = positive.getRotation();
+	Quaternion rot = testing.getRotation();
 	if (rot.r < 0)rot = -rot;
 
 	float angle = 2 * acosf(rot.r);
@@ -110,8 +107,7 @@ void Fourier::strictReturn()
 
 	if (fabs(angle) < 0.01f)
 	{
-		positive.updateRotation(window.graphics, Vector3f(), 0.f);
-		positive.updateRotation(window.graphics, Vector3f(), 0.f);
+		testing.updateRotation(window.graphics, Vector3f(), 0.f);
 
 		strict = false;
 		dangle = 0.f;
@@ -157,15 +153,20 @@ void Fourier::eventManager()
 			-sinf(IG_DATA::PHI)
 	};
 
-	if (IG_DATA::UPDATE)
+	if (IG_DATA::UPDATE || true)
 	{
 		IG_DATA::UPDATE = false;
-		positive.updateShape(window.graphics, SURFACE_SHAPE(_PARAMETRIC, Ylm, false, { 0.f,0.f }, { 2 * pi,pi }, 200u, 200u));
-		negative.updateShape(window.graphics, SURFACE_SHAPE(_PARAMETRIC, Ylm, false, { 0.f,pi }, { 2 * pi,2 * pi }, 200u, 200u));
 
-		Yphi.updateShape(window.graphics, Ylmphi, Vector2f(0.f, pi), 200, Color::White);
-		Ytheta.updateShape(window.graphics, Ylmtheta, Vector2f(0.f, 2 * pi), 200, Color::White);
-		Ypos.updatePosition(window.graphics, 1.005 * Ylm(IG_DATA::phi, IG_DATA::theta));
+		C.L = (unsigned int)IG_DATA::L;
+		C.M = IG_DATA::M;
+		testing.updateShape(window.graphics, &C, 1);
+
+		if (IG_DATA::CURVES)
+		{
+			Yphi.updateShape(window.graphics, Ylmphi, Vector2f(0.f, pi), 200, Color::White);
+			Ytheta.updateShape(window.graphics, Ylmtheta, Vector2f(0.f, 2 * pi), 200, Color::White);
+			Ypos.updatePosition(window.graphics, 1.005 * Ylm(IG_DATA::phi, IG_DATA::theta));
+		}
 	}
 
 	if (IG_DATA::UPDATE_CURVES)
@@ -184,21 +185,17 @@ void Fourier::doFrame()
 
 	window.graphics.updatePerspective(observer, center, scale);
 
-	positive.updateRotation(window.graphics, axis, dangle, true);
-	negative.updateRotation(window.graphics, axis, dangle, true);
-	Yphi.updateRotation(window.graphics, axis, dangle, true);
-	Ytheta.updateRotation(window.graphics, axis, dangle, true);
-	Ypos.updateRotation(window.graphics, axis, dangle, true);
+	testing.updateRotation(window.graphics, axis, dangle, true);
 	
 
-	window.setTitle(positive.getRotation().str() + "  -  " + std::to_string(int(std::round(window.getFramerate()))) + "fps");
+	window.setTitle(testing.getRotation().str() + "  -  " + std::to_string(int(std::round(window.getFramerate()))) + "fps");
 
 	//	Rendering
 
 	window.graphics.clearBuffer(Color::Black);
 
-	positive.Draw(window.graphics);
-	if (IG_DATA::L % 2) negative.Draw(window.graphics);
+	testing.Draw(window.graphics);
+
 	if (IG_DATA::CURVES)
 	{
 		Yphi.Draw(window.graphics);
@@ -222,21 +219,24 @@ float exampleRadius(float theta, float phi)
 	return 1.f + (sinf(theta) * sinf(theta) * cosf(phi) + cosf(phi) * cosf(phi) * sinf(phi)) * sinf(5 * theta) * cosf(3 * phi) / 2.f;
 }
 
-Vector3f Ylm(float phi, float theta)
+Vector3f YlmD(float phi, float theta)
 {
-	
-	int neg = 1;
-
-	if (theta > pi) {
-		neg = -1;
-		theta -= pi;
-	}
-
 	float cost = cosf(theta);
 	float sint = sinf(theta);
 	float cosp = cosf(phi);
 	float sinp = sinf(phi);
-	float Y = neg * Functions::Yfunc(IG_DATA::L, IG_DATA::M, phi, theta);
+	float Y = Functions::Yfunc(IG_DATA::L, IG_DATA::M, phi, theta);
+
+	return Vector3f(Y * sint * cosp, Y * sint * sinp, Y * cost);
+}
+
+Vector3f Ylm(float phi, float theta)
+{
+	float cost = cosf(theta);
+	float sint = sinf(theta);
+	float cosp = cosf(phi);
+	float sinp = sinf(phi);
+	float Y = Functions::Yfunc(IG_DATA::L, IG_DATA::M, phi, theta);
 	return Vector3f(Y * sint * cosp, Y * sint * sinp, Y * cost);
 }
 

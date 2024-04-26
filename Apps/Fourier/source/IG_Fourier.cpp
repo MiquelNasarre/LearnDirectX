@@ -10,9 +10,9 @@ void IG_Fourier::render()
 	{
 		ImGui::SetWindowPos(ImVec2(2, 2), ImGuiCond_Once);
 		ImGui::SetWindowCollapsed(true, ImGuiCond_Once);
-		ImGui::SetWindowSize(ImVec2(315, 100), ImGuiCond_Once);
+		ImGui::SetWindowSize(ImVec2(350, 100), ImGuiCond_Once);
 
-		if (ImGui::SliderInt("Valor de L", &IG_DATA::L, 0, 10))IG_DATA::UPDATE = true;
+		if (ImGui::SliderInt("Valor de L", &IG_DATA::L, 0, MAX_L))IG_DATA::UPDATE = true;
 		if (ImGui::SliderInt("Valor de M", &IG_DATA::M, -IG_DATA::L, IG_DATA::L))IG_DATA::UPDATE = true;
 
 		if (IG_DATA::M > IG_DATA::L) IG_DATA::M = IG_DATA::L;

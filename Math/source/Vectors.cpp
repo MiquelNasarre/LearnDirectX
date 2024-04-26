@@ -921,13 +921,12 @@ Vector3f& Vector3f::operator/=(const float& other)
 
 Vector3f Vector3f::operator*(const Vector3f& other) const
 {
-	return -Vector3f(y * other.z - other.y * z, z * other.x - other.z * x, x * other.y - other.x * y);
+	return Vector3f(z * other.y - other.z * y, x * other.z - other.x * z, y * other.x - other.y * x);
 }
 
 Vector3f& Vector3f::normalize()
 {
-	*this = *this / abs();
-	return *this;
+	return *this /= sqrtf(x * x + y * y + z * z);
 }
 
 float Vector3f::operator^(const Vector3f& other) const

@@ -1,9 +1,9 @@
 #pragma once
 
 #include "Window.h"
-#include "Drawable/Surface.h"
 #include "Drawable/Curve.h"
 #include "Drawable/Point.h"
+#include "FourierSurface.h"
 
 struct IG_DATA {
 	static float THETA;
@@ -24,6 +24,7 @@ struct IG_DATA {
 class Fourier {
 
 private:
+
 	Window window;
 
 	float scale = 280.f;
@@ -53,13 +54,13 @@ private:
 
 	// Surfaces
 
-	Surface positive;
-	Surface negative;
-
 	Curve Yphi;
 	Curve Ytheta;
 
 	Point Ypos;
+
+	FourierSurface testing;
+	FourierSurface::Coefficient C = { (unsigned int)IG_DATA::L, IG_DATA::M, 1 };
 
 public:
 	Fourier();
@@ -75,6 +76,7 @@ public:
 
 float exampleRadius(float, float);
 
+Vector3f YlmD(float phi, float theta);
 Vector3f Ylm(float phi, float theta);
 Vector3f Ylmphi(float theta);
 Vector3f Ylmtheta(float phi);

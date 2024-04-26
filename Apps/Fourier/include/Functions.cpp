@@ -49,6 +49,92 @@ float Functions::Legendre(int l, int m, float x)
 	return Pl1m;
 }
 
+Vector2f Functions::LegendreDif(int l, int m, float x)
+{
+	Vector2f Plm;
+
+	if (l == 0)
+	{
+		Plm.x = 1;
+		Plm.y = 0;
+		return Plm;
+	}
+
+	float x12 = 1 - x * x;
+	float sq = sqrtf(x12);
+	int lc = m;
+
+
+	Plm.x = DFactorial(2 * m - 1);
+
+	for (unsigned short i = 0; i < m; i++)
+		Plm.x *= -sq;
+
+	if (l == m)
+	{
+		Plm.y = -x * l / x12 * Plm.x;
+		return Plm;
+	}
+
+
+	float aux = x * (2 * lc + 1) * Plm.x;
+	float Pl1m = Plm.x;
+	Plm.x = aux;
+	lc++;
+
+	while (lc < l) {
+		aux = ((2 * lc + 1) * x * Plm.x - (lc + m) * Pl1m) / (lc - m + 1);
+		lc++;
+		Pl1m = Plm.x;
+		Plm.x = aux;
+	}
+
+	Plm.y = ((l + m) * Pl1m - l * x * Plm.x) / x12;
+	return Plm;
+}
+
+float Functions::Tchev(int n, float x)
+{
+	if (!n)
+		return 1.f;
+	if (n == 1)
+		return x;
+
+	float Ti1 = 1.f;
+	float Ti = x;
+
+	int m = 1;
+	float temp;
+	while (m++ < n)
+	{
+		temp = 2 * x * Ti - Ti1;
+		Ti1 = Ti;
+		Ti = temp;
+	}
+	return Ti;
+}
+
+float Functions::Uchev(int n, float x)
+{
+	if (!n)
+		return 1.f;
+	if (n == 1)
+		return 2 * x;
+
+	float Ui1 = 1.f;
+	float Ui = 2 * x;
+
+	int m = 1;
+	float temp;
+	while (m++ < n)
+	{
+		temp = 2 * x * Ui - Ui1;
+		Ui1 = Ui;
+		Ui = temp;
+	}
+	return Ui;
+}
+
 int Functions::Factorial(int n)
 {
 	if (!n) return 1;
@@ -105,6 +191,17 @@ float Functions::DivFactorial(int n, int m)
 
 	while (--n > m)
 		f *= n;
+
+	return f;
+}
+
+float Functions::sqDivFactorial(int n, int m)
+{
+	if (!n || n <= m) return 1;
+	float f = sqrtf(float(n));
+
+	while (--n > m)
+		f *= sqrtf(float(n));
 
 	return f;
 }
