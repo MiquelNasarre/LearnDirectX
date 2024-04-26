@@ -47,7 +47,6 @@ private:
 	bool magnetized = false;
 	Vector3f magnetPos = { 1.f, 0.f, 0.f };
 
-
 	void drag_dynamic_space();
 	void magneticReturn();
 	void strictReturn();

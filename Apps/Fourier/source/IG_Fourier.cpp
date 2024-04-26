@@ -33,6 +33,7 @@ void IG_Fourier::render()
 		{
 			ImGui::SetWindowSize(ImVec2(315, 148));
 			IG_DATA::CURVES = true;
+			IG_DATA::UPDATE_CURVES = true;
 		}
 
 

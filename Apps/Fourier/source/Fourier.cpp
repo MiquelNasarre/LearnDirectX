@@ -24,10 +24,11 @@ Fourier::Fourier()
 {
 	window.setFramerateLimit(60);
 
-	testing.create(window.graphics, &C, 1u);
+	testing.create(window.graphics, FourierSurface::FileManager::calculateCoefficients("Cube",25u), 676u);
 
 	testing.clearLights(window.graphics);
-	testing.updateLight(window.graphics, 0, { 100,50 }, Color::White, Vector3f(10, 0, 10));
+	testing.updateLight(window.graphics, 0, { 600,320 }, Color::White, Vector3f(30, 10, 20));
+
 }
 
 int Fourier::Run()
@@ -153,13 +154,14 @@ void Fourier::eventManager()
 			-sinf(IG_DATA::PHI)
 	};
 
-	if (IG_DATA::UPDATE || true)
+	if (IG_DATA::UPDATE)
 	{
 		IG_DATA::UPDATE = false;
 
 		C.L = (unsigned int)IG_DATA::L;
 		C.M = IG_DATA::M;
-		testing.updateShape(window.graphics, &C, 1);
+
+		testing.updateShape(window.graphics, &C, 1u);
 
 		if (IG_DATA::CURVES)
 		{
@@ -186,7 +188,9 @@ void Fourier::doFrame()
 	window.graphics.updatePerspective(observer, center, scale);
 
 	testing.updateRotation(window.graphics, axis, dangle, true);
-	
+	Yphi.updateRotation(window.graphics, axis, dangle, true);
+	Ytheta.updateRotation(window.graphics, axis, dangle, true);
+	Ypos.updateRotation(window.graphics, axis, dangle, true);
 
 	window.setTitle(testing.getRotation().str() + "  -  " + std::to_string(int(std::round(window.getFramerate()))) + "fps");
 

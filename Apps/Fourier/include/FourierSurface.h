@@ -11,13 +11,16 @@ public:
 		float C;
 	};
 
-	Coefficient* Coef;
-	unsigned int Ncoef;
+	class FileManager
+	{
+	public:
+		static void** extractFigureFromFile(const char* filename);
+		static Coefficient* calculateCoefficients(const char* filename, unsigned int maxL);
 
-	float Ylm(Vector3f v, unsigned int l, int m);
-	float Ylm(unsigned int i, unsigned int l, int m);
-	_float4vector YlmDif(unsigned int i, unsigned int l, int m);
-	
+	};
+
+	void saveCoefficients(const char* filename = "");
+
 private:
 	struct infoVect
 	{
@@ -27,6 +30,14 @@ private:
 		float costheta;
 
 	};
+
+	Coefficient* Coef;
+	unsigned int Ncoef;
+
+	static float	Ylm(Vector3f v, unsigned int l, int m);
+	float			Ylm(unsigned int i, unsigned int l, int m);
+	_float4vector	YlmDif(unsigned int i, unsigned int l, int m);
+	Vector3f		Ylmdif(unsigned int i, unsigned int l, int m);
 
 	static Vector3f*		vertexsIcosphere;
 	static infoVect*		infoIcosphere;
