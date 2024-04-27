@@ -10,6 +10,7 @@ public:
 	void updateRadius(Graphics& gfx, float radius);
 	void updateColor(Graphics& gfx, Color col);
 	void updateRotation(Graphics& gfx, Vector3f axis, float angle, bool multiplicative = false);
+	void updateRotation(Graphics& gfx, Quaternion rotation, bool multiplicative = false);
 
 	void Draw(Graphics& gfx) override;
 private:

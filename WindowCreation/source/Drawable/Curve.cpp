@@ -142,6 +142,17 @@ void Curve::updateRotation(Graphics& gfx, Vector3f axis, float angle, bool multi
 	pVSCB->Update(gfx, vscBuff);
 }
 
+void Curve::updateRotation(Graphics& gfx, Quaternion rotation, bool multiplicative)
+{
+	if (!multiplicative)
+		vscBuff.rotation = rotation;
+	else
+		vscBuff.rotation *= rotation;
+
+	vscBuff.rotation.normalize();
+	pVSCB->Update(gfx, vscBuff);
+}
+
 void Curve::updatePosition(Graphics& gfx, Vector3f position, bool additive)
 {
 	if (!additive)

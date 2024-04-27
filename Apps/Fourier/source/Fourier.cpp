@@ -3,29 +3,31 @@
 #include "Mouse.h"
 #include "IG_Fourier.h"
 
-float IG_DATA::THETA = 0.f;
-float IG_DATA::PHI   = 0.f;
-float IG_DATA::SPEED = 0.f;
-int IG_DATA::L = 0;
-int IG_DATA::M = 0;
-float IG_DATA::theta = 0.f;
-float IG_DATA::phi = 0.f;
-bool IG_DATA::UPDATE = false;
-bool IG_DATA::UPDATE_CURVES = false;
-bool IG_DATA::CURVES = false;
+float			IG_DATA::THETA = 0.f;
+float			IG_DATA::PHI   = 0.f;
+float			IG_DATA::SPEED = 0.f;
+int				IG_DATA::L = 7;
+int				IG_DATA::M = -4;
+float			IG_DATA::theta = 0.f;
+float			IG_DATA::phi = 0.f;
+bool			IG_DATA::UPDATE = false;
+bool			IG_DATA::UPDATE_CURVES = false;
+bool			IG_DATA::CURVES = false;
+
+bool			IG_DATA::CALCULATE_FIGURE = false;
+int				IG_DATA::FIGURE_VIEW = -1;
+bool			IG_DATA::LOADING = false;
+const char*		IG_DATA::FILENAME = (const char*)calloc(100, sizeof(char));
+unsigned int	IG_DATA::MAXL = 0u;
+unsigned int	IG_DATA::NFIG = 0u;
+Vector2i		IG_DATA::WindowDim = { 0, 0 };
 
 Fourier::Fourier()
-	: window(640, 480, "Fourier", "", true),
-
-	Yphi(window.graphics, Ylmphi, Vector2f(0.f, pi), 200),
-	Ytheta(window.graphics, Ylmtheta, Vector2f(0.f, 2 * pi), 200),
-	Ypos(window.graphics, 1.005 * Ylm(IG_DATA::phi,IG_DATA::theta), 8.f, Color(80,80,80))
+	: window(640, 480, "Fourier", "", true)
 {
 	window.setFramerateLimit(60);
 
-	harmonics.create(window.graphics, FourierSurface::FileManager::calculateCoefficients("Cube",25u), 676u);
-	harmonics.updateLight(window.graphics, 0, { 600,320 }, Color::White, Vector3f(30, 10, 20));
-	
+	harmonics.create(window.graphics, &C, 1u);
 }
 
 int Fourier::Run()
@@ -64,49 +66,48 @@ void Fourier::drag_dynamic_space()
 
 void Fourier::magneticReturn()
 {
-	Quaternion rot = harmonics.getRotation();
-	if (rot.r < 0)rot = -rot;
+	if (rotation.r < 0)rotation = -rotation;
 	constexpr float pull = 0.03f;
 
-	float angle = 2 * acosf(rot.r);
-	Vector3f axisRot = rot.getVector();
+	float angle = 2 * acosf(rotation.r);
+	Vector3f axisRot = rotation.getVector();
 
 	Quaternion newRot;
 	if (angle < pull)
 		newRot = rotationQuaternion(axisRot, -pull / 40.f) * rotationQuaternion(axis, dangle);
 	else
 		newRot = rotationQuaternion(axisRot, -angle / 40.f) * rotationQuaternion(axis, dangle);
-
+	
 	axis = newRot.getVector();
 	dangle = 2 * acos(newRot.r);
 
 	dangle *= 0.95f;
 
-	if (fabs(angle) < 0.01f && fabs(dangle) < 0.005f)
+	if ((fabs(angle) < 0.01f && fabs(dangle) < 0.005f))
 	{
-		harmonics.updateRotation(window.graphics, Vector3f(), 0.f);
-		returning = false;
+		rotation = 1.f;
+		axis = { 1.f,0.f,0.f };
 		dangle = 0.f;
+		returning = false;
+
 	}
 }
 
 void Fourier::strictReturn()
 {
-	dangle = 0;
+	dangle = 0.f;
 
-	Quaternion rot = harmonics.getRotation();
-	if (rot.r < 0)rot = -rot;
+	if (rotation.r < 0)rotation = -rotation;
 
-	float angle = 2 * acosf(rot.r);
-	Vector3f axisRot = rot.getVector();
+	float angle = 2 * acosf(rotation.r);
+	Vector3f axisRot = rotation.getVector();
 
 	axis = axisRot;
 	dangle = -powf(angle, 0.65f) / 40.f;
 
 	if (fabs(angle) < 0.01f)
 	{
-		harmonics.updateRotation(window.graphics, Vector3f(), 0.f);
-
+		rotation = 1.f;
 		strict = false;
 		dangle = 0.f;
 	}
@@ -143,6 +144,18 @@ void Fourier::eventManager()
 	else
 		scale *= powf(1.1f, Mouse::getWheel() / 120.f);
 
+	rotation *= rotationQuaternion(axis, dangle * window.getFrameTime() * 60.f);
+
+	IG_DATA::WindowDim = window.getDimensions();
+
+	if (!(rotation.abs() < 10.f))
+	{
+		rotation = 1.f;
+		axis = { 1.f,1.f,1.f };
+		dangle = 0.f;
+	}
+
+
 	//	Calculate observer vector
 
 	observer = {
@@ -150,6 +163,31 @@ void Fourier::eventManager()
 			-cosf(IG_DATA::PHI) * sinf(IG_DATA::THETA) ,
 			-sinf(IG_DATA::PHI)
 	};
+
+	// Multithread
+
+	if (IG_DATA::CALCULATE_FIGURE)
+	{
+		IG_DATA::CALCULATE_FIGURE = false;
+		IG_DATA::LOADING = true;
+		std::thread(calculateCoefficientsAsync, &coef, IG_DATA::FILENAME, IG_DATA::MAXL, &Fcoef).detach();
+
+		Figure = (FourierSurface**)memcpy(calloc(IG_DATA::NFIG + 1, sizeof(void*)), Figure, IG_DATA::NFIG * sizeof(void*));
+		Figure[IG_DATA::NFIG] = new(FourierSurface);
+
+		std::thread(createFigureAsync, &window.graphics, Figure[IG_DATA::NFIG], &coef, (IG_DATA::MAXL + 1) * (IG_DATA::MAXL + 1), &Ffigu, &mtx, &Fcoef).detach();
+	}
+
+	if (Ffigu)
+	{
+		Ffigu = false;
+		IG_DATA::NFIG++;
+		IG_DATA::LOADING = false;
+		IG_DATA::FIGURE_VIEW = IG_DATA::NFIG - 1;
+		IG_DATA::UPDATE_CURVES = true;
+	}
+
+	//	Shape updates
 
 	if (IG_DATA::UPDATE)
 	{
@@ -162,17 +200,21 @@ void Fourier::eventManager()
 
 		if (IG_DATA::CURVES)
 		{
-			Yphi.updateShape(window.graphics, Ylmphi, Vector2f(0.f, pi), 200, Color::White);
-			Ytheta.updateShape(window.graphics, Ylmtheta, Vector2f(0.f, 2 * pi), 200, Color::White);
-			Ypos.updatePosition(window.graphics, 1.005 * Ylm(IG_DATA::phi, IG_DATA::theta));
+			if (IG_DATA::FIGURE_VIEW == -1)
+				harmonics.updateCurves(window.graphics, IG_DATA::phi, IG_DATA::theta);
+			else
+				Figure[IG_DATA::FIGURE_VIEW]->updateCurves(window.graphics, IG_DATA::phi, IG_DATA::theta);
 		}
 	}
 
 	if (IG_DATA::UPDATE_CURVES)
 	{
-		Yphi.updateShape(window.graphics, Ylmphi, Vector2f(0.f, pi), 200, Color::White);
-		Ytheta.updateShape(window.graphics, Ylmtheta, Vector2f(0.f, 2 * pi), 200, Color::White);
-		Ypos.updatePosition(window.graphics, 1.005 * Ylm(IG_DATA::phi, IG_DATA::theta));
+		IG_DATA::UPDATE_CURVES = false;
+
+		if (IG_DATA::FIGURE_VIEW == -1)
+			harmonics.updateCurves(window.graphics, IG_DATA::phi, IG_DATA::theta);
+		else
+			Figure[IG_DATA::FIGURE_VIEW]->updateCurves(window.graphics, IG_DATA::phi, IG_DATA::theta);
 	}
 }
 
@@ -184,24 +226,28 @@ void Fourier::doFrame()
 
 	window.graphics.updatePerspective(observer, center, scale);
 
-	harmonics.updateRotation(window.graphics, axis, dangle, true);
-	Yphi.updateRotation(window.graphics, axis, dangle, true);
-	Ytheta.updateRotation(window.graphics, axis, dangle, true);
-	Ypos.updateRotation(window.graphics, axis, dangle, true);
+	if (IG_DATA::FIGURE_VIEW == -1)
+		harmonics.updateRotation(window.graphics, rotation);
+	else
+		Figure[IG_DATA::FIGURE_VIEW]->updateRotation(window.graphics, rotation);
 
-	window.setTitle(harmonics.getRotation().str() + "  -  " + std::to_string(int(std::round(window.getFramerate()))) + "fps");
+	window.setTitle("Fourier  -  " + std::to_string(int(std::round(window.getFramerate()))) + "fps");
 
 	//	Rendering
 
 	window.graphics.clearBuffer(Color::Black);
 
-	harmonics.Draw(window.graphics);
+	if (IG_DATA::FIGURE_VIEW == -1)
+		harmonics.Draw(window.graphics);
+	else
+		Figure[IG_DATA::FIGURE_VIEW]->Draw(window.graphics);
 
 	if (IG_DATA::CURVES)
 	{
-		Yphi.Draw(window.graphics);
-		Ytheta.Draw(window.graphics);
-		Ypos.Draw(window.graphics);
+		if (IG_DATA::FIGURE_VIEW == -1)
+			harmonics.DrawCurves(window.graphics);
+		else
+			Figure[IG_DATA::FIGURE_VIEW]->DrawCurves(window.graphics);
 	}
 
 	//	ImGui crap
@@ -213,40 +259,21 @@ void Fourier::doFrame()
 	window.graphics.pushFrame();
 }
 
-//	Functions
+//  Threading utilities
 
-float exampleRadius(float theta, float phi)
+void createFigureAsync(Graphics* gfx, FourierSurface* figure, FourierSurface::Coefficient** coef, unsigned int ncoef, bool* done, std::mutex* mtx, bool* begin)
 {
-	return 1.f + (sinf(theta) * sinf(theta) * cosf(phi) + cosf(phi) * cosf(phi) * sinf(phi)) * sinf(5 * theta) * cosf(3 * phi) / 2.f;
+	while (begin && !(*begin))
+		std::this_thread::sleep_for(std::chrono::milliseconds(10));
+	*begin = false;
+
+	// Crea la figura
+	figure->create(*gfx, *coef, ncoef, mtx);
+	*done = true;
 }
 
-Vector3f YlmD(float phi, float theta)
+void calculateCoefficientsAsync(FourierSurface::Coefficient** coef, const char* filename, unsigned int maxL, bool* done)
 {
-	float cost = cosf(theta);
-	float sint = sinf(theta);
-	float cosp = cosf(phi);
-	float sinp = sinf(phi);
-	float Y = FourierSurface::Functions::Ylm(IG_DATA::L, IG_DATA::M, phi, theta);
-
-	return Vector3f(Y * sint * cosp, Y * sint * sinp, Y * cost);
-}
-
-Vector3f Ylm(float phi, float theta)
-{
-	float cost = cosf(theta);
-	float sint = sinf(theta);
-	float cosp = cosf(phi);
-	float sinp = sinf(phi);
-	float Y = FourierSurface::Functions::Ylm(IG_DATA::L, IG_DATA::M, phi, theta);
-	return Vector3f(Y * sint * cosp, Y * sint * sinp, Y * cost);
-}
-
-Vector3f Ylmphi(float theta)
-{
-	return 1.005 * Ylm(IG_DATA::phi,theta);
-}
-
-Vector3f Ylmtheta(float phi)
-{
-	return 1.005 * Ylm(phi,IG_DATA::theta);
+	*coef = FourierSurface::FileManager::calculateCoefficients(filename, maxL);
+	*done = true;
 }

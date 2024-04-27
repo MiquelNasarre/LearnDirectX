@@ -129,6 +129,17 @@ void Point::updateRotation(Graphics& gfx, Vector3f axis, float angle, bool multi
 	pVSCB->Update(gfx, vscBuff);
 }
 
+void Point::updateRotation(Graphics& gfx, Quaternion rotation, bool multiplicative)
+{
+	if (!multiplicative)
+		vscBuff.rotation = rotation;
+	else
+		vscBuff.rotation *= rotation;
+
+	vscBuff.rotation.normalize();
+	pVSCB->Update(gfx, vscBuff);
+}
+
 void Point::Draw(Graphics& gfx)
 {
 	vscBuff.scale = gfx.getScale();

@@ -1,9 +1,9 @@
 #pragma once
-
 #include "Window.h"
 #include "Drawable/Curve.h"
 #include "Drawable/Point.h"
 #include "FourierSurface.h"
+#include <thread>
 
 struct IG_DATA {
 	static float THETA;
@@ -19,6 +19,15 @@ struct IG_DATA {
 	static bool UPDATE;
 	static bool CURVES;
 	static bool UPDATE_CURVES;
+
+	static bool CALCULATE_FIGURE;
+	static int FIGURE_VIEW;
+	static unsigned int NFIG;
+	static bool LOADING;
+	static const char* FILENAME;
+	static unsigned int MAXL;
+
+	static Vector2i WindowDim;
 };
 
 class Fourier {
@@ -27,15 +36,17 @@ private:
 
 	Window window;
 
-	float scale = 280.f;
+	float scale = 200.f;
 	Vector3f center = { 0.f, 0.f, 0.f };
 	Vector3f observer = { 0.f,-1.f, 0.f };
 
-	Vector3f axis = Vector3f(1.f, -1.f, 1.f);
-	float dangle = 0.01f;
+	Vector3f axis = Vector3f(sinf(0.5f), 0.f, cosf(0.5f));
+	float dangle = 0.005f;
 
 	Vector2i lastPos;
 	bool dragging;
+
+	Quaternion rotation = Quaternion(cosf(0.25f),0.f,sinf(0.25f),0.f);
 
 	//	Forced return
 
@@ -53,13 +64,16 @@ private:
 
 	// Surfaces
 
-	Curve Yphi;
-	Curve Ytheta;
-
-	Point Ypos;
-
 	FourierSurface harmonics;
 	FourierSurface::Coefficient C = { (unsigned int)IG_DATA::L, IG_DATA::M, 1 };
+
+	// Multithread stuff
+
+	bool Ffigu = false;
+	bool Fcoef = false;
+	FourierSurface::Coefficient* coef;
+	std::mutex mtx;
+	FourierSurface** Figure;
 
 public:
 	Fourier();
@@ -71,11 +85,7 @@ public:
 	void doFrame();
 };
 
-//	Functions
+//  Threading utlities
 
-float exampleRadius(float, float);
-
-Vector3f YlmD(float phi, float theta);
-Vector3f Ylm(float phi, float theta);
-Vector3f Ylmphi(float theta);
-Vector3f Ylmtheta(float phi);
+void createFigureAsync(Graphics* gfx, FourierSurface* figure, FourierSurface::Coefficient** coef, unsigned int ncoef, bool* done, std::mutex* mtx, bool* begin);
+void calculateCoefficientsAsync(FourierSurface::Coefficient** coef, const char* filename, unsigned int maxL, bool* done);

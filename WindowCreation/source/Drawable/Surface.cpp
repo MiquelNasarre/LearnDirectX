@@ -863,6 +863,17 @@ void Surface::updateRotation(Graphics& gfx, Vector3f axis, float angle, bool mul
 	pVSCB->Update(gfx, vscBuff);
 }
 
+void Surface::updateRotation(Graphics& gfx, Quaternion rotation, bool multiplicative)
+{
+	if (!multiplicative)
+		vscBuff.rotation = rotation;
+	else
+		vscBuff.rotation *= rotation;
+
+	vscBuff.rotation.normalize();
+	pVSCB->Update(gfx, vscBuff);
+}
+
 void Surface::updatePosition(Graphics& gfx, Vector3f position, bool additive)
 {
 	if (!additive)

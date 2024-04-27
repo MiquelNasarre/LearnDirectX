@@ -1,5 +1,6 @@
 #pragma once
 #include "Drawable.h"
+#include <mutex>
 
 class FourierSurface : public Drawable
 {
@@ -19,6 +20,7 @@ public:
 		static void saveCoefficients(Coefficient* coef, unsigned int ncoef, const char* filename);
 	};
 
+private:
 	class Functions
 	{
 	public:
@@ -45,7 +47,6 @@ public:
 		static void generateConstants();
 	};
 
-private:
 	struct infoVect
 	{
 		float sinphi;
@@ -54,6 +55,29 @@ private:
 		float costheta;
 
 	};
+
+	class Curves : public Drawable
+	{
+		const unsigned int Npoints = 250u;
+
+		struct Vertex {
+			_float4vector position;
+			_float4color color;
+		};
+
+		struct VSconstBuffer {
+			_float4vector translation = { 0.f, 0.f, 0.f, 0.f };
+			Quaternion rotation = 1.f;
+		}vscBuff;
+
+		ConstantBuffer<VSconstBuffer>* pVSCB;
+
+	public:
+		Curves() {}
+		void create(Graphics& gfx, Coefficient* coef, const unsigned int ncoef, const float phi, const float theta, std::mutex* mtx);
+		void updateShape(Graphics& gfx, Coefficient* coef, const unsigned int ncoef, const float phi, const float theta);
+		void updateRotation(Graphics& gfx, Quaternion rotation, bool multiplicative = false);
+	} curves;
 
 	Coefficient* Coef;
 	unsigned int Ncoef;
@@ -72,7 +96,7 @@ public:
 	FourierSurface() {}
 	FourierSurface(Graphics& gfx, Coefficient* coef, unsigned int ncoef);
 
-	void create(Graphics& gfx, Coefficient* coef, unsigned int ncoef);
+	void create(Graphics& gfx, Coefficient* coef, unsigned int ncoef, std::mutex* mtx = NULL);
 	void updateShape(Graphics& gfx, Coefficient* coef, unsigned int ncoef);
 
 	void saveCoefficients(const char* filename);
@@ -80,7 +104,11 @@ public:
 	void updateLight(Graphics& gfx, UINT id, _float4vector intensity, _float4color color, _float4vector position);
 	void clearLights(Graphics& gfx);
 	void updateRotation(Graphics& gfx, Vector3f axis, float angle, bool multiplicative = false);
+	void updateRotation(Graphics& gfx, Quaternion rotation, bool multiplicative = false);
+	void updateCurves(Graphics& gfx, float phi, float theta);
 	Quaternion getRotation();
+
+	void DrawCurves(Graphics& gfx);
 
 private:
 

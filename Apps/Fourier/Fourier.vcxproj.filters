@@ -52,5 +52,16 @@
     <FxCompile Include="Shaders\PixelShader.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
+    <FxCompile Include="Shaders\CurvesVS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\CurvesPS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Shaders\Quaternion.hlsli">
+      <Filter>Shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

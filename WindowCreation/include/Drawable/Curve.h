@@ -31,6 +31,7 @@ public:
 
 	void updateRotation(Graphics& gfx, float rotationX, float rotationY, float rotationZ);
 	void updateRotation(Graphics& gfx, Vector3f axis, float angle, bool multiplicative = false);
+	void updateRotation(Graphics& gfx, Quaternion rotation, bool multiplicative = false);
 	void updatePosition(Graphics& gfx, Vector3f position, bool additive = false);
 
 	Quaternion getRotation();

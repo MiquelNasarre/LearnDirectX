@@ -12,7 +12,6 @@ unsigned int	FourierSurface::nvertexs = 0;
 unsigned int	FourierSurface::Functions::maxL = MAX_L;
 float**			FourierSurface::Functions::Constants = NULL;
 
-
 // File Manager Functions
 
 void** FourierSurface::FileManager::extractFigureFromFile(const char* filename)
@@ -140,92 +139,21 @@ void FourierSurface::FileManager::saveCoefficients(Coefficient* coef, unsigned i
 	fclose(file);
 }
 
-void createShape(const char* filename)
-{
-	int n = 21;
-	Vector3f* vertexs = (Vector3f*)calloc(n * n * 6, sizeof(Vector3f));
-
-	for (int m = 0; m < 6; m++)
-	{
-		for (int i = 0; i < n; i++)
-		{
-			for (int j = 0; j < n; j++)
-			{
-				float x = -1.f + 2.f * i / (n - 1.f);
-				float y = -1.f + 2.f * j / (n - 1.f);
-				switch (m)
-				{
-				case 0:
-					vertexs[n * n * m + n * i + j] = Vector3f(1.f, x, y);
-					break;
-				case 1:
-					vertexs[n * n * m + n * i + j] = Vector3f(-1.f, x, y);
-					break;
-				case 2:
-					vertexs[n * n * m + n * i + j] = Vector3f(x, 1.f, y);
-					break;
-				case 3:
-					vertexs[n * n * m + n * i + j] = Vector3f(x, -1.f, y);
-					break;
-				case 4:
-					vertexs[n * n * m + n * i + j] = Vector3f(x, y, 1.f);
-					break;
-				case 5:
-					vertexs[n * n * m + n * i + j] = Vector3f(x, y, -1.f);
-					break;
-				default:
-					break;
-				}
-			}
-		}
-	}
-
-	Vector3i* triangles = (Vector3i*)calloc((n - 1) * (n - 1) * 12, sizeof(Vector3i));
-
-	for (int m = 0; m < 6; m++)
-	{
-		for (int i = 0; i < n - 1; i++)
-		{
-			for (int j = 0; j < n - 1; j++)
-			{
-				triangles[2 * m * (n - 1) * (n - 1) + 2 * i * (n - 1) + 2 * j] = Vector3i(n * n * m + n * i + j, n * n * m + n * (i + 1) + j, n * n * m + n * i + (j + 1));
-				triangles[2 * m * (n - 1) * (n - 1) + 2 * i * (n - 1) + 2 * j + 1] = Vector3i(n * n * m + n * (i + 1) + (j + 1), n * n * m + n * (i + 1) + j, n * n * m + n * i + (j + 1));
-			}
-		}
-	}
-
-	FILE* file = fopen((FIGURES_DIR + std::string(filename) + ".dat").c_str(), "w");
-	if (!file)
-		throw std::exception("Couldn't create the file");
-
-	fprintf(file, "Vertexs:\n");
-
-	for (int i = 0; i < n * n * 6; i++)
-		fprintf(file, "(%f,%f,%f)\n", vertexs[i].x, vertexs[i].y, vertexs[i].z);
-
-	fprintf(file, "Triangles:");
-	for (int i = 0; i < (n - 1) * (n - 1) * 12; i++)
-		fprintf(file, "\n%i,%i,%i", triangles[i].x, triangles[i].y, triangles[i].z);
-
-	fclose(file);
-}
-
 // Math Functions
 
 float			FourierSurface::Functions::Ylm(int l, int m, float phi, float theta)
 {
-	float NonTheta;
+	float costheta = cosf(theta);
+	float sintheta = sinf(theta);
+	float cosphi = cosf(phi);
+	float sinphi = sinf(phi);
 
 	if (m > 0)
-		NonTheta = sqrtf(2 * (2 * l + 1) / float(DivFactorial(l + m, l - m))) * cosf(m * phi);
+		return Klm(l, m) * Functions::Tchev(m, cosphi) * Functions::Legendre(l, m, costheta);
 	else if (m == 0)
-		NonTheta = sqrtf(float(2 * l + 1));
-	else {
-		m = -m;
-		NonTheta = sqrtf(2 * (2 * l + 1) / float(DivFactorial(l + m, l - m))) * sinf(m * phi);
-	}
-
-	return NonTheta * Legendre(l, m, cosf(theta));
+		return Klm(l, m) * Functions::Legendre(l, m, costheta);
+	else
+		return Klm(l, m) * Functions::Uchev(-m - 1, cosphi) * sinphi * Functions::Legendre(l, -m, costheta);
 }
 
 float			FourierSurface::Functions::Ylm(Vector3f v, unsigned int l, int m)
@@ -371,11 +299,31 @@ Vector3f		FourierSurface::Functions::Ylmdif(unsigned int i, unsigned int l, int 
 
 float			FourierSurface::Functions::Legendre(int l, int m, float x)
 {
-	float sq = sqrtf(1 - x * x);
+	float Plm;
+	
+	if (x == 1.f || x == -1)
+	{
+		if (m == 0)
+		{
+			if (x == -1.f && l % 2)
+				return -1.f;
+			else
+				return 1.f;
+		}
+		return 0.f;
+	}
+
+	if (l == 0)
+	{
+		return 1.f;
+	}
+
+	float x12 = 1 - x * x;
+	float sq = sqrtf(x12);
 	int lc = m;
 
 
-	float Plm = DFactorial(2 * m - 1);
+	Plm = DFactorial(2 * m - 1);
 
 	for (unsigned short i = 0; i < m; i++)
 		Plm *= -sq;
@@ -383,18 +331,19 @@ float			FourierSurface::Functions::Legendre(int l, int m, float x)
 	if (l == m)
 		return Plm;
 
-	float Pl1m = x * (2 * lc + 1) * Plm;
+	float aux = x * (2 * lc + 1) * Plm;
+	float Pl1m = Plm;
+	Plm = aux;
 	lc++;
-	float aux;
 
 	while (lc < l) {
-		aux = ((2 * lc + 1) * x * Pl1m - (lc + m) * Plm) / (lc - m + 1);
+		aux = ((2 * lc + 1) * x * Plm - (lc + m) * Pl1m) / (lc - m + 1);
 		lc++;
-		Plm = Pl1m;
-		Pl1m = aux;
+		Pl1m = Plm;
+		Plm = aux;
 	}
 
-	return Pl1m;
+	return Plm;
 }
 
 Vector2f		FourierSurface::Functions::LegendreDif(int l, int m, float x)
@@ -598,7 +547,7 @@ FourierSurface::FourierSurface(Graphics& gfx, Coefficient* coef, unsigned int nc
 	create(gfx, coef, ncoef);
 }
 
-void		FourierSurface::create(Graphics& gfx, Coefficient* coef, unsigned int ncoef)
+void		FourierSurface::create(Graphics& gfx, Coefficient* coef, unsigned int ncoef, std::mutex* mtx)
 {
 
 	if (isInit)
@@ -660,6 +609,11 @@ void		FourierSurface::create(Graphics& gfx, Coefficient* coef, unsigned int ncoe
 		}
 	}
 
+	curves.create(gfx, coef, ncoef, 0.f, 0.f, mtx);
+
+	if(mtx)
+		mtx->lock();
+
 	AddBind(std::make_unique<VertexBuffer>(gfx, V, nvertexs));
 	free(V);
 
@@ -684,7 +638,12 @@ void		FourierSurface::create(Graphics& gfx, Coefficient* coef, unsigned int ncoe
 
 	pVSCB = (ConstantBuffer<VSconstBuffer>*)AddBind(std::make_unique<ConstantBuffer<VSconstBuffer>>(gfx, VERTEX_CONSTANT_BUFFER_TYPE));
 
+	pscBuff.lightsource[0] = { { 600.f, 320.f, 0.f, 0.f } , { 1.f, 1.f, 1.f, 1.f } , { 30.f, 10.f, 20.f, 0.f } };
+
 	pPSCB = (ConstantBuffer<PSconstBuffer>*)AddBind(std::make_unique<ConstantBuffer<PSconstBuffer>>(gfx, pscBuff, PIXEL_CONSTANT_BUFFER_TYPE));
+
+	if (mtx)
+		mtx->unlock();
 }
 
 void		FourierSurface::generateIcosphere()
@@ -1003,9 +962,230 @@ void		FourierSurface::updateRotation(Graphics& gfx, Vector3f axis, float angle, 
 
 	vscBuff.rotation.normalize();
 	pVSCB->Update(gfx, vscBuff);
+
+	curves.updateRotation(gfx, rotationQuaternion(axis, angle), multiplicative);
+}
+
+void		FourierSurface::updateRotation(Graphics& gfx, Quaternion rotation, bool multiplicative)
+{
+	if (!multiplicative)
+		vscBuff.rotation = rotation;
+	else
+		vscBuff.rotation *= rotation;
+
+	vscBuff.rotation.normalize();
+	pVSCB->Update(gfx, vscBuff);
+
+	curves.updateRotation(gfx, rotation, multiplicative);
+}
+
+void		FourierSurface::updateCurves(Graphics& gfx, float phi, float theta)
+{
+	curves.updateShape(gfx, Coef, Ncoef, phi, theta);
 }
 
 Quaternion	FourierSurface::getRotation()
 {
 	return vscBuff.rotation;
+}
+
+void		FourierSurface::DrawCurves(Graphics& gfx)
+{
+	curves.Draw(gfx);
+}
+
+//	Curves
+
+void FourierSurface::Curves::create(Graphics& gfx, Coefficient* coef, const unsigned int ncoef, const float phi, const float theta, std::mutex* mtx)
+{
+	constexpr float error = 1.0035f;
+	if (isInit)
+		throw std::exception("You cannot create a curve over one that is already initialized");
+	else
+		isInit = true;
+
+	Vertex* vertexs = (Vertex*)calloc(2 * (Npoints + 1), sizeof(Vertex));
+	unsigned int Ntheta = unsigned int(theta * Npoints / pi);
+	for (unsigned int i = 0; i <= Npoints; i++)
+	{
+		float itheta = i * pi / Npoints;
+		float Y = 0.f;
+		if (i == Ntheta + 1)
+		{
+			for (unsigned int j = 0; j <= Npoints; j++)
+			{
+				float iphi = j * 2 * pi / Npoints + phi;
+				float Z = 0.f;
+				for (unsigned int k = 0; k < ncoef; k++)
+					Z += coef[k].C * Functions::Ylm(coef[k].L, coef[k].M, iphi, theta);
+
+				vertexs[i + j] = { (error * Z * Vector3f(sinf(theta) * cosf(iphi), sinf(theta) * sinf(iphi), cosf(theta))).getVector4(), { 1.f, 1.f, 1.f, 1.f } };
+			}
+		}
+		for (unsigned int k = 0; k < ncoef; k++)
+			Y += coef[k].C * Functions::Ylm(coef[k].L, coef[k].M, phi, itheta);
+
+		if (i <= Ntheta)
+			vertexs[i] = { (error * Y * Vector3f(sinf(itheta) * cosf(phi), sinf(itheta) * sinf(phi), cosf(itheta))).getVector4(), { 1.f, 1.f, 1.f, 1.f } };
+		else 
+			vertexs[i + Npoints + 1] = { (error * Y * Vector3f(sinf(itheta) * cosf(phi), sinf(itheta) * sinf(phi), cosf(itheta))).getVector4(), { 1.f, 1.f, 1.f, 1.f } };
+	}
+
+	unsigned short* indexs = (unsigned short*)calloc(2 * (Npoints + 1), sizeof(unsigned short));
+	for (UINT i = 0; i <= 2 * Npoints + 1; i++)
+		indexs[i] = i;
+
+	if(mtx)
+		mtx->lock();
+
+	AddBind(std::make_unique<VertexBuffer>(gfx, vertexs, 2 * (Npoints + 1)));
+	AddBind(std::make_unique<IndexBuffer>(gfx, indexs, 2 * (Npoints + 1)));
+
+	auto pvs = (VertexShader*)AddBind(std::move(std::make_unique<VertexShader>(gfx, SHADERS_DIR + std::wstring(L"CurvesVS.cso"))));
+	AddBind(std::make_unique<PixelShader>(gfx, SHADERS_DIR + std::wstring(L"CurvesPS.cso")));
+
+	std::vector<D3D11_INPUT_ELEMENT_DESC> ied =
+	{
+		{ "Position",0,DXGI_FORMAT_R32G32B32A32_FLOAT,0,0,D3D11_INPUT_PER_VERTEX_DATA,0 },
+		{ "Color",0,DXGI_FORMAT_R32G32B32A32_FLOAT,0,D3D11_APPEND_ALIGNED_ELEMENT,D3D11_INPUT_PER_VERTEX_DATA,0 },
+	};
+
+	AddBind(std::make_unique<InputLayout>(gfx, ied, pvs->GetBytecode()));
+	AddBind(std::make_unique<Topology>(D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP));
+	AddBind(std::make_unique<Blender>(gfx, false));
+
+	pVSCB = (ConstantBuffer<VSconstBuffer>*)AddBind(std::make_unique<ConstantBuffer<VSconstBuffer>>(gfx, vscBuff, VERTEX_CONSTANT_BUFFER_TYPE));
+
+	free(vertexs);
+	free(indexs);
+
+	if (mtx)
+		mtx->unlock();
+}
+
+void FourierSurface::Curves::updateShape(Graphics& gfx, Coefficient* coef, unsigned int ncoef, float phi, float theta)
+{
+	constexpr float error = 1.0035f;
+	if (!isInit)
+		throw std::exception("You cannot update the shape of a curve if you havent initialized it first");
+
+	Vertex* vertexs = (Vertex*)calloc(2 * (Npoints + 1), sizeof(Vertex));
+	unsigned int Ntheta = unsigned int(theta * Npoints / pi);
+	for (unsigned int i = 0; i <= Npoints; i++)
+	{
+		float itheta = i * pi / Npoints;
+		float Y = 0.f;
+		if (i == Ntheta + 1)
+		{
+			for (unsigned int j = 0; j <= Npoints; j++)
+			{
+				float iphi = j * 2 * pi / Npoints + phi;
+				float Z = 0.f;
+				for (unsigned int k = 0; k < ncoef; k++)
+					Z += coef[k].C * Functions::Ylm(coef[k].L, coef[k].M, iphi, theta);
+
+				vertexs[i + j] = { (error * Z * Vector3f(sinf(theta) * cosf(iphi), sinf(theta) * sinf(iphi), cosf(theta))).getVector4(), { 1.f, 1.f, 1.f, 1.f } };
+			}
+		}
+		for (unsigned int k = 0; k < ncoef; k++)
+			Y += coef[k].C * Functions::Ylm(coef[k].L, coef[k].M, phi, itheta);
+
+		if (i <= Ntheta)
+			vertexs[i] = { (error * Y * Vector3f(sinf(itheta) * cosf(phi), sinf(itheta) * sinf(phi), cosf(itheta))).getVector4(), { 1.f, 1.f, 1.f, 1.f } };
+		else
+			vertexs[i + Npoints + 1] = { (error * Y * Vector3f(sinf(itheta) * cosf(phi), sinf(itheta) * sinf(phi), cosf(itheta))).getVector4(), { 1.f, 1.f, 1.f, 1.f } };
+	}
+
+	unsigned short* indexs = (unsigned short*)calloc(2 * (Npoints + 1), sizeof(unsigned short));
+	for (UINT i = 0; i <= 2 * Npoints + 1; i++)
+		indexs[i] = i;
+
+	changeBind(std::make_unique<VertexBuffer>(gfx, vertexs, 2 * (Npoints + 1)), 0u);
+	changeBind(std::make_unique<IndexBuffer>(gfx, indexs, 2 *(Npoints + 1)), 1u);
+
+	free(vertexs);
+	free(indexs);
+}
+
+void FourierSurface::Curves::updateRotation(Graphics& gfx, Quaternion rotation, bool multiplicative)
+{
+	if (!multiplicative)
+		vscBuff.rotation = rotation;
+	else
+		vscBuff.rotation *= rotation;
+
+	vscBuff.rotation.normalize();
+	pVSCB->Update(gfx, vscBuff);
+}
+
+//	Creation Functions
+
+void createShape(const char* filename)
+{
+	int n = 21;
+	Vector3f* vertexs = (Vector3f*)calloc(n * n * 6, sizeof(Vector3f));
+
+	for (int m = 0; m < 6; m++)
+	{
+		for (int i = 0; i < n; i++)
+		{
+			for (int j = 0; j < n; j++)
+			{
+				float x = -1.f + 2.f * i / (n - 1.f);
+				float y = -1.f + 2.f * j / (n - 1.f);
+				switch (m)
+				{
+				case 0:
+					vertexs[n * n * m + n * i + j] = Vector3f(1.f, x, y);
+					break;
+				case 1:
+					vertexs[n * n * m + n * i + j] = Vector3f(-1.f, x, y);
+					break;
+				case 2:
+					vertexs[n * n * m + n * i + j] = Vector3f(x, 1.f, y);
+					break;
+				case 3:
+					vertexs[n * n * m + n * i + j] = Vector3f(x, -1.f, y);
+					break;
+				case 4:
+					vertexs[n * n * m + n * i + j] = Vector3f(x, y, 1.f);
+					break;
+				case 5:
+					vertexs[n * n * m + n * i + j] = Vector3f(x, y, -1.f);
+					break;
+				default:
+					break;
+				}
+			}
+		}
+	}
+
+	Vector3i* triangles = (Vector3i*)calloc((n - 1) * (n - 1) * 12, sizeof(Vector3i));
+
+	for (int m = 0; m < 6; m++)
+	{
+		for (int i = 0; i < n - 1; i++)
+		{
+			for (int j = 0; j < n - 1; j++)
+			{
+				triangles[2 * m * (n - 1) * (n - 1) + 2 * i * (n - 1) + 2 * j] = Vector3i(n * n * m + n * i + j, n * n * m + n * (i + 1) + j, n * n * m + n * i + (j + 1));
+				triangles[2 * m * (n - 1) * (n - 1) + 2 * i * (n - 1) + 2 * j + 1] = Vector3i(n * n * m + n * (i + 1) + (j + 1), n * n * m + n * (i + 1) + j, n * n * m + n * i + (j + 1));
+			}
+		}
+	}
+
+	FILE* file = fopen((FIGURES_DIR + std::string(filename) + ".dat").c_str(), "w");
+	if (!file)
+		throw std::exception("Couldn't create the file");
+
+	fprintf(file, "Vertexs:\n");
+
+	for (int i = 0; i < n * n * 6; i++)
+		fprintf(file, "(%f,%f,%f)\n", vertexs[i].x, vertexs[i].y, vertexs[i].z);
+
+	fprintf(file, "Triangles:");
+	for (int i = 0; i < (n - 1) * (n - 1) * 12; i++)
+		fprintf(file, "\n%i,%i,%i", triangles[i].x, triangles[i].y, triangles[i].z);
+
+	fclose(file);
 }
