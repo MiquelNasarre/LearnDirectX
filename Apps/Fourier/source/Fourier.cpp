@@ -15,6 +15,7 @@ bool			IG_DATA::UPDATE_CURVES = false;
 bool			IG_DATA::CURVES = false;
 
 bool			IG_DATA::CALCULATE_FIGURE = false;
+bool			IG_DATA::FIGURE_FILE = true;
 int				IG_DATA::FIGURE_VIEW = -1;
 bool			IG_DATA::LOADING = false;
 const char*		IG_DATA::FILENAME = (const char*)calloc(100, sizeof(char));
@@ -22,10 +23,21 @@ unsigned int	IG_DATA::MAXL = 0u;
 unsigned int	IG_DATA::NFIG = 0u;
 Vector2i		IG_DATA::WindowDim = { 0, 0 };
 
+bool			IG_DATA::UPDATE_TEXTURE = false;
+_float4color	IG_DATA::TEXTURE = { -1.f,0.f,0.f,0.f };
+
+int						IG_DATA::UPDATE_LIGHT = -1;
+IG_DATA::lightsource*	IG_DATA::LIGHTS = (IG_DATA::lightsource*)calloc(sizeof(IG_DATA::lightsource), 8);
+
 Fourier::Fourier()
 	: window(640, 480, "Fourier", "", true)
 {
 	window.setFramerateLimit(60);
+
+	IG_DATA::LIGHTS[0].is_on = true;
+	IG_DATA::LIGHTS[0].color = { 1.f, 1.f, 1.f, 1.f };
+	IG_DATA::LIGHTS[0].intensities = { 600.f, 320.f, 0.f, 0.f };
+	IG_DATA::LIGHTS[0].position = { 30.f, 10.f, 20.f, 0.f };
 
 	harmonics.create(window.graphics, &C, 1u);
 }
@@ -170,12 +182,21 @@ void Fourier::eventManager()
 	{
 		IG_DATA::CALCULATE_FIGURE = false;
 		IG_DATA::LOADING = true;
-		std::thread(calculateCoefficientsAsync, &coef, IG_DATA::FILENAME, IG_DATA::MAXL, &Fcoef).detach();
 
 		Figure = (FourierSurface**)memcpy(calloc(IG_DATA::NFIG + 1, sizeof(void*)), Figure, IG_DATA::NFIG * sizeof(void*));
 		Figure[IG_DATA::NFIG] = new(FourierSurface);
 
-		std::thread(createFigureAsync, &window.graphics, Figure[IG_DATA::NFIG], &coef, (IG_DATA::MAXL + 1) * (IG_DATA::MAXL + 1), &Ffigu, &mtx, &Fcoef).detach();
+		if (IG_DATA::FIGURE_FILE)
+		{
+			std::thread(calculateCoefficientsAsync, &coef, IG_DATA::FILENAME, IG_DATA::MAXL, &Fcoef).detach();
+			std::thread(createFigureAsync, &window.graphics, Figure[IG_DATA::NFIG], &coef, (IG_DATA::MAXL + 1) * (IG_DATA::MAXL + 1), &Ffigu, &mtx, &Fcoef).detach();
+		}
+		else
+		{
+			coef = FourierSurface::FileManager::loadCoefficientsFromFile(IG_DATA::FILENAME);
+			Fcoef = true;
+			std::thread(createFigureAsync, &window.graphics, Figure[IG_DATA::NFIG], &coef, FourierSurface::FileManager::ncoefFromFile(IG_DATA::FILENAME), &Ffigu, &mtx, &Fcoef).detach();
+		}
 	}
 
 	if (Ffigu)
@@ -185,6 +206,7 @@ void Fourier::eventManager()
 		IG_DATA::LOADING = false;
 		IG_DATA::FIGURE_VIEW = IG_DATA::NFIG - 1;
 		IG_DATA::UPDATE_CURVES = true;
+		IG_DATA::UPDATE_LIGHT = -2;
 	}
 
 	//	Shape updates
@@ -215,6 +237,49 @@ void Fourier::eventManager()
 			harmonics.updateCurves(window.graphics, IG_DATA::phi, IG_DATA::theta);
 		else
 			Figure[IG_DATA::FIGURE_VIEW]->updateCurves(window.graphics, IG_DATA::phi, IG_DATA::theta);
+	}
+
+	//	Set lights & textures
+
+	int l = IG_DATA::UPDATE_LIGHT;
+	if (l == -2) {
+		for (int i = 0; i < 8; i++) {
+			harmonics.updateLight(window.graphics, i, IG_DATA::LIGHTS[i].intensities, IG_DATA::LIGHTS[i].color, IG_DATA::LIGHTS[i].position);
+			for (unsigned int j = 0; j < IG_DATA::NFIG; j++)
+				Figure[j]->updateLight(window.graphics, i, IG_DATA::LIGHTS[i].intensities, IG_DATA::LIGHTS[i].color, IG_DATA::LIGHTS[i].position);
+		}
+	}
+	if (l > -1) {
+		harmonics.updateLight(window.graphics, l, IG_DATA::LIGHTS[l].intensities, IG_DATA::LIGHTS[l].color, IG_DATA::LIGHTS[l].position);
+		for (unsigned int j = 0; j < IG_DATA::NFIG; j++)
+			Figure[j]->updateLight(window.graphics, l, IG_DATA::LIGHTS[l].intensities, IG_DATA::LIGHTS[l].color, IG_DATA::LIGHTS[l].position);
+		IG_DATA::UPDATE_LIGHT = -1;
+	}
+
+	if (IG_DATA::UPDATE_TEXTURE)
+	{
+		IG_DATA::UPDATE_TEXTURE = false;
+		if (IG_DATA::TEXTURE.r == -1.f)
+		{
+			if (IG_DATA::FIGURE_VIEW > -1)
+				Figure[IG_DATA::FIGURE_VIEW]->updateTexture(window.graphics, Color::White, true);
+			else
+				harmonics.updateTexture(window.graphics, Color::White, true);
+		}
+		else if (IG_DATA::TEXTURE.g == -1.f)
+		{
+			if (IG_DATA::FIGURE_VIEW > -1)
+				Figure[IG_DATA::FIGURE_VIEW]->updateTexture(window.graphics, Color::White, false, true);
+			else
+				harmonics.updateTexture(window.graphics, Color::White, false, true);
+		}
+		else
+		{
+			if (IG_DATA::FIGURE_VIEW > -1)
+				Figure[IG_DATA::FIGURE_VIEW]->updateTexture(window.graphics, Color((float*)&IG_DATA::TEXTURE));
+			else
+				harmonics.updateTexture(window.graphics, Color((float*)&IG_DATA::TEXTURE));
+		}
 	}
 }
 

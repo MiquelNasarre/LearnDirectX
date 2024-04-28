@@ -14,9 +14,13 @@ public:
 
 	class FileManager
 	{
+	private:
+		static void calculateCoefficientAsync(Coefficient* coef, const unsigned int l, const Vector3f* centerTriangles, const float* areaTriangles, const float* distanceTriangles, const unsigned int numT, bool* finished);
 	public:
 		static void** extractFigureFromFile(const char* filename);
 		static Coefficient* calculateCoefficients(const char* filename, unsigned int maxL);
+		static unsigned int ncoefFromFile(const char* filename);
+		static Coefficient* loadCoefficientsFromFile(const char* filename);
 		static void saveCoefficients(Coefficient* coef, unsigned int ncoef, const char* filename);
 	};
 
@@ -24,6 +28,10 @@ private:
 	class Functions
 	{
 	public:
+		static void				generateHarmonicsAsync();
+		static void				generateDataAsync(Vector3f*** dataset, unsigned int l, bool* done);
+		static Vector3f***		DatasetYlmi;
+
 		static float			Ylm(int l, int m, float phi, float theta);
 		static float			Ylm(Vector3f v, unsigned int l, int m);
 		static float			Ylm(unsigned int i, unsigned int l, int m);
@@ -58,7 +66,7 @@ private:
 
 	class Curves : public Drawable
 	{
-		const unsigned int Npoints = 250u;
+		static const unsigned int Npoints = 250u;
 
 		struct Vertex {
 			_float4vector position;
@@ -72,15 +80,25 @@ private:
 
 		ConstantBuffer<VSconstBuffer>* pVSCB;
 
+		static void generatePhiCurveAsync(const unsigned int t0, const unsigned int t1, const Coefficient* coef, const unsigned int ncoef, const float phi, const float theta, Vertex* V);
+		static void generateThetaCurveAsync(const unsigned int t0, const unsigned int t1, const Coefficient* coef, const unsigned int ncoef, const float phi, const float theta, Vertex* V);
+
 	public:
 		Curves() {}
-		void create(Graphics& gfx, Coefficient* coef, const unsigned int ncoef, const float phi, const float theta, std::mutex* mtx);
-		void updateShape(Graphics& gfx, Coefficient* coef, const unsigned int ncoef, const float phi, const float theta);
+		void create(Graphics& gfx, const Coefficient* coef, const unsigned int ncoef, const float phi, const float theta, std::mutex* mtx);
+		void updateShape(Graphics& gfx, const Coefficient* coef, const unsigned int ncoef, const float phi, const float theta);
 		void updateRotation(Graphics& gfx, Quaternion rotation, bool multiplicative = false);
 	} curves;
 
-	Coefficient* Coef;
-	unsigned int Ncoef;
+	struct Vertex {
+		Vector3f vector;
+		Vector3f norm;
+		Color color;
+	};
+
+	Coefficient* Coef = NULL;
+	unsigned int Ncoef = 0u;
+	Vertex* Vertexs = NULL;
 
 	static Vector3f*		vertexsIcosphere;
 	static infoVect*		infoIcosphere;
@@ -91,18 +109,21 @@ private:
 	static unsigned int nvertexs;
 
 	static void generateIcosphere();
+	static void calculateVertexsAsync(const unsigned int ti, const unsigned int tf, const Coefficient* coef, const unsigned int ncoef, Vertex* V);
 
 public:
 	FourierSurface() {}
-	FourierSurface(Graphics& gfx, Coefficient* coef, unsigned int ncoef);
+	~FourierSurface();
+	FourierSurface(Graphics& gfx, const Coefficient* coef, const unsigned int ncoef);
 
-	void create(Graphics& gfx, Coefficient* coef, unsigned int ncoef, std::mutex* mtx = NULL);
-	void updateShape(Graphics& gfx, Coefficient* coef, unsigned int ncoef);
+	void create(Graphics& gfx, const Coefficient* coef, const unsigned int ncoef, std::mutex* mtx = NULL);
+	void updateShape(Graphics& gfx, const Coefficient* coef, const unsigned int ncoef);
 
 	void saveCoefficients(const char* filename);
 	void updateLight(Graphics& gfx, UINT id, Vector2f intensity, Color color, Vector3f position);
 	void updateLight(Graphics& gfx, UINT id, _float4vector intensity, _float4color color, _float4vector position);
 	void clearLights(Graphics& gfx);
+	void updateTexture(Graphics& gfx, Color color, bool def = false, bool random = false);
 	void updateRotation(Graphics& gfx, Vector3f axis, float angle, bool multiplicative = false);
 	void updateRotation(Graphics& gfx, Quaternion rotation, bool multiplicative = false);
 	void updateCurves(Graphics& gfx, float phi, float theta);
@@ -110,6 +131,8 @@ public:
 
 	void DrawCurves(Graphics& gfx);
 
+	static void generateDataSet();
+	static unsigned int depthDataset();
 private:
 
 	struct LIGHTSOURCE {
@@ -127,8 +150,8 @@ private:
 		Quaternion rotation = 1.f;
 	}vscBuff;
 
-	ConstantBuffer<VSconstBuffer>* pVSCB;
-	ConstantBuffer<PSconstBuffer>* pPSCB;
+	ConstantBuffer<VSconstBuffer>* pVSCB = NULL;
+	ConstantBuffer<PSconstBuffer>* pPSCB = NULL;
 
 };
 

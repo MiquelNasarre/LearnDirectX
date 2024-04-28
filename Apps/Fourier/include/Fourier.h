@@ -21,13 +21,26 @@ struct IG_DATA {
 	static bool UPDATE_CURVES;
 
 	static bool CALCULATE_FIGURE;
+	static bool FIGURE_FILE;
 	static int FIGURE_VIEW;
 	static unsigned int NFIG;
 	static bool LOADING;
 	static const char* FILENAME;
 	static unsigned int MAXL;
+	static bool UPDATE_TEXTURE;
+	static _float4color TEXTURE;
 
 	static Vector2i WindowDim;
+
+	static int UPDATE_LIGHT;
+	struct lightsource {
+		bool is_on;
+		_float4vector intensities;
+		_float4color color;
+		_float4vector position;
+	};
+
+	static lightsource* LIGHTS;
 };
 
 class Fourier {
