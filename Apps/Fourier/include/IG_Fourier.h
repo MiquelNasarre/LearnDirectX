@@ -7,7 +7,8 @@ private:
 	static bool loadMenuOpen;
 	static bool colorPickerOpen;
 	static const char** figureNames;
-	static unsigned int* figureSizes;
+	static const char** plotsNames;
+	static int* figureSizes;
 
 	static void saveLightState(int id);
 	static void loadLightState(int id);

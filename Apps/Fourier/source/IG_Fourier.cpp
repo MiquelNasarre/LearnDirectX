@@ -6,7 +6,8 @@
 bool IG_Fourier::loadMenuOpen = false;
 bool IG_Fourier::colorPickerOpen = false;
 const char** IG_Fourier::figureNames;
-unsigned int* IG_Fourier::figureSizes;
+const char** IG_Fourier::plotsNames;
+int* IG_Fourier::figureSizes;
 
 static IG_DATA::lightsource savestate;
 
@@ -109,40 +110,21 @@ void IG_Fourier::loadMenu()
 		}
 
 		static char* filename = (char*)calloc(100,sizeof(char));
+		static const char* existance;
 		static bool exists = false;
+		
+		if (ImGui::InputText("File", filename, 100, ImGuiInputTextFlags_AutoSelectAll) || change)
+		{
+			change = false;
+			FILE* file;
+			if (IG_DATA::FIGURE_FILE)
+				file = fopen((FIGURES_DIR + std::string(filename) + ".dat").c_str(), "r");
+			else
+				file = fopen((COEFFICIENTS_DIR + std::string(filename) + ".dat").c_str(), "r");
 
-		if (!exists)
-		{
-			if (ImGui::InputText(" File*", filename, 100, ImGuiInputTextFlags_AutoSelectAll) || change)
-			{
-				change = false;
-				FILE* file;
-				if (IG_DATA::FIGURE_FILE)
-					file = fopen((FIGURES_DIR + std::string(filename) + ".dat").c_str(), "r");
-				else
-					file = fopen((COEFFICIENTS_DIR + std::string(filename) + ".dat").c_str(), "r");
-				if (file)
-				{
-					exists = true;
-					fclose(file);
-				}
-			}
-		}
-		else
-		{
-			if (ImGui::InputText(" File", filename, 100, ImGuiInputTextFlags_AutoSelectAll) || change)
-			{
-				change = false;
-				FILE* file;
-				if (IG_DATA::FIGURE_FILE)
-					file = fopen((FIGURES_DIR + std::string(filename) + ".dat").c_str(), "r");
-				else
-					file = fopen((COEFFICIENTS_DIR + std::string(filename) + ".dat").c_str(), "r");
-				if (file)
-					fclose(file);
-				else
-					exists = false;
-			}
+			exists = file;
+			if (file)
+				fclose(file);
 		}
 
 		IG_DATA::FILENAME = filename;
@@ -157,18 +139,153 @@ void IG_Fourier::loadMenu()
 				L = MAX_L;
 			IG_DATA::MAXL = (unsigned int)L;
 		}
-
-		if (ImGui::Button("Load") && exists)
+		
+		if (!exists)
+			ImGui::BeginDisabled();
+		if (ImGui::Button("Load") || (ImGui::IsKeyPressed(ImGuiKey_Enter) && exists))
 		{
-			figureNames = (const char**)memcpy(calloc(IG_DATA::NFIG + 1, sizeof(const char*)), figureNames, IG_DATA::NFIG * sizeof(const char*));
-			figureNames[IG_DATA::NFIG] = (const char*)memcpy(calloc(100, sizeof(char)), filename, 100 * sizeof(char));
+			if (IG_DATA::FIGURE_FILE)
+			{
+				for (unsigned int i = 0; i < IG_DATA::NFIG; i++)
+				{
+					if (std::string(figureNames[i]) == IG_DATA::FILENAME)
+					{
+						if (figureSizes[i] == IG_DATA::MAXL)
+						{
+							IG_DATA::FIGURE_VIEW = i;
+							for(unsigned int j = 0; j<IG_DATA::PAIRS_SIZE;j++)
+							{
+								if (IG_DATA::PAIRS[j].x == i)
+									IG_DATA::SECOND_VIEW = IG_DATA::PAIRS[j].y;
+							}
+							IG_DATA::DOUBLE_VIEW = true;
+							IG_DATA::UPDATE_CURVES = true;
+							IG_DATA::UPDATE_LIGHT = -2;
+							loadMenuOpen = false;
+							return;
+						}
+						IG_DATA::ALREADY_EXISTS = true;
+						for (unsigned int j = 0; j < IG_DATA::PAIRS_SIZE; j++)
+						{
+							if (IG_DATA::PAIRS[j].x == i)
+								IG_DATA::COPY = IG_DATA::PAIRS[j].y;
+						}
+					}
+				}
 
-			figureSizes = (unsigned int*)memcpy(calloc(IG_DATA::NFIG + 1, sizeof(int)), figureSizes, IG_DATA::NFIG * sizeof(int));
-			figureSizes[IG_DATA::NFIG] = IG_DATA::MAXL;
+				IG_DATA::PAIRS_SIZE++;
+				Vector2i* Pairs = (Vector2i*)calloc(IG_DATA::PAIRS_SIZE, sizeof(Vector2i));
+				for (unsigned int i = 0; i < IG_DATA::PAIRS_SIZE - 1; i++)
+					Pairs[i] = IG_DATA::PAIRS[i];
+				if (IG_DATA::PAIRS)
+					free(IG_DATA::PAIRS);
+				IG_DATA::PAIRS = Pairs;
+				IG_DATA::PAIRS[IG_DATA::PAIRS_SIZE - 1] = { int(IG_DATA::NFIG), IG_DATA::ALREADY_EXISTS ? IG_DATA::COPY : -int(IG_DATA::NPLOT) - 2 };
 
-			IG_DATA::CALCULATE_FIGURE = true;
-			loadMenuOpen = false;
+
+				const char** tNames = (const char**)calloc(IG_DATA::NFIG + 1, sizeof(void*));
+				for (unsigned int i = 0; i < IG_DATA::NFIG; i++)
+					tNames[i] = figureNames[i];
+				if(figureNames)
+					free(figureNames);
+				figureNames = tNames;
+				
+				figureNames[IG_DATA::NFIG] = (const char*)calloc(100, sizeof(char));
+					char* temp = (char*)figureNames[IG_DATA::NFIG];
+				for (unsigned int i = 0; i < 100; i++)
+				{
+					char c = filename[i];
+					if (c <= 90 && c >= 65)
+						c += 32;
+					temp[i] = c;
+					if (!c)
+						break;
+				}
+
+				if (!IG_DATA::ALREADY_EXISTS)
+				{
+					const char** tNames = (const char**)calloc(IG_DATA::NPLOT + 1, sizeof(void*));
+					for (unsigned int i = 0; i < IG_DATA::NPLOT; i++)
+						tNames[i] = plotsNames[i];
+					if (plotsNames)
+						free(plotsNames);
+
+					plotsNames = tNames;
+
+					plotsNames[IG_DATA::NFIG] = (const char*)calloc(100, sizeof(char));
+					temp = (char*)plotsNames[IG_DATA::NFIG];
+					for (unsigned int i = 0; i < 100; i++)
+					{
+						char c = filename[i];
+						if (c <= 90 && c >= 65)
+							c += 32;
+						temp[i] = c;
+						if (!c)
+							break;
+					}
+				}
+
+				int* tSizes = (int*)calloc(IG_DATA::NFIG + 1, sizeof(int));
+				for (unsigned int i = 0; i < IG_DATA::NFIG; i++)
+					tSizes[i] = figureSizes[i];
+				if (figureSizes)
+					free(figureSizes);
+				figureSizes = tSizes;
+				figureSizes[IG_DATA::NFIG] = IG_DATA::MAXL;
+
+				IG_DATA::CALCULATE_FIGURE = true;
+				loadMenuOpen = false;
+			}
+			
+			else
+			{
+				for (unsigned int i = 0; i < IG_DATA::NFIG; i++)
+				{
+					if (std::string(figureNames[i]) == IG_DATA::FILENAME && figureSizes[i] == -1)
+					{
+						IG_DATA::FIGURE_VIEW = i;
+						IG_DATA::DOUBLE_VIEW = false;
+						IG_DATA::UPDATE_CURVES = true;
+						IG_DATA::UPDATE_LIGHT = -2;
+						loadMenuOpen = false;
+						return;
+					}
+				}
+
+				const char** tNames = (const char**)calloc(IG_DATA::NFIG + 1, sizeof(void*));
+				for (unsigned int i = 0; i < IG_DATA::NFIG; i++)
+					tNames[i] = figureNames[i];
+				free((void*)figureNames);
+				figureNames = tNames;
+
+				figureNames[IG_DATA::NFIG] = (const char*)calloc(100, sizeof(char));
+				char* temp = (char*)figureNames[IG_DATA::NFIG];
+				for (unsigned int i = 0; i < 100; i++)
+				{
+					char c = filename[i];
+					if (c <= 90 && c >= 65)
+						c += 32;
+					temp[i] = c;
+					if (!c)
+						break;
+				}
+
+				int* tSizes = (int*)calloc(IG_DATA::NFIG + 1, sizeof(int));
+				for (unsigned int i = 0; i < IG_DATA::NFIG; i++)
+					tSizes[i] = figureSizes[i];
+				if (figureSizes)
+					free(figureSizes);
+				figureSizes = tSizes;
+				figureSizes[IG_DATA::NFIG] = -1;
+
+				IG_DATA::CALCULATE_FIGURE = true;
+				loadMenuOpen = false;
+
+			}
+
 		}
+		if (!exists)
+			ImGui::EndDisabled();
 
 		ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX() + 45.f, ImGui::GetCursorPosY() - 23.f));
 		if (ImGui::Button("Cancel"))
@@ -222,18 +339,40 @@ void IG_Fourier::render()
 		{
 			if (ImGui::BeginMenu("Figure"))
 			{
-				if (ImGui::MenuItem("Spehrical Harmonics"))
+				if (ImGui::MenuItem("Spherical Harmonics"))
 				{
 					IG_DATA::FIGURE_VIEW = -1;
 					IG_DATA::UPDATE_CURVES = true;
+					IG_DATA::DOUBLE_VIEW = false;
 				}
 
-				for (unsigned int i = 0; i < IG_DATA::NFIG; i++)
+				if (IG_DATA::NFIG)
 				{
-					if (ImGui::MenuItem(figureNames[i], std::to_string(figureSizes[i]).c_str()))
+					ImGui::MenuItem("Fourier Series", "", false, false);
+
+					for (unsigned int i = 0; i < IG_DATA::NFIG; i++)
 					{
-						IG_DATA::FIGURE_VIEW = i;
-						IG_DATA::UPDATE_CURVES = true;
+						if (ImGui::MenuItem(figureNames[i], figureSizes[i] == -1 ? "" : std::to_string(figureSizes[i]).c_str()))
+						{
+							IG_DATA::FIGURE_VIEW = i;
+							IG_DATA::UPDATE_CURVES = true;
+							IG_DATA::DOUBLE_VIEW = false;
+						}
+					}
+				}
+
+				if (IG_DATA::NPLOT)
+				{
+					ImGui::MenuItem("Data Plots", "", false, false);
+
+					for (unsigned int i = 0; i < IG_DATA::NPLOT; i++)
+					{
+						if (ImGui::MenuItem(plotsNames[i]))
+						{
+							IG_DATA::FIGURE_VIEW = -int(i) - 2;
+							IG_DATA::DOUBLE_VIEW = false;
+						}
+
 					}
 				}
 
@@ -254,7 +393,7 @@ void IG_Fourier::render()
 				}
 
 				ImGui::PushItemFlag(ImGuiItemFlags_SelectableDontClosePopup, true);
-				if (!datasetStarted && ImGui::MenuItem("Generate dataset"))
+				if (!datasetStarted && ImGui::MenuItem("Generate Dataset"))
 				{
 					datasetStarted = true;
 					FourierSurface::generateDataSet();
@@ -309,7 +448,7 @@ void IG_Fourier::render()
 					IG_DATA::UPDATE_TEXTURE = true;
 					IG_DATA::TEXTURE = { -1.f,0.f,0.f,0.f };
 				}
-				if (ImGui::MenuItem("Pick color"))
+				if (ImGui::MenuItem("Pick Color"))
 					colorPickerOpen = true;
 				if (ImGui::MenuItem("Randomized"))
 				{
@@ -328,20 +467,28 @@ void IG_Fourier::render()
 		ImGui::SetWindowCollapsed(true, ImGuiCond_Once);
 		ImGui::SetWindowSize(ImVec2(350, 120), ImGuiCond_Once);
 
-		if (ImGui::SliderInt("Valor de L", &IG_DATA::L, 0, MAX_L))
+		if (IG_DATA::FIGURE_VIEW == -1)
 		{
-			IG_DATA::UPDATE = true;
-			IG_DATA::UPDATE_TEXTURE = true;
+			if (ImGui::SliderInt("L value", &IG_DATA::L, 0, MAX_L))
+			{
+				IG_DATA::UPDATE = true;
+				IG_DATA::UPDATE_TEXTURE = true;
+			}
+
+			if (ImGui::SliderInt("M value", &IG_DATA::M, -IG_DATA::L, IG_DATA::L))
+			{
+				IG_DATA::UPDATE = true;
+				IG_DATA::UPDATE_TEXTURE = true;
+			}
+
+			if (IG_DATA::M > IG_DATA::L) IG_DATA::M = IG_DATA::L;
+			if (-IG_DATA::M > IG_DATA::L) IG_DATA::M = -IG_DATA::L;
 		}
 
-		if (ImGui::SliderInt("Valor de M", &IG_DATA::M, -IG_DATA::L, IG_DATA::L))
+		else
 		{
-			IG_DATA::UPDATE = true;
-			IG_DATA::UPDATE_TEXTURE = true;
+			ImGui::Text("Interpolation will be impelemented soon\n \nHopefully...");
 		}
-
-		if (IG_DATA::M > IG_DATA::L) IG_DATA::M = IG_DATA::L;
-		if (-IG_DATA::M > IG_DATA::L) IG_DATA::M = -IG_DATA::L;
 
 		if (!IG_DATA::LOADING && ImGui::Button("Load Figure"))
 			loadMenuOpen = true;
@@ -365,34 +512,60 @@ void IG_Fourier::render()
 
 		ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX() + 100.f, ImGui::GetCursorPosY() - 23.f));
 
+		if (IG_DATA::DOUBLE_VIEW)
+		{
+			if (ImGui::Button("Single View"))
+				IG_DATA::DOUBLE_VIEW = false;
+			ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX() + 200.f, ImGui::GetCursorPosY() - 23.f));
+		}
+		else
+		{
+			for (unsigned int i = 0; i < IG_DATA::PAIRS_SIZE; i++)
+			{
+				if (IG_DATA::FIGURE_VIEW == IG_DATA::PAIRS[i].x || IG_DATA::FIGURE_VIEW == IG_DATA::PAIRS[i].y)
+				{
+					if (ImGui::Button("Double View"))
+					{
+						IG_DATA::DOUBLE_VIEW = true;
+						IG_DATA::SECOND_VIEW = IG_DATA::FIGURE_VIEW == IG_DATA::PAIRS[i].x ? IG_DATA::PAIRS[i].y : IG_DATA::PAIRS[i].x;
+					}
+					ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX() + 200.f, ImGui::GetCursorPosY() - 23.f));
+				}
+
+			}
+		}
+
+		
+		
 		if (IG_DATA::CURVES)
 		{
-			if (ImGui::Button("Hide curves"))
+			if (ImGui::Button("Hide Curves"))
 			{
 				IG_DATA::CURVES = false;
 				ImGui::SetWindowSize(ImVec2(350, 120));
 			}
 
-			if (ImGui::SliderFloat("phi", &IG_DATA::phi, 0.f, 2 * pi)) IG_DATA::UPDATE_CURVES = true;
-			if (ImGui::SliderFloat("theta", &IG_DATA::theta, 0.f, pi)) IG_DATA::UPDATE_CURVES = true;
+			if (ImGui::SliderFloat("Phi", &IG_DATA::phi, 0.f, 2 * pi)) IG_DATA::UPDATE_CURVES = true;
+			if (ImGui::SliderFloat("Theta", &IG_DATA::theta, 0.f, pi)) IG_DATA::UPDATE_CURVES = true;
 		}
-		else if (ImGui::Button("Show curves"))
+		else if (ImGui::Button("Show Curves"))
 		{
 			ImGui::SetWindowSize(ImVec2(350, 168));
 			IG_DATA::CURVES = true;
 			IG_DATA::UPDATE_CURVES = true;
 		}
 
-		if (loadMenuOpen)
-			loadMenu();
-
-		if (light > -1)
-			doLightEditor(light);
-
-		if (colorPickerOpen)
-			colorPicker();
 	}
 	ImGui::End();
+
+	if (loadMenuOpen)
+		loadMenu();
+
+	if (light > -1)
+		doLightEditor(light);
+
+	if (colorPickerOpen)
+		colorPicker();
 
 	drawFrame();
 }

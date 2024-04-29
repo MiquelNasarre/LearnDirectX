@@ -33,7 +33,7 @@ void FourierSurface::FileManager::calculateCoefficientAsync(Coefficient* coef, c
 	*finished = true;
 }
 
-void** FourierSurface::FileManager::extractFigureFromFile(const char* filename)
+const void** FourierSurface::FileManager::extractFigureFromFile(const char* filename)
 {
 	FILE* file = fopen((FIGURES_DIR + std::string(filename) + ".dat").c_str(), "r");
 	if (!file)
@@ -67,7 +67,7 @@ void** FourierSurface::FileManager::extractFigureFromFile(const char* filename)
 
 	fclose(file);
 
-	void** figure = (void**)calloc(3, sizeof(void*));
+	const void** figure = (const void**)calloc(3, sizeof(void*));
 	int* nt = (int*)calloc(2, sizeof(int));
 	nt[0] = nT;
 	nt[1] = nV;
@@ -78,16 +78,12 @@ void** FourierSurface::FileManager::extractFigureFromFile(const char* filename)
 	return figure;
 }
 
-FourierSurface::Coefficient* FourierSurface::FileManager::calculateCoefficients(const char* filename, unsigned int maxL)
+FourierSurface::Coefficient* FourierSurface::FileManager::calculateCoefficients(const void** extractedFigure, unsigned int maxL)
 {
-	void** figure = extractFigureFromFile(filename);
-
-	Vector3f* vertexs = (Vector3f*)figure[0];
-	Vector3i* triangles = (Vector3i*)figure[1];
-	int numT = ((int*)figure[2])[0];
-	int numV = ((int*)figure[2])[1];
-	free(figure[2]);
-	free(figure);
+	const Vector3f* vertexs = (Vector3f*)extractedFigure[0];
+	const Vector3i* triangles = (Vector3i*)extractedFigure[1];
+	const int numT = ((int*)extractedFigure[2])[0];
+	const int numV = ((int*)extractedFigure[2])[1];
 
 	// Now we have the figure
 	// Lets calculate the coefficients
@@ -146,8 +142,6 @@ FourierSurface::Coefficient* FourierSurface::FileManager::calculateCoefficients(
 	free(centerTriangles);
 	free(areaTriangles);
 	free(distanceTriangles);
-	free(vertexs);
-	free(triangles);
 	return Coef;
 
 }
@@ -1128,6 +1122,18 @@ void		FourierSurface::updateRotation(Graphics& gfx, Quaternion rotation, bool mu
 	curves.updateRotation(gfx, rotation, multiplicative);
 }
 
+void		FourierSurface::updateScreenPosition(Graphics& gfx, Vector2f screenDisplacement)
+{
+	if (!isInit)
+		throw std::exception("You cannot update screen position to an uninitialized surface");
+
+	vscBuff.screenDisplacement = screenDisplacement.getVector4();
+
+	pVSCB->Update(gfx, vscBuff);
+
+	curves.updateScreenPosition(gfx, screenDisplacement);
+}
+
 void		FourierSurface::updateCurves(Graphics& gfx, float phi, float theta)
 {
 	curves.updateShape(gfx, Coef, Ncoef, phi, theta);
@@ -1281,6 +1287,13 @@ void FourierSurface::Curves::updateRotation(Graphics& gfx, Quaternion rotation, 
 		vscBuff.rotation *= rotation;
 
 	vscBuff.rotation.normalize();
+	pVSCB->Update(gfx, vscBuff);
+}
+
+void FourierSurface::Curves::updateScreenPosition(Graphics& gfx, Vector2f screenDisplacement)
+{
+	vscBuff.screenDisplacement = screenDisplacement.getVector4();
+
 	pVSCB->Update(gfx, vscBuff);
 }
 

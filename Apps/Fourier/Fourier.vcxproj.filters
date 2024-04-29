@@ -30,6 +30,9 @@
     <ClInclude Include="include\FourierSurface.h">
       <Filter>Sources\Public</Filter>
     </ClInclude>
+    <ClInclude Include="include\Polihedron.h">
+      <Filter>Sources\Public</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\WinMain.cpp">
@@ -44,6 +47,9 @@
     <ClCompile Include="source\FourierSurface.cpp">
       <Filter>Sources\Private</Filter>
     </ClCompile>
+    <ClCompile Include="source\Polihedron.cpp">
+      <Filter>Sources\Private</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shaders\VertexShader.hlsl">
@@ -56,6 +62,12 @@
       <Filter>Shaders</Filter>
     </FxCompile>
     <FxCompile Include="Shaders\CurvesPS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\PolihedronVS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\PolihedronPS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
   </ItemGroup>

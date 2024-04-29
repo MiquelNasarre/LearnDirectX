@@ -1,13 +1,9 @@
 #pragma once
 #include "Window.h"
-#include "Drawable/Curve.h"
-#include "Drawable/Point.h"
 #include "FourierSurface.h"
+#include "Polihedron.h"
 
 struct IG_DATA {
-	static float THETA;
-	static float PHI;
-	static float SPEED;
 
 	static int L;
 	static int M;
@@ -19,10 +15,18 @@ struct IG_DATA {
 	static bool CURVES;
 	static bool UPDATE_CURVES;
 
+	static bool DOUBLE_VIEW;
+	static int FIGURE_VIEW;
+	static int SECOND_VIEW;
+	static Vector2i* PAIRS;
+	static unsigned int PAIRS_SIZE;
+	static bool ALREADY_EXISTS;
+	static int COPY;
+
 	static bool CALCULATE_FIGURE;
 	static bool FIGURE_FILE;
-	static int FIGURE_VIEW;
 	static unsigned int NFIG;
+	static unsigned int NPLOT;
 	static bool LOADING;
 	static const char* FILENAME;
 	static unsigned int MAXL;
@@ -38,7 +42,6 @@ struct IG_DATA {
 		_float4color color;
 		_float4vector position;
 	};
-
 	static lightsource* LIGHTS;
 };
 
@@ -50,7 +53,7 @@ private:
 
 	float scale = 200.f;
 	Vector3f center = { 0.f, 0.f, 0.f };
-	Vector3f observer = { 0.f,-1.f, 0.f };
+	Vector3f observer = { -1.f, 0.f, 0.f };
 
 	Vector3f axis = Vector3f(sinf(0.5f), 0.f, cosf(0.5f));
 	float dangle = 0.005f;
@@ -71,18 +74,23 @@ private:
 	Vector3f magnetPos = { 1.f, 0.f, 0.f };
 
 	void drag_dynamic_space();
+	void drag_dynamic_plane();
 	void magneticReturn();
 	void strictReturn();
+
+	// Figures
+
+	Polihedron** DataPlots;
 
 	// Surfaces
 
 	FourierSurface harmonics;
 	FourierSurface::Coefficient C = { (unsigned int)IG_DATA::L, IG_DATA::M, 1 };
 
-	// Multithread stuff
-
 	bool Ffigu = false;
 	bool Fcoef = false;
+	bool Fplot = false;
+	const void** extractedFigure = NULL;
 	FourierSurface::Coefficient* coef;
 	std::mutex mtx;
 	FourierSurface** Figure;
@@ -99,5 +107,6 @@ public:
 
 //  Threading utlities
 
+void createPlotAsync(Graphics* gfx, Polihedron* dataplot, const void** extractedFigure, bool* done, std::mutex* mtx);
 void createFigureAsync(Graphics* gfx, FourierSurface* figure, FourierSurface::Coefficient** coef, unsigned int ncoef, bool* done, std::mutex* mtx, bool* begin);
-void calculateCoefficientsAsync(FourierSurface::Coefficient** coef, const char* filename, unsigned int maxL, bool* done);
+void calculateCoefficientsAsync(FourierSurface::Coefficient** coef, const void** extractedFigure, unsigned int maxL, bool* done);

@@ -3,9 +3,15 @@
 #include "Mouse.h"
 #include "IG_Fourier.h"
 
-float			IG_DATA::THETA = 0.f;
-float			IG_DATA::PHI   = 0.f;
-float			IG_DATA::SPEED = 0.f;
+#define INTERPRET_FIGURE_VIEW(view, call) \
+if (view == -1) harmonics.call; \
+else if (view > -1) Figure[view]->call; \
+else DataPlots[-view - 2]->call
+
+#define INTERPRET_FIGURE_VIEW_NT(view, call) \
+if (view == -1) harmonics.call; \
+else if (view > -1) Figure[view]->call
+
 int				IG_DATA::L = 7;
 int				IG_DATA::M = -4;
 float			IG_DATA::theta = 0.f;
@@ -14,13 +20,21 @@ bool			IG_DATA::UPDATE = false;
 bool			IG_DATA::UPDATE_CURVES = false;
 bool			IG_DATA::CURVES = false;
 
+bool 			IG_DATA::DOUBLE_VIEW = false;
+int 			IG_DATA::FIGURE_VIEW = -1;
+int 			IG_DATA::SECOND_VIEW = -1;
+Vector2i*		IG_DATA::PAIRS = NULL;
+unsigned int	IG_DATA::PAIRS_SIZE = 0u;
+bool			IG_DATA::ALREADY_EXISTS = false;
+int				IG_DATA::COPY = -1;
+
 bool			IG_DATA::CALCULATE_FIGURE = false;
 bool			IG_DATA::FIGURE_FILE = true;
-int				IG_DATA::FIGURE_VIEW = -1;
 bool			IG_DATA::LOADING = false;
 const char*		IG_DATA::FILENAME = (const char*)calloc(100, sizeof(char));
 unsigned int	IG_DATA::MAXL = 0u;
 unsigned int	IG_DATA::NFIG = 0u;
+unsigned int	IG_DATA::NPLOT = 0u;
 Vector2i		IG_DATA::WindowDim = { 0, 0 };
 
 bool			IG_DATA::UPDATE_TEXTURE = false;
@@ -74,6 +88,41 @@ void Fourier::drag_dynamic_space()
 	axis = newRot.getVector();
 	if (!axis)axis = newMouse;
 	axis.normalize();
+}
+
+void Fourier::drag_dynamic_plane()
+{
+	Vector3f obs = window.graphics.getObserver();
+	Vector3f ex = -(obs * Vector3f(0.f, 0.f, 1.f)).normalize();
+	Vector3f ey = ex * obs;
+
+	Vector2i movement = Mouse::getPosition() - lastPos;
+	lastPos = Mouse::getPosition();
+
+	Vector3f desiredAxis;
+	float desiredAngle;
+
+	if (!movement)
+	{
+		desiredAxis = obs;
+		desiredAngle = Mouse::getWheel() / 18000.f;
+		dangle *= 0.90f;
+	}
+	else
+	{
+		desiredAxis = (movement.y * ex - movement.x * ey).normalize();
+		desiredAngle = 2 * movement.abs() / scale;
+	}
+
+	Vector3f preAxis = axis;
+	axis = (axis * dangle + desiredAxis * desiredAngle);
+	if (axis)axis.normalize();
+	else axis = desiredAxis;
+	dangle *= axis ^ preAxis;
+	dangle += (desiredAxis ^ axis) * (desiredAngle - dangle) / 20.f;
+
+	if (dangle > 0.2f)dangle = 0.2f;
+	if (dangle < -0.2f)dangle = -0.2f;
 }
 
 void Fourier::magneticReturn()
@@ -158,7 +207,13 @@ void Fourier::eventManager()
 		dragging = false;
 
 	if (dragging)
+	{
+		if (IG_DATA::DOUBLE_VIEW)
+			drag_dynamic_plane();
+		else
 			drag_dynamic_space();
+	}
+
 
 	else
 		scale *= powf(1.1f, Mouse::getWheel() / 120.f);
@@ -173,15 +228,6 @@ void Fourier::eventManager()
 		axis = { 1.f,1.f,1.f };
 		dangle = 0.f;
 	}
-
-
-	//	Calculate observer vector
-
-	observer = {
-			-cosf(IG_DATA::PHI) * cosf(IG_DATA::THETA) ,
-			-cosf(IG_DATA::PHI) * sinf(IG_DATA::THETA) ,
-			-sinf(IG_DATA::PHI)
-	};
 
 	// Multithread
 
@@ -200,7 +246,25 @@ void Fourier::eventManager()
 
 		if (IG_DATA::FIGURE_FILE)
 		{
-			std::thread(calculateCoefficientsAsync, &coef, IG_DATA::FILENAME, IG_DATA::MAXL, &Fcoef).detach();
+			extractedFigure = FourierSurface::FileManager::extractFigureFromFile(IG_DATA::FILENAME);
+
+			if (!IG_DATA::ALREADY_EXISTS)
+			{
+				Polihedron** tPlots = (Polihedron**)calloc(IG_DATA::NPLOT + 1, sizeof(void*));
+				for (unsigned int i = 0; i < IG_DATA::NPLOT; i++)
+					tPlots[i] = DataPlots[i];
+				if (IG_DATA::NPLOT)
+					free(DataPlots);
+				DataPlots = tPlots;
+				DataPlots[IG_DATA::NPLOT] = new(Polihedron);
+				std::thread(createPlotAsync, &window.graphics, DataPlots[IG_DATA::NPLOT], extractedFigure, &Fplot, &mtx).detach();
+			}
+			else
+			{
+				Fplot = true;
+			}
+
+			std::thread(calculateCoefficientsAsync, &coef, extractedFigure, IG_DATA::MAXL, &Fcoef).detach();
 			std::thread(createFigureAsync, &window.graphics, Figure[IG_DATA::NFIG], &coef, (IG_DATA::MAXL + 1) * (IG_DATA::MAXL + 1), &Ffigu, &mtx, &Fcoef).detach();
 		}
 		else
@@ -211,7 +275,7 @@ void Fourier::eventManager()
 		}
 	}
 
-	if (Ffigu)
+	if (Ffigu && !IG_DATA::FIGURE_FILE)
 	{
 		Ffigu = false;
 		IG_DATA::NFIG++;
@@ -219,6 +283,36 @@ void Fourier::eventManager()
 		IG_DATA::FIGURE_VIEW = IG_DATA::NFIG - 1;
 		IG_DATA::UPDATE_CURVES = true;
 		IG_DATA::UPDATE_LIGHT = -2;
+		IG_DATA::DOUBLE_VIEW = false;
+	}
+	if (Ffigu && Fplot)
+	{
+		Ffigu = false;
+		Fplot = false;
+
+
+		IG_DATA::NFIG++;
+		IG_DATA::DOUBLE_VIEW = true;
+		IG_DATA::LOADING = false;
+		IG_DATA::FIGURE_VIEW = IG_DATA::NFIG - 1;
+		IG_DATA::UPDATE_CURVES = true;
+		IG_DATA::UPDATE_LIGHT = -2;
+
+		if (IG_DATA::ALREADY_EXISTS)
+		{
+			IG_DATA::SECOND_VIEW = IG_DATA::COPY;
+			IG_DATA::ALREADY_EXISTS = false;
+		}
+		else
+		{
+			IG_DATA::NPLOT++;
+			IG_DATA::SECOND_VIEW = -int(IG_DATA::NPLOT) - 1;
+		}
+
+		free((void*)extractedFigure[0]);
+		free((void*)extractedFigure[1]);
+		free((void*)extractedFigure[2]);
+		free(extractedFigure);
 	}
 
 	//	Shape updates
@@ -233,22 +327,17 @@ void Fourier::eventManager()
 		harmonics.updateShape(window.graphics, &C, 1u);
 
 		if (IG_DATA::CURVES)
-		{
-			if (IG_DATA::FIGURE_VIEW == -1)
-				harmonics.updateCurves(window.graphics, IG_DATA::phi, IG_DATA::theta);
-			else
-				Figure[IG_DATA::FIGURE_VIEW]->updateCurves(window.graphics, IG_DATA::phi, IG_DATA::theta);
-		}
+			harmonics.updateCurves(window.graphics, IG_DATA::phi, IG_DATA::theta);
 	}
 
 	if (IG_DATA::UPDATE_CURVES)
 	{
 		IG_DATA::UPDATE_CURVES = false;
 
-		if (IG_DATA::FIGURE_VIEW == -1)
-			harmonics.updateCurves(window.graphics, IG_DATA::phi, IG_DATA::theta);
-		else
-			Figure[IG_DATA::FIGURE_VIEW]->updateCurves(window.graphics, IG_DATA::phi, IG_DATA::theta);
+		INTERPRET_FIGURE_VIEW_NT(IG_DATA::FIGURE_VIEW, updateCurves(window.graphics, IG_DATA::phi, IG_DATA::theta));
+
+		if (IG_DATA::DOUBLE_VIEW)
+			{INTERPRET_FIGURE_VIEW_NT(IG_DATA::SECOND_VIEW, updateCurves(window.graphics, IG_DATA::phi, IG_DATA::theta));}
 	}
 
 	//	Set lights & textures
@@ -273,26 +362,35 @@ void Fourier::eventManager()
 		IG_DATA::UPDATE_TEXTURE = false;
 		if (IG_DATA::TEXTURE.r == -1.f)
 		{
-			if (IG_DATA::FIGURE_VIEW > -1)
-				Figure[IG_DATA::FIGURE_VIEW]->updateTexture(window.graphics, Color::White, true);
-			else
-				harmonics.updateTexture(window.graphics, Color::White, true);
+			INTERPRET_FIGURE_VIEW_NT(IG_DATA::FIGURE_VIEW, updateTexture(window.graphics, Color::White, true));
+			if(IG_DATA::DOUBLE_VIEW)
+				{INTERPRET_FIGURE_VIEW_NT(IG_DATA::SECOND_VIEW, updateTexture(window.graphics, Color::White, true));}
 		}
 		else if (IG_DATA::TEXTURE.g == -1.f)
 		{
-			if (IG_DATA::FIGURE_VIEW > -1)
-				Figure[IG_DATA::FIGURE_VIEW]->updateTexture(window.graphics, Color::White, false, true);
-			else
-				harmonics.updateTexture(window.graphics, Color::White, false, true);
+			INTERPRET_FIGURE_VIEW_NT(IG_DATA::FIGURE_VIEW, updateTexture(window.graphics, Color::White, false, true));
+			if(IG_DATA::DOUBLE_VIEW)
+				{INTERPRET_FIGURE_VIEW_NT(IG_DATA::SECOND_VIEW, updateTexture(window.graphics, Color::White, false, true));}
 		}
 		else
 		{
-			if (IG_DATA::FIGURE_VIEW > -1)
-				Figure[IG_DATA::FIGURE_VIEW]->updateTexture(window.graphics, Color((float*)&IG_DATA::TEXTURE));
-			else
-				harmonics.updateTexture(window.graphics, Color((float*)&IG_DATA::TEXTURE));
+			INTERPRET_FIGURE_VIEW_NT(IG_DATA::FIGURE_VIEW, updateTexture(window.graphics, Color((float*)&IG_DATA::TEXTURE)));
+			if (IG_DATA::DOUBLE_VIEW)
+				{INTERPRET_FIGURE_VIEW_NT(IG_DATA::SECOND_VIEW, updateTexture(window.graphics, Color((float*)&IG_DATA::TEXTURE)));}
 		}
+
 	}
+
+	//	Double view
+
+	if (IG_DATA::DOUBLE_VIEW)
+	{
+		INTERPRET_FIGURE_VIEW(IG_DATA::FIGURE_VIEW, updateScreenPosition(window.graphics, {-0.5f, 0.f }));
+		INTERPRET_FIGURE_VIEW(IG_DATA::SECOND_VIEW, updateScreenPosition(window.graphics, { 0.5f, 0.f }));
+	}
+	else
+		{INTERPRET_FIGURE_VIEW(IG_DATA::FIGURE_VIEW, updateScreenPosition(window.graphics, { 0.f, 0.f }));}
+
 }
 
 void Fourier::doFrame()
@@ -301,31 +399,30 @@ void Fourier::doFrame()
 
 	//	Update objects
 
+	window.setTitle("Fourier  -  " + std::to_string(int(std::round(window.getFramerate()))) + "fps");
+
 	window.graphics.updatePerspective(observer, center, scale);
 
-	if (IG_DATA::FIGURE_VIEW == -1)
-		harmonics.updateRotation(window.graphics, rotation);
-	else
-		Figure[IG_DATA::FIGURE_VIEW]->updateRotation(window.graphics, rotation);
+	INTERPRET_FIGURE_VIEW(IG_DATA::FIGURE_VIEW, updateRotation(window.graphics, rotation));
 
-	window.setTitle("Fourier  -  " + std::to_string(int(std::round(window.getFramerate()))) + "fps");
+	if(IG_DATA::DOUBLE_VIEW)
+		{INTERPRET_FIGURE_VIEW(IG_DATA::SECOND_VIEW, updateRotation(window.graphics, rotation));}
 
 	//	Rendering
 
 	window.graphics.clearBuffer(Color::Black);
 
-	if (IG_DATA::FIGURE_VIEW == -1)
-		harmonics.Draw(window.graphics);
-	else
-		Figure[IG_DATA::FIGURE_VIEW]->Draw(window.graphics);
+	INTERPRET_FIGURE_VIEW(IG_DATA::FIGURE_VIEW, Draw(window.graphics));
+
+	if(IG_DATA::DOUBLE_VIEW)
+		{INTERPRET_FIGURE_VIEW(IG_DATA::SECOND_VIEW, Draw(window.graphics));}
 
 	if (IG_DATA::CURVES)
-	{
-		if (IG_DATA::FIGURE_VIEW == -1)
-			harmonics.DrawCurves(window.graphics);
-		else
-			Figure[IG_DATA::FIGURE_VIEW]->DrawCurves(window.graphics);
-	}
+		{INTERPRET_FIGURE_VIEW_NT(IG_DATA::FIGURE_VIEW, DrawCurves(window.graphics));}
+
+	if(IG_DATA::CURVES && IG_DATA::DOUBLE_VIEW)
+		{INTERPRET_FIGURE_VIEW_NT(IG_DATA::SECOND_VIEW, DrawCurves(window.graphics));}
+
 
 	//	ImGui crap
 
@@ -338,6 +435,18 @@ void Fourier::doFrame()
 
 //  Threading utilities
 
+void createPlotAsync(Graphics* gfx, Polihedron* dataplot, const void** extractedFigure, bool* done, std::mutex* mtx)
+{
+
+	const Vector3f* vertexs = (Vector3f*)extractedFigure[0];
+	const Vector3i* triangles = (Vector3i*)extractedFigure[1];
+	int numT = ((int*)extractedFigure[2])[0];
+	int numV = ((int*)extractedFigure[2])[1];
+
+	dataplot->create(*gfx, vertexs, triangles, numT, nullptr, false, true, true, mtx);
+	*done = true;
+}
+
 void createFigureAsync(Graphics* gfx, FourierSurface* figure, FourierSurface::Coefficient** coef, unsigned int ncoef, bool* done, std::mutex* mtx, bool* begin)
 {
 	while (begin && !(*begin))
@@ -349,8 +458,8 @@ void createFigureAsync(Graphics* gfx, FourierSurface* figure, FourierSurface::Co
 	*done = true;
 }
 
-void calculateCoefficientsAsync(FourierSurface::Coefficient** coef, const char* filename, unsigned int maxL, bool* done)
+void calculateCoefficientsAsync(FourierSurface::Coefficient** coef, const void** extractedFigure, unsigned int maxL, bool* done)
 {
-	*coef = FourierSurface::FileManager::calculateCoefficients(filename, maxL);
+	*coef = FourierSurface::FileManager::calculateCoefficients(extractedFigure, maxL);
 	*done = true;
 }

@@ -17,8 +17,8 @@ public:
 	private:
 		static void calculateCoefficientAsync(Coefficient* coef, const unsigned int l, const Vector3f* centerTriangles, const float* areaTriangles, const float* distanceTriangles, const unsigned int numT, bool* finished);
 	public:
-		static void** extractFigureFromFile(const char* filename);
-		static Coefficient* calculateCoefficients(const char* filename, unsigned int maxL);
+		const static void** extractFigureFromFile(const char* filename);
+		static Coefficient* calculateCoefficients(const void** extractedFigure, unsigned int maxL);
 		static unsigned int ncoefFromFile(const char* filename);
 		static Coefficient* loadCoefficientsFromFile(const char* filename);
 		static void saveCoefficients(Coefficient* coef, unsigned int ncoef, const char* filename);
@@ -76,6 +76,7 @@ private:
 		struct VSconstBuffer {
 			_float4vector translation = { 0.f, 0.f, 0.f, 0.f };
 			Quaternion rotation = 1.f;
+			_float4vector screenDisplacement = { 0.f, 0.f, 0.f, 0.f };
 		}vscBuff;
 
 		ConstantBuffer<VSconstBuffer>* pVSCB;
@@ -88,6 +89,7 @@ private:
 		void create(Graphics& gfx, const Coefficient* coef, const unsigned int ncoef, const float phi, const float theta, std::mutex* mtx);
 		void updateShape(Graphics& gfx, const Coefficient* coef, const unsigned int ncoef, const float phi, const float theta);
 		void updateRotation(Graphics& gfx, Quaternion rotation, bool multiplicative = false);
+		void updateScreenPosition(Graphics& gfx, Vector2f screenDisplacement);
 	} curves;
 
 	struct Vertex {
@@ -127,6 +129,7 @@ public:
 	void updateTexture(Graphics& gfx, Color color, bool def = false, bool random = false);
 	void updateRotation(Graphics& gfx, Vector3f axis, float angle, bool multiplicative = false);
 	void updateRotation(Graphics& gfx, Quaternion rotation, bool multiplicative = false);
+	void updateScreenPosition(Graphics& gfx, Vector2f screenDisplacement);
 	void updateCurves(Graphics& gfx, float phi, float theta);
 	Quaternion getRotation();
 
@@ -149,6 +152,7 @@ private:
 	struct VSconstBuffer {
 		_float4vector translation = { 0.f, 0.f, 0.f, 0.f };
 		Quaternion rotation = 1.f;
+		_float4vector screenDisplacement = { 0.f, 0.f, 0.f, 0.f };
 	}vscBuff;
 
 	ConstantBuffer<VSconstBuffer>* pVSCB = NULL;

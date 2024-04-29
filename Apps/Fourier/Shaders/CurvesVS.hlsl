@@ -10,6 +10,7 @@ cbuffer Cbuff1 : register(b1)
 {
     float4 traslation;
     float4 quaternion;
+    float2 sceenDisplacement;
 };
 
 struct VSOut
@@ -24,6 +25,6 @@ VSOut main(float3 pos : Position, float4 color : Color)
     vso.color = color;
     float4 R3Pos = Q2V(qRot(quaternion, float4(0, pos))) + traslation;
     float4 test = mul(R3Pos - center, projection);
-    vso.SCpos = float4(test.x, test.y, test.z / 10000000.f + 0.5, 1.f);
+    vso.SCpos = float4(test.x + sceenDisplacement.x, test.y + sceenDisplacement.y, test.z / 10000000.f + 0.5, 1.f);
     return vso;
 }

@@ -135,8 +135,8 @@ Window::Window(int width, int height, const char* Title, const char* IconFilenam
 
 Window::~Window()
 {
-	DestroyWindow(hWnd);
 	iGManager::closeWin32();
+	DestroyWindow(hWnd);
 }
 
 LRESULT CALLBACK Window::HandleMsgSetup(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noexcept
@@ -265,6 +265,9 @@ LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noe
 void Window::setTitle(std::string name)
 {
 	Name = name;
+
+	if (!IsWindow(hWnd))
+		return;
 	if (!SetWindowTextA(hWnd, name.c_str()))
 		throw CHWND_LAST_EXCEPT();
 }
