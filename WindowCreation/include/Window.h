@@ -76,6 +76,7 @@ public:
 	void setPosition(Vector2i Pos);
 	void setFramerateLimit(int fps);
 	void setDarkTheme(BOOL DARK_THEME);
+	void setFullScreen(BOOL FULL_SCREEN);
 
 	std::string getTitle();
 	Vector2i getDimensions();

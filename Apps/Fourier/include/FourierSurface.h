@@ -99,6 +99,7 @@ private:
 	Coefficient* Coef = NULL;
 	unsigned int Ncoef = 0u;
 	Vertex* Vertexs = NULL;
+	Vector2f* Derivative = NULL;
 
 	static Vector3f*		vertexsIcosphere;
 	static infoVect*		infoIcosphere;
@@ -156,3 +157,4 @@ private:
 };
 
 void createShape(const char* filename);
+void formatFile(const char* srcFile, const char* newFile);

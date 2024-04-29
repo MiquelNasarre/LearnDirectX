@@ -944,23 +944,26 @@ void		FourierSurface::create(Graphics& gfx, const Coefficient* coef, const unsig
 	if (!Functions::Constants)
 		Functions::generateConstants();
 
-	Coef = (Coefficient*)memcpy(calloc(ncoef, sizeof(Coefficient)), coef, ncoef * sizeof(Coefficient));
+	Coef = (Coefficient*)calloc(ncoef, sizeof(Coefficient));
+	for (unsigned int i = 0; i < ncoef; i++)
+		Coef[i] = coef[i];
+
 	Ncoef = ncoef;
 
 	if (!vertexsIcosphere)
 		generateIcosphere();
 
-	Vertex* V = (Vertex*)calloc(nvertexs, sizeof(Vertex));
+	Vertexs = (Vertex*)calloc(nvertexs, sizeof(Vertex));
 	const unsigned int t0 = 0u;
 	const unsigned int t1 = nvertexs / 4u;
 	const unsigned int t2 = nvertexs / 2u;
 	const unsigned int t3 = 3u * nvertexs / 4u;
 	const unsigned int t4 = nvertexs;
 
-	std::thread worker0 = std::thread(calculateVertexsAsync, t0, t1, coef, ncoef, V);
-	std::thread worker1 = std::thread(calculateVertexsAsync, t1, t2, coef, ncoef, V);
-	std::thread worker2 = std::thread(calculateVertexsAsync, t2, t3, coef, ncoef, V);
-	std::thread worker3 = std::thread(calculateVertexsAsync, t3, t4, coef, ncoef, V);
+	std::thread worker0 = std::thread(calculateVertexsAsync, t0, t1, coef, ncoef, Vertexs);
+	std::thread worker1 = std::thread(calculateVertexsAsync, t1, t2, coef, ncoef, Vertexs);
+	std::thread worker2 = std::thread(calculateVertexsAsync, t2, t3, coef, ncoef, Vertexs);
+	std::thread worker3 = std::thread(calculateVertexsAsync, t3, t4, coef, ncoef, Vertexs);
 
 	curves.create(gfx, coef, ncoef, 0.f, 0.f, mtx);
 
@@ -972,9 +975,7 @@ void		FourierSurface::create(Graphics& gfx, const Coefficient* coef, const unsig
 	if(mtx)
 		mtx->lock();
 
-	AddBind(std::make_unique<VertexBuffer>(gfx, V, nvertexs));
-
-	Vertexs = V;
+	AddBind(std::make_unique<VertexBuffer>(gfx, Vertexs, nvertexs));
 
 	AddBind(std::make_unique<IndexBuffer>(gfx, trianglesIcosphere, 3 * ntriangles));
 
@@ -1010,7 +1011,10 @@ void		FourierSurface::updateShape(Graphics& gfx, const Coefficient* coef, const 
 	if (!isInit)
 		throw std::exception("You cannot update shape to an uninitialized surface");
 
-	Coef = (Coefficient*)memcpy(calloc(ncoef,sizeof(Coefficient)), coef, ncoef * sizeof(Coefficient));
+	Coef = (Coefficient*)calloc(ncoef, sizeof(Coefficient));
+	for (unsigned int i = 0; i < ncoef; i++)
+		Coef[i] = coef[i];
+
 	Ncoef = ncoef;
 
 	if (!vertexsIcosphere)
@@ -1348,6 +1352,48 @@ void createShape(const char* filename)
 	fprintf(file, "Triangles:");
 	for (int i = 0; i < (n - 1) * (n - 1) * 12; i++)
 		fprintf(file, "\n%i,%i,%i", triangles[i].x, triangles[i].y, triangles[i].z);
+
+	fclose(file);
+}
+
+void formatFile(const char* srcFile, const char* newFile)
+{
+	FILE* file = fopen((FIGURES_DIR + std::string(srcFile) + ".txt").c_str(), "r");
+	if (!file)
+		throw std::exception(("Couldn't open the file " + std::string(srcFile) + ".txt").c_str());
+
+	Vector3f* V = (Vector3f*)calloc(3000, sizeof(Vector3f));
+	Vector3f deviation = { 0.f,0.f,0.f };
+	float meanradius = 0.f;
+	int i = 0;
+	while (fscanf(file, "%f %f %f\n\n", &V[i].x, &V[i].y, &V[i].z) != EOF)
+	{
+		deviation += V[i];
+		meanradius += V[i].abs();
+		i++;
+	}
+	deviation /= float(i);
+	meanradius /= float(i);
+
+	for (int j = 0; j < i; j++)
+	{
+		V[j] -= deviation;
+		V[j] /= meanradius / 2.f;
+	}
+
+	//Vector3i* V = (Vector3i*)calloc(5000, sizeof(Vector3i));
+	//int i = 0;
+	//while (fscanf(file, "%i %i %i\n\n", &V[i].x, &V[i].y, &V[i].z) != EOF)i++;
+
+	fclose(file);
+
+	file = fopen((FIGURES_DIR + std::string(newFile) + ".dat").c_str(), "w");
+
+	for (int j = 0; j < i; j++)
+		fprintf(file, "\n(%f,%f,%f)", V[j].x, V[j].y, V[j].z);
+
+	//for (int j = 0; j < i; j++)
+	//	fprintf(file, "\n%i,%i,%i", V[j].x, V[j].y, V[j].z);
 
 	fclose(file);
 }

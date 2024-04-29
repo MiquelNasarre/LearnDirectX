@@ -30,7 +30,7 @@ int						IG_DATA::UPDATE_LIGHT = -1;
 IG_DATA::lightsource*	IG_DATA::LIGHTS = (IG_DATA::lightsource*)calloc(sizeof(IG_DATA::lightsource), 8);
 
 Fourier::Fourier()
-	: window(640, 480, "Fourier", "", true)
+	: window(960, 720, "Fourier", "", true)
 {
 	window.setFramerateLimit(60);
 
@@ -127,9 +127,15 @@ void Fourier::strictReturn()
 
 void Fourier::eventManager()
 {
-	//	Keyboard and Mouse events
+	// Full screen
 
-		// returning motion
+	if (Keyboard::isKeyPressed(VK_F11))
+		window.setFullScreen(true);
+
+	if (Keyboard::isKeyPressed(VK_ESCAPE))
+		window.setFullScreen(false);
+
+	// returning motion
 
 	if (Keyboard::isKeyPressed('R'))
 		magneticReturn();
@@ -140,6 +146,7 @@ void Fourier::eventManager()
 	if (Keyboard::isKeyPressed('S'))
 		dangle = 0.f;
 
+	// Quaternion motion
 
 	if (Mouse::isButtonPressed(Mouse::Left) && !dragging)
 	{
@@ -183,7 +190,12 @@ void Fourier::eventManager()
 		IG_DATA::CALCULATE_FIGURE = false;
 		IG_DATA::LOADING = true;
 
-		Figure = (FourierSurface**)memcpy(calloc(IG_DATA::NFIG + 1, sizeof(void*)), Figure, IG_DATA::NFIG * sizeof(void*));
+		FourierSurface** tFigure = (FourierSurface**)calloc(IG_DATA::NFIG + 1, sizeof(void*));
+		for (unsigned int i = 0; i < IG_DATA::NFIG; i++)
+			tFigure[i] = Figure[i];
+		if(IG_DATA::NFIG)
+			free(Figure);
+		Figure = tFigure;
 		Figure[IG_DATA::NFIG] = new(FourierSurface);
 
 		if (IG_DATA::FIGURE_FILE)

@@ -26,7 +26,7 @@ Window::WindowClass::WindowClass() noexcept
 	wc.cbWndExtra = 0;
 	wc.hInstance = GetInstance();
 	wc.hIcon = static_cast<HICON>(LoadImageA(0, (RESOURCES_DIR + std::string("Icon.ico")).c_str(), IMAGE_ICON, 0, 0, LR_DEFAULTSIZE | LR_LOADFROMFILE | LR_SHARED));
-	wc.hCursor = LoadCursor(NULL, IDC_ARROW);
+	//wc.hCursor = LoadCursor(NULL, IDC_ARROW);
 	wc.hbrBackground = nullptr;
 	wc.lpszMenuName = nullptr;
 	wc.lpszClassName = GetName();
@@ -135,8 +135,8 @@ Window::Window(int width, int height, const char* Title, const char* IconFilenam
 
 Window::~Window()
 {
-	iGManager::closeWin32();
 	DestroyWindow(hWnd);
+	iGManager::closeWin32();
 }
 
 LRESULT CALLBACK Window::HandleMsgSetup(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noexcept
@@ -330,6 +330,32 @@ void Window::setDarkTheme(BOOL DARK_THEME)
 	CHWND_EXCEPT(DwmSetWindowAttribute(hWnd, DWMWINDOWATTRIBUTE::DWMWA_USE_IMMERSIVE_DARK_MODE, &DARK_THEME, sizeof(BOOL)));
 	setDimensions(Dimensions - Vector2i(1, 1));
 	setDimensions(Dimensions + Vector2i(1, 1));
+}
+
+void Window::setFullScreen(BOOL FULL_SCREEN)
+{
+	static WINDOWPLACEMENT g_wpPrev;
+
+	DWORD dwStyle = GetWindowLong(hWnd, GWL_STYLE);
+	if (dwStyle & WS_OVERLAPPEDWINDOW && FULL_SCREEN) {
+		MONITORINFO mi = { sizeof(mi) };
+		if (GetWindowPlacement(hWnd, &g_wpPrev) && GetMonitorInfo(MonitorFromWindow(hWnd,MONITOR_DEFAULTTOPRIMARY), &mi))
+		{
+			SetWindowLongPtr(hWnd, GWL_STYLE, dwStyle & ~WS_OVERLAPPEDWINDOW);
+			SetWindowPos(hWnd, HWND_TOP,
+				mi.rcMonitor.left, 
+				mi.rcMonitor.top,
+				mi.rcMonitor.right - mi.rcMonitor.left,
+				mi.rcMonitor.bottom - mi.rcMonitor.top,
+				SWP_NOOWNERZORDER | SWP_FRAMECHANGED
+			);
+		}
+	}
+	else if (!FULL_SCREEN)
+	{
+		SetWindowLongPtr(hWnd, GWL_STYLE, dwStyle | WS_OVERLAPPEDWINDOW);
+		SetWindowPlacement(hWnd, &g_wpPrev);
+	}
 }
 
 std::string Window::getTitle()

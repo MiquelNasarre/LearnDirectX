@@ -3,7 +3,6 @@
 #include "Drawable/Curve.h"
 #include "Drawable/Point.h"
 #include "FourierSurface.h"
-#include <thread>
 
 struct IG_DATA {
 	static float THETA;
