@@ -6,8 +6,8 @@ class IG_Fourier : public iGManager
 private:
 	static bool loadMenuOpen;
 	static bool colorPickerOpen;
-	static const char** figureNames;
-	static const char** plotsNames;
+	static char** figureNames;
+	static char** plotsNames;
 	static int* figureSizes;
 
 	static void saveLightState(int id);

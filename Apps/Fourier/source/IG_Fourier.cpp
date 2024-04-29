@@ -5,11 +5,12 @@
 
 bool IG_Fourier::loadMenuOpen = false;
 bool IG_Fourier::colorPickerOpen = false;
-const char** IG_Fourier::figureNames;
-const char** IG_Fourier::plotsNames;
-int* IG_Fourier::figureSizes;
+char** IG_Fourier::figureNames = NULL;
+char** IG_Fourier::plotsNames = NULL;
+int* IG_Fourier::figureSizes = NULL;
 
 static IG_DATA::lightsource savestate;
+static _float4color harmonicsTexture = { -1.f,0.f,0.f,0.f };
 
 //	Private
 
@@ -34,11 +35,11 @@ void IG_Fourier::doLightEditor(int& id)
 			IG_DATA::UPDATE_LIGHT = id;
 		ImGui::Spacing();
 		ImGui::Text("Intensities:");
-		if (ImGui::SliderFloat2("", (float*)&IG_DATA::LIGHTS[id].intensities, 0.f, 100000.f, "%.3f", 4))
+		if (ImGui::SliderFloat2("", (float*)&IG_DATA::LIGHTS[id].intensities, 0.f, 100000.f, "%.3f", ImGuiSliderFlags_Logarithmic))
 			IG_DATA::UPDATE_LIGHT = id;
 		ImGui::Spacing();
 		ImGui::Text("Position:");
-		if (ImGui::SliderFloat3(" ", (float*)&IG_DATA::LIGHTS[id].position, -1000.f, 1000.f, "%.3f", 4))
+		if (ImGui::SliderFloat3(" ", (float*)&IG_DATA::LIGHTS[id].position, -1000.f, 1000.f, "%.3f", ImGuiSliderFlags_Logarithmic))
 			IG_DATA::UPDATE_LIGHT = id;
 
 		ImGui::SetCursorPos(ImVec2(245, 235));
@@ -148,7 +149,7 @@ void IG_Fourier::loadMenu()
 			{
 				for (unsigned int i = 0; i < IG_DATA::NFIG; i++)
 				{
-					if (std::string(figureNames[i]) == IG_DATA::FILENAME)
+					if (std::string(figureNames[i]) == IG_DATA::FILENAME && figureSizes[i]!= -1)
 					{
 						if (figureSizes[i] == IG_DATA::MAXL)
 						{
@@ -162,6 +163,7 @@ void IG_Fourier::loadMenu()
 							IG_DATA::UPDATE_CURVES = true;
 							IG_DATA::UPDATE_LIGHT = -2;
 							loadMenuOpen = false;
+							ImGui::End();
 							return;
 						}
 						IG_DATA::ALREADY_EXISTS = true;
@@ -183,28 +185,27 @@ void IG_Fourier::loadMenu()
 				IG_DATA::PAIRS[IG_DATA::PAIRS_SIZE - 1] = { int(IG_DATA::NFIG), IG_DATA::ALREADY_EXISTS ? IG_DATA::COPY : -int(IG_DATA::NPLOT) - 2 };
 
 
-				const char** tNames = (const char**)calloc(IG_DATA::NFIG + 1, sizeof(void*));
+				char** tNames = (char**)calloc(IG_DATA::NFIG + 1, sizeof(void*));
 				for (unsigned int i = 0; i < IG_DATA::NFIG; i++)
 					tNames[i] = figureNames[i];
 				if(figureNames)
 					free(figureNames);
 				figureNames = tNames;
 				
-				figureNames[IG_DATA::NFIG] = (const char*)calloc(100, sizeof(char));
-					char* temp = (char*)figureNames[IG_DATA::NFIG];
+				figureNames[IG_DATA::NFIG] = (char*)calloc(100, sizeof(char));
 				for (unsigned int i = 0; i < 100; i++)
 				{
 					char c = filename[i];
 					if (c <= 90 && c >= 65)
 						c += 32;
-					temp[i] = c;
+					figureNames[IG_DATA::NFIG][i] = c;
 					if (!c)
 						break;
 				}
 
 				if (!IG_DATA::ALREADY_EXISTS)
 				{
-					const char** tNames = (const char**)calloc(IG_DATA::NPLOT + 1, sizeof(void*));
+					tNames = (char**)calloc(IG_DATA::NPLOT + 1, sizeof(void*));
 					for (unsigned int i = 0; i < IG_DATA::NPLOT; i++)
 						tNames[i] = plotsNames[i];
 					if (plotsNames)
@@ -212,14 +213,13 @@ void IG_Fourier::loadMenu()
 
 					plotsNames = tNames;
 
-					plotsNames[IG_DATA::NFIG] = (const char*)calloc(100, sizeof(char));
-					temp = (char*)plotsNames[IG_DATA::NFIG];
+					plotsNames[IG_DATA::NPLOT] = (char*)calloc(100, sizeof(char));
 					for (unsigned int i = 0; i < 100; i++)
 					{
 						char c = filename[i];
 						if (c <= 90 && c >= 65)
 							c += 32;
-						temp[i] = c;
+						plotsNames[IG_DATA::NPLOT][i] = c;
 						if (!c)
 							break;
 					}
@@ -248,24 +248,24 @@ void IG_Fourier::loadMenu()
 						IG_DATA::UPDATE_CURVES = true;
 						IG_DATA::UPDATE_LIGHT = -2;
 						loadMenuOpen = false;
+						ImGui::End();
 						return;
 					}
 				}
 
-				const char** tNames = (const char**)calloc(IG_DATA::NFIG + 1, sizeof(void*));
+				char** tNames = (char**)calloc(IG_DATA::NFIG + 1, sizeof(void*));
 				for (unsigned int i = 0; i < IG_DATA::NFIG; i++)
 					tNames[i] = figureNames[i];
 				free((void*)figureNames);
 				figureNames = tNames;
 
-				figureNames[IG_DATA::NFIG] = (const char*)calloc(100, sizeof(char));
-				char* temp = (char*)figureNames[IG_DATA::NFIG];
+				figureNames[IG_DATA::NFIG] = (char*)calloc(100, sizeof(char));
 				for (unsigned int i = 0; i < 100; i++)
 				{
 					char c = filename[i];
 					if (c <= 90 && c >= 65)
 						c += 32;
-					temp[i] = c;
+					figureNames[IG_DATA::NFIG][i] = c;
 					if (!c)
 						break;
 				}
@@ -320,6 +320,8 @@ void IG_Fourier::colorPicker()
 			colorPickerOpen = false;
 			IG_DATA::UPDATE_TEXTURE = true;
 			IG_DATA::TEXTURE = color;
+			if (IG_DATA::FIGURE_VIEW == -1)
+				harmonicsTexture = IG_DATA::TEXTURE;
 		}
 	}
 	ImGui::End();
@@ -332,7 +334,7 @@ void IG_Fourier::render()
 	static int light = -1;
 	newFrame();
 
-	if (ImGui::Begin("Selector", NULL, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_MenuBar))
+	if (ImGui::Begin("Menu", NULL, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_MenuBar))
 	{
 
 		if (ImGui::BeginMenuBar())
@@ -455,6 +457,8 @@ void IG_Fourier::render()
 					IG_DATA::UPDATE_TEXTURE = true;
 					IG_DATA::TEXTURE = { 0.f,-1.f,0.f,0.f };
 				}
+				if (IG_DATA::FIGURE_VIEW == -1)
+					harmonicsTexture = IG_DATA::TEXTURE;
 
 				ImGui::EndMenu();
 			}
@@ -473,12 +477,14 @@ void IG_Fourier::render()
 			{
 				IG_DATA::UPDATE = true;
 				IG_DATA::UPDATE_TEXTURE = true;
+				IG_DATA::TEXTURE = harmonicsTexture;
 			}
 
 			if (ImGui::SliderInt("M value", &IG_DATA::M, -IG_DATA::L, IG_DATA::L))
 			{
 				IG_DATA::UPDATE = true;
 				IG_DATA::UPDATE_TEXTURE = true;
+				IG_DATA::TEXTURE = harmonicsTexture;
 			}
 
 			if (IG_DATA::M > IG_DATA::L) IG_DATA::M = IG_DATA::L;
@@ -535,8 +541,6 @@ void IG_Fourier::render()
 			}
 		}
 
-		
-		
 		if (IG_DATA::CURVES)
 		{
 			if (ImGui::Button("Hide Curves"))
