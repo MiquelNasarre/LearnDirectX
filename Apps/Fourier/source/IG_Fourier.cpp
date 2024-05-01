@@ -3,14 +3,16 @@
 #include "imgui/imgui.h"
 #include "imgui/imgui_internal.h"
 
-bool IG_Fourier::loadMenuOpen = false;
-bool IG_Fourier::colorPickerOpen = false;
-char** IG_Fourier::figureNames = NULL;
-char** IG_Fourier::plotsNames = NULL;
-int* IG_Fourier::figureSizes = NULL;
+bool			IG_Fourier::loadMenuOpen = false;
+bool			IG_Fourier::colorPickerOpen = false;
+char**			IG_Fourier::interpolationsNames = NULL;
+char**			IG_Fourier::figureNames = NULL;
+char**			IG_Fourier::plotsNames = NULL;
+int*			IG_Fourier::figureSizes = NULL;
+int				IG_Fourier::light = -1;
 
+static _float4color	harmonicsTexture = { -1.f,0.f,0.f,0.f };
 static IG_DATA::lightsource savestate;
-static _float4color harmonicsTexture = { -1.f,0.f,0.f,0.f };
 
 //	Private
 
@@ -327,18 +329,89 @@ void IG_Fourier::colorPicker()
 	ImGui::End();
 }
 
-//	Public
-
-void IG_Fourier::render()
+void IG_Fourier::interpolationEditor()
 {
-	static int light = -1;
-	newFrame();
-
-	if (ImGui::Begin("Menu", NULL, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_MenuBar))
+	int m = IG_DATA::INTERPOLATION_MENU;
+	unsigned int s = IG_DATA::INTERPOLATION_DATA_SIZE[m];
+	if (ImGui::Begin("Interpolation Editor", NULL, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_MenuBar))
 	{
+		if(ImGui::BeginMenuBar())
+		{
+			if (ImGui::BeginMenu("Add figure"))
+			{
+				for (unsigned int i = 0; i < IG_DATA::NFIG; i++)
+				{
+					if (ImGui::MenuItem(figureNames[i], std::to_string(figureSizes[i]).c_str()))
+					{
+						IG_DATA::ADD_FIGURE = i;
+						int* temp = (int*)calloc(s + 1, sizeof(int));
+						for (unsigned int j = 0; j < s; j++)
+							temp[j] = IG_DATA::INTERPOLATION_DATA[m][j];
+						if (IG_DATA::INTERPOLATION_DATA[m])
+							free(IG_DATA::INTERPOLATION_DATA[m]);
+						IG_DATA::INTERPOLATION_DATA[m] = temp;
+						IG_DATA::INTERPOLATION_DATA[m][IG_DATA::INTERPOLATION_DATA_SIZE[m]] = i;
+						IG_DATA::INTERPOLATION_DATA_SIZE[m]++;
+					}
+				}
+				ImGui::EndMenu();
+			}
 
+			ImGui::EndMenuBar();
+		}
+
+		ImGui::SetWindowSize(ImVec2(200, 190), ImGuiCond_Once);
+
+		if(ImGui::BeginListBox("##",ImVec2(180, 90)))
+		{
+			for (unsigned int i = 0; i < s; i++)
+			{
+				if (ImGui::Selectable(figureNames[IG_DATA::INTERPOLATION_DATA[m][i]]))
+				{
+					IG_DATA::DELETE_FIGURE = i;
+					for (unsigned int j = i; j < s - 1; j++)
+						IG_DATA::INTERPOLATION_DATA[m][j] = IG_DATA::INTERPOLATION_DATA[m][j + 1];
+					IG_DATA::INTERPOLATION_DATA_SIZE[m]--;
+				}
+			}
+			ImGui::EndListBox();
+		}
+
+		ImGui::InputText(" Name", interpolationsNames[m], 100);
+
+		if (!interpolationsNames[m][0])
+			ImGui::BeginDisabled();
+		if (ImGui::Button("Save", ImVec2(88, 19)))
+			IG_DATA::INTERPOLATION_MENU = -1;
+		else if (!interpolationsNames[m][0])
+			ImGui::EndDisabled();
+
+		ImGui::SetCursorPos(ImVec2(100, 163));
+		if (ImGui::Button("Delete", ImVec2(88, 19)))
+		{
+
+			for (unsigned int i = m; i < IG_DATA::NINT - 1; i++)
+			{
+				IG_DATA::INTERPOLATION_DATA[i] = IG_DATA::INTERPOLATION_DATA[i + 1];
+				IG_DATA::INTERPOLATION_DATA_SIZE[i] = IG_DATA::INTERPOLATION_DATA_SIZE[i + 1];
+				interpolationsNames[i] = interpolationsNames[i + 1];
+			}
+
+			IG_DATA::DELETE_INTERPOLATION = true;
+		}
+
+	}
+	ImGui::End();
+}
+
+void IG_Fourier::mainMenu()
+{
+	if (ImGui::Begin("Menu", NULL, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoMove))
+	{
 		if (ImGui::BeginMenuBar())
 		{
+			if (IG_DATA::INTERPOLATION_MENU != -1)
+				ImGui::BeginDisabled();
 			if (ImGui::BeginMenu("Figure"))
 			{
 				if (ImGui::MenuItem("Spherical Harmonics"))
@@ -378,8 +451,24 @@ void IG_Fourier::render()
 					}
 				}
 
+				if (IG_DATA::NINT)
+				{
+					ImGui::MenuItem("Interpolations", "", false, false);
+
+					for (unsigned int i = 0; i < IG_DATA::NINT; i++)
+					{
+						if (ImGui::MenuItem(interpolationsNames[i]))
+						{
+							IG_DATA::INTERPOLATION_MENU = i;
+						}
+
+					}
+				}
+
 				ImGui::EndMenu();
 			}
+			else if (IG_DATA::INTERPOLATION_MENU != -1)
+				ImGui::EndDisabled();
 
 			if (ImGui::BeginMenu("Advanced"))
 			{
@@ -462,14 +551,13 @@ void IG_Fourier::render()
 
 				ImGui::EndMenu();
 			}
-			
 
 			ImGui::EndMenuBar();
 		}
 
 		ImGui::SetWindowPos(ImVec2(2, 2), ImGuiCond_Once);
 		ImGui::SetWindowCollapsed(true, ImGuiCond_Once);
-		ImGui::SetWindowSize(ImVec2(350, 120), ImGuiCond_Once);
+		ImGui::SetWindowSize(ImVec2(330, 120), ImGuiCond_Once);
 
 		if (IG_DATA::FIGURE_VIEW == -1)
 		{
@@ -493,10 +581,53 @@ void IG_Fourier::render()
 
 		else
 		{
-			ImGui::Text("Interpolation will be impelemented soon\n \nHopefully...");
+			int m = IG_DATA::INTERPOLATION_MENU;
+			if (IG_DATA::NFIG < 2 || m != -1 || IG_DATA::FIGURE_VIEW < 0)
+				ImGui::BeginDisabled();
+			if (ImGui::Button("Create Interpolation", ImVec2(300, 19)))
+			{
+				IG_DATA::ADD_FIGURE = IG_DATA::FIGURE_VIEW;
+
+				int** temp = (int**)calloc(IG_DATA::NINT + 1, sizeof(void*));
+				for (unsigned int i = 0; i < IG_DATA::NINT; i++)
+					temp[i] = IG_DATA::INTERPOLATION_DATA[i];
+				if (IG_DATA::INTERPOLATION_DATA)
+					free(IG_DATA::INTERPOLATION_DATA);
+				IG_DATA::INTERPOLATION_DATA = temp;
+
+				IG_DATA::INTERPOLATION_DATA[IG_DATA::NINT] = (int*)calloc(1, sizeof(int));
+				IG_DATA::INTERPOLATION_DATA[IG_DATA::NINT][0] = IG_DATA::FIGURE_VIEW;
+
+				unsigned int* temp0 = (unsigned int*)calloc(IG_DATA::NINT + 1, sizeof(int));
+				for (unsigned int i = 0; i < IG_DATA::NINT; i++)
+					temp0[i] = IG_DATA::INTERPOLATION_DATA_SIZE[i];
+				if (IG_DATA::INTERPOLATION_DATA_SIZE)
+					free(IG_DATA::INTERPOLATION_DATA_SIZE);
+				IG_DATA::INTERPOLATION_DATA_SIZE = temp0;
+
+				IG_DATA::INTERPOLATION_DATA_SIZE[IG_DATA::NINT] = 1u;
+
+				char** tNames = (char**)calloc(IG_DATA::NINT + 1, sizeof(void*));
+				for (unsigned int i = 0; i < IG_DATA::NINT; i++)
+					tNames[i] = interpolationsNames[i];
+				if (interpolationsNames)
+					free(interpolationsNames);
+				interpolationsNames = tNames;
+				interpolationsNames[IG_DATA::NINT] = (char*)calloc(100, sizeof(char));
+
+				IG_DATA::ADD_INTERPOLATION = true;
+				IG_DATA::INTERPOLATION_MENU = IG_DATA::NINT;
+			}
+			else if (IG_DATA::NFIG < 2 || m != -1 || IG_DATA::FIGURE_VIEW < 0)
+				ImGui::EndDisabled();
+
+			if (ImGui::Button("Compare View", ImVec2(95, 19)))
+			{
+
+			}
 		}
 
-		if (!IG_DATA::LOADING && ImGui::Button("Load Figure"))
+		if (!IG_DATA::LOADING && ImGui::Button("Load Figure", ImVec2(95, 19)))
 			loadMenuOpen = true;
 
 		static int counter = 0;
@@ -513,14 +644,16 @@ void IG_Fourier::render()
 				loadText = "Loading...";
 			else
 				loadText = "Loading....";
-			ImGui::Button(loadText.c_str());
+			ImGui::BeginDisabled();
+			ImGui::Button(loadText.c_str(), ImVec2(95, 19));
+			ImGui::EndDisabled();
 		}
 
 		ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX() + 100.f, ImGui::GetCursorPosY() - 23.f));
 
 		if (IG_DATA::DOUBLE_VIEW)
 		{
-			if (ImGui::Button("Single View"))
+			if (ImGui::Button("Single View", ImVec2(95, 19)))
 				IG_DATA::DOUBLE_VIEW = false;
 			ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX() + 200.f, ImGui::GetCursorPosY() - 23.f));
 		}
@@ -530,7 +663,7 @@ void IG_Fourier::render()
 			{
 				if (IG_DATA::FIGURE_VIEW == IG_DATA::PAIRS[i].x || IG_DATA::FIGURE_VIEW == IG_DATA::PAIRS[i].y)
 				{
-					if (ImGui::Button("Double View"))
+					if (ImGui::Button("Double View", ImVec2(95, 19)))
 					{
 						IG_DATA::DOUBLE_VIEW = true;
 						IG_DATA::SECOND_VIEW = IG_DATA::FIGURE_VIEW == IG_DATA::PAIRS[i].x ? IG_DATA::PAIRS[i].y : IG_DATA::PAIRS[i].x;
@@ -543,24 +676,39 @@ void IG_Fourier::render()
 
 		if (IG_DATA::CURVES)
 		{
-			if (ImGui::Button("Hide Curves"))
+			if (ImGui::Button("Hide Curves", ImVec2(95, 19)))
 			{
 				IG_DATA::CURVES = false;
-				ImGui::SetWindowSize(ImVec2(350, 120));
+				ImGui::SetWindowSize(ImVec2(330, 120));
 			}
 
 			if (ImGui::SliderFloat("Phi", &IG_DATA::phi, 0.f, 2 * pi)) IG_DATA::UPDATE_CURVES = true;
 			if (ImGui::SliderFloat("Theta", &IG_DATA::theta, 0.f, pi)) IG_DATA::UPDATE_CURVES = true;
 		}
-		else if (ImGui::Button("Show Curves"))
+		else if (ImGui::Button("Show Curves", ImVec2(95, 19)))
 		{
-			ImGui::SetWindowSize(ImVec2(350, 168));
+			ImGui::SetWindowSize(ImVec2(330, 168));
 			IG_DATA::CURVES = true;
 			IG_DATA::UPDATE_CURVES = true;
 		}
 
 	}
 	ImGui::End();
+}
+
+//	Public
+
+void IG_Fourier::render()
+{
+	if (!IG_DATA::MENU)
+		return;
+
+	newFrame();
+
+	mainMenu();
+
+	if (IG_DATA::INTERPOLATION_MENU > -1)
+		interpolationEditor();
 
 	if (loadMenuOpen)
 		loadMenu();

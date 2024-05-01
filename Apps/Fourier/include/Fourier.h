@@ -2,6 +2,7 @@
 #include "Window.h"
 #include "FourierSurface.h"
 #include "Polihedron.h"
+#include "Interpolated.h"
 
 struct IG_DATA {
 
@@ -33,6 +34,18 @@ struct IG_DATA {
 	static bool UPDATE_TEXTURE;
 	static _float4color TEXTURE;
 
+	static unsigned int NINT;
+	static float TVALUE;
+	static int INTERPOLATION_MENU;
+	static int** INTERPOLATION_DATA;
+	static unsigned int* INTERPOLATION_DATA_SIZE;
+	static bool ADD_INTERPOLATION;
+	static bool DELETE_INTERPOLATION;
+	static int ADD_FIGURE;
+	static int DELETE_FIGURE;
+
+	static int INTERPOLATED_VIEW;
+
 	static Vector2i WindowDim;
 
 	static int UPDATE_LIGHT;
@@ -43,6 +56,8 @@ struct IG_DATA {
 		_float4vector position;
 	};
 	static lightsource* LIGHTS;
+
+	static bool MENU;
 };
 
 class Fourier {
@@ -78,14 +93,16 @@ private:
 	void magneticReturn();
 	void strictReturn();
 
-	// Figures
+	//	Figures
 
 	Polihedron** DataPlots;
 
-	// Surfaces
+	//	Harmonics
 
 	FourierSurface harmonics;
 	FourierSurface::Coefficient C = { (unsigned int)IG_DATA::L, IG_DATA::M, 1 };
+
+	//	Surfaces
 
 	bool Ffigu = false;
 	bool Fcoef = false;
@@ -94,6 +111,10 @@ private:
 	FourierSurface::Coefficient* coef;
 	std::mutex mtx;
 	FourierSurface** Figure;
+
+	//	Interpolations
+	
+	InterpolatedString** Interpolations = NULL;
 
 public:
 	Fourier();

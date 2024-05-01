@@ -869,19 +869,17 @@ void		FourierSurface::calculateVertexsAsync(const unsigned int ti, const unsigne
 	{
 		if (ncoef == 1)
 		{
-			_float4vector ylm = Functions::YlmDif(i, coef[0].L, coef[0].M);
-			if (ylm.w > 0)
-			{
-				V[i].vector = ylm.w * vertexsIcosphere[i];
-				V[i].color = Color::Blue;
-				V[i].norm = Vector3f(ylm.x, ylm.y, ylm.z).normalize();
-			}
+			if (Functions::DatasetYlmi[coef[0].L])
+				V[i].dYlm = coef[0].C * Functions::DatasetYlmi[coef[0].L][coef[0].M + coef[0].L][i];
 			else
-			{
-				V[i].vector = -ylm.w * vertexsIcosphere[i];
+				V[i].dYlm = coef[0].C * Functions::Ylmdif(i, coef[0].L, coef[0].M);
+
+			if (V[i].dYlm.x > 0)
+				V[i].color = Color::Blue;
+			else
 				V[i].color = Color::Yellow;
-				V[i].norm = Vector3f(ylm.x, ylm.y, ylm.z).normalize();
-			}
+
+			V[i].vector = vertexsIcosphere[i];
 		}
 		else
 		{
@@ -894,21 +892,10 @@ void		FourierSurface::calculateVertexsAsync(const unsigned int ti, const unsigne
 					ylm += coef[j].C * Functions::Ylmdif(i, coef[j].L, coef[j].M);
 			}
 
-
-			V[i].vector = ylm.x * vertexsIcosphere[i];
-
-			if (i == 12)
-				V[i].norm = Vector3f(0.f, 0.f, 1.f);
-			else if (i == 17)
-				V[i].norm = Vector3f(0.f, 0.f, -1.f);
-			else
-				V[i].norm = (ylm.x * Vector3f(
-					-infoIcosphere[i].sintheta * infoIcosphere[i].costheta * infoIcosphere[i].cosphi * ylm.y + infoIcosphere[i].sinphi * ylm.z + infoIcosphere[i].sintheta * infoIcosphere[i].sintheta * infoIcosphere[i].cosphi * ylm.x,
-					-infoIcosphere[i].sintheta * infoIcosphere[i].costheta * infoIcosphere[i].sinphi * ylm.y - infoIcosphere[i].cosphi * ylm.z + infoIcosphere[i].sintheta * infoIcosphere[i].sintheta * infoIcosphere[i].sinphi * ylm.x,
-					infoIcosphere[i].sintheta * (infoIcosphere[i].sintheta * ylm.y + infoIcosphere[i].costheta * ylm.x)
-				)).normalize();
-
+			V[i].vector = vertexsIcosphere[i];
+			V[i].dYlm = ylm;
 			V[i].color = Color::White;
+
 		}
 	}
 }
@@ -980,7 +967,7 @@ void		FourierSurface::create(Graphics& gfx, const Coefficient* coef, const unsig
 	std::vector<D3D11_INPUT_ELEMENT_DESC> ied =
 	{
 		{ "Position",0,DXGI_FORMAT_R32G32B32_FLOAT,0,0,D3D11_INPUT_PER_VERTEX_DATA,0 },
-		{ "Normal",0,DXGI_FORMAT_R32G32B32_FLOAT,0,D3D11_APPEND_ALIGNED_ELEMENT,D3D11_INPUT_PER_VERTEX_DATA,0 },
+		{ "Dylm",0,DXGI_FORMAT_R32G32B32_FLOAT,0,D3D11_APPEND_ALIGNED_ELEMENT,D3D11_INPUT_PER_VERTEX_DATA,0 },
 		{ "Color",0,DXGI_FORMAT_B8G8R8A8_UNORM,0,D3D11_APPEND_ALIGNED_ELEMENT,D3D11_INPUT_PER_VERTEX_DATA,0 },
 	};
 
@@ -1005,6 +992,7 @@ void		FourierSurface::updateShape(Graphics& gfx, const Coefficient* coef, const 
 	if (!isInit)
 		throw std::exception("You cannot update shape to an uninitialized surface");
 
+	free(Coef);
 	Coef = (Coefficient*)calloc(ncoef, sizeof(Coefficient));
 	for (unsigned int i = 0; i < ncoef; i++)
 		Coef[i] = coef[i];
@@ -1045,6 +1033,9 @@ void		FourierSurface::saveCoefficients(const char* filename)
 
 void		FourierSurface::updateLight(Graphics& gfx, UINT id, Vector2f intensity, Color color, Vector3f position)
 {
+	if (!isInit)
+		throw std::exception("You cannot update light to an uninitialized surface");
+
 	pscBuff.lightsource[id] = { intensity.getVector4() , color.getColor4() , position.getVector4() };
 	pPSCB->Update(gfx, pscBuff);
 }
@@ -1142,6 +1133,26 @@ void		FourierSurface::updateCurves(Graphics& gfx, float phi, float theta)
 Quaternion	FourierSurface::getRotation()
 {
 	return vscBuff.rotation;
+}
+
+FourierSurface::Vertex* FourierSurface::getVertexPtr()
+{
+	return Vertexs;
+}
+
+unsigned int FourierSurface::getNvertexs()
+{
+	return nvertexs;
+}
+
+unsigned short* FourierSurface::getTrianglesIcosphere()
+{
+	return trianglesIcosphere;
+}
+
+unsigned int FourierSurface::getNtriangles()
+{
+	return ntriangles;
 }
 
 void		FourierSurface::DrawCurves(Graphics& gfx)

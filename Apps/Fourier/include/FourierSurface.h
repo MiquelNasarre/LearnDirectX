@@ -24,6 +24,12 @@ public:
 		static void saveCoefficients(Coefficient* coef, unsigned int ncoef, const char* filename);
 	};
 
+	struct Vertex {
+		Vector3f vector;
+		Vector3f dYlm;
+		Color color;
+	};
+
 private:
 	class Functions
 	{
@@ -92,16 +98,9 @@ private:
 		void updateScreenPosition(Graphics& gfx, Vector2f screenDisplacement);
 	} curves;
 
-	struct Vertex {
-		Vector3f vector;
-		Vector3f norm;
-		Color color;
-	};
-
 	Coefficient* Coef = NULL;
 	unsigned int Ncoef = 0u;
 	Vertex* Vertexs = NULL;
-	Vector2f* Derivative = NULL;
 
 	static Vector3f*		vertexsIcosphere;
 	static infoVect*		infoIcosphere;
@@ -131,22 +130,25 @@ public:
 	void updateRotation(Graphics& gfx, Quaternion rotation, bool multiplicative = false);
 	void updateScreenPosition(Graphics& gfx, Vector2f screenDisplacement);
 	void updateCurves(Graphics& gfx, float phi, float theta);
+
 	Quaternion getRotation();
+	Vertex* getVertexPtr();
 
 	void DrawCurves(Graphics& gfx);
 
 	static void generateDataSet();
 	static unsigned int depthDataset();
+	static unsigned int getNvertexs();
+	static unsigned short* getTrianglesIcosphere();
+	static unsigned int getNtriangles();
 private:
 
-	struct LIGHTSOURCE {
-		_float4vector intensity = { 0.f,0.f,0.f,0.f };
-		_float4color  color = { 1.f,1.f,1.f,1.f };
-		_float4vector position = { 0.f,0.f,0.f,0.f };
-	}lightsource[8];
-
 	struct PSconstBuffer {
-		LIGHTSOURCE lightsource[8];
+		struct {
+			_float4vector intensity = { 0.f,0.f,0.f,0.f };
+			_float4color  color = { 1.f,1.f,1.f,1.f };
+			_float4vector position = { 0.f,0.f,0.f,0.f };
+		}lightsource[8];
 	}pscBuff;
 
 	struct VSconstBuffer {

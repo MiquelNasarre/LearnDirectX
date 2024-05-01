@@ -33,6 +33,9 @@
     <ClInclude Include="include\Polihedron.h">
       <Filter>Sources\Public</Filter>
     </ClInclude>
+    <ClInclude Include="include\Interpolated.h">
+      <Filter>Sources\Public</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\WinMain.cpp">
@@ -48,6 +51,9 @@
       <Filter>Sources\Private</Filter>
     </ClCompile>
     <ClCompile Include="source\Polihedron.cpp">
+      <Filter>Sources\Private</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Interpolated.cpp">
       <Filter>Sources\Private</Filter>
     </ClCompile>
   </ItemGroup>
@@ -68,6 +74,12 @@
       <Filter>Shaders</Filter>
     </FxCompile>
     <FxCompile Include="Shaders\PolihedronPS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\InterpolatedVS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\InterpolatedPS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
   </ItemGroup>

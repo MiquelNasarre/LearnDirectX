@@ -19,6 +19,7 @@ float			IG_DATA::phi = 0.f;
 bool			IG_DATA::UPDATE = false;
 bool			IG_DATA::UPDATE_CURVES = false;
 bool			IG_DATA::CURVES = false;
+bool			IG_DATA::MENU = true;
 
 bool 			IG_DATA::DOUBLE_VIEW = false;
 int 			IG_DATA::FIGURE_VIEW = -1;
@@ -36,6 +37,18 @@ unsigned int	IG_DATA::MAXL = 0u;
 unsigned int	IG_DATA::NFIG = 0u;
 unsigned int	IG_DATA::NPLOT = 0u;
 Vector2i		IG_DATA::WindowDim = { 0, 0 };
+
+unsigned int	IG_DATA::NINT = 0u;
+float			IG_DATA::TVALUE = 0.f;
+int				IG_DATA::INTERPOLATION_MENU = -1;
+int**			IG_DATA::INTERPOLATION_DATA = NULL;
+unsigned int*	IG_DATA::INTERPOLATION_DATA_SIZE = NULL;
+bool			IG_DATA::ADD_INTERPOLATION = false;
+bool			IG_DATA::DELETE_INTERPOLATION = false;
+int				IG_DATA::ADD_FIGURE = -1;
+int				IG_DATA::DELETE_FIGURE = -1;
+
+int				IG_DATA::INTERPOLATED_VIEW = -1;
 
 bool			IG_DATA::UPDATE_TEXTURE = false;
 _float4color	IG_DATA::TEXTURE = { -1.f,0.f,0.f,0.f };
@@ -176,6 +189,23 @@ void Fourier::strictReturn()
 
 void Fourier::eventManager()
 {
+	//	Enable disable ImGui
+
+	static bool persists = false;
+	if (Keyboard::isKeyPressed('M'))
+	{
+		if (persists == false)
+		{
+			if (IG_DATA::MENU)
+				IG_DATA::MENU = false;
+			else
+				IG_DATA::MENU = true;
+		}
+		persists = true;
+	}
+	else
+		persists = false;
+
 	// Full screen
 
 	if (Keyboard::isKeyPressed(VK_F11))
@@ -284,7 +314,9 @@ void Fourier::eventManager()
 		IG_DATA::UPDATE_CURVES = true;
 		IG_DATA::UPDATE_LIGHT = -2;
 		IG_DATA::DOUBLE_VIEW = false;
+		free(coef);
 	}
+
 	if (Ffigu && Fplot)
 	{
 		Ffigu = false;
@@ -313,6 +345,7 @@ void Fourier::eventManager()
 		free((void*)extractedFigure[1]);
 		free((void*)extractedFigure[2]);
 		free(extractedFigure);
+		free(coef);
 	}
 
 	//	Shape updates
@@ -391,6 +424,56 @@ void Fourier::eventManager()
 	else
 		{INTERPRET_FIGURE_VIEW(IG_DATA::FIGURE_VIEW, updateScreenPosition(window.graphics, { 0.f, 0.f }));}
 
+	//	Interpolation
+
+	if (IG_DATA::ADD_INTERPOLATION)
+	{
+		InterpolatedString** temp = (InterpolatedString**)calloc(IG_DATA::NINT + 1, sizeof(void*));
+		for (unsigned int i = 0; i < IG_DATA::NINT; i++)
+			temp[i] = Interpolations[i];
+		if (Interpolations)
+			free(Interpolations);
+		Interpolations = temp;
+
+		Interpolations[IG_DATA::NINT] = new(InterpolatedString);
+
+		IG_DATA::DOUBLE_VIEW = false;
+		IG_DATA::ADD_INTERPOLATION = false;
+		IG_DATA::INTERPOLATED_VIEW = IG_DATA::NINT;
+		IG_DATA::NINT++;
+
+	}
+
+	if (IG_DATA::DELETE_INTERPOLATION)
+	{
+		Interpolations[IG_DATA::INTERPOLATION_MENU]->~InterpolatedString();
+
+		for (unsigned int i = IG_DATA::INTERPOLATION_MENU; i < IG_DATA::NINT - 1; i++)
+			Interpolations[i] = Interpolations[i + 1];
+
+		IG_DATA::INTERPOLATION_MENU = -1;
+		IG_DATA::DELETE_INTERPOLATION = false;
+		IG_DATA::INTERPOLATED_VIEW = -1;
+		IG_DATA::NINT--;
+
+		if (IG_DATA::NINT == 0)
+			free(Interpolations);
+
+		Interpolations = NULL;
+	}
+
+	if (IG_DATA::ADD_FIGURE != -1)
+	{
+		Interpolations[IG_DATA::INTERPOLATION_MENU]->addSurface(window.graphics, Figure[IG_DATA::ADD_FIGURE]);
+		IG_DATA::ADD_FIGURE = -1;
+	}
+
+	if (IG_DATA::DELETE_FIGURE != -1)
+	{
+		Interpolations[IG_DATA::INTERPOLATION_MENU]->deleteSurface(window.graphics, IG_DATA::DELETE_FIGURE);
+		IG_DATA::DELETE_FIGURE = -1;
+	}
+
 }
 
 void Fourier::doFrame()
@@ -402,6 +485,19 @@ void Fourier::doFrame()
 	window.setTitle("Fourier  -  " + std::to_string(int(std::round(window.getFramerate()))) + "fps");
 
 	window.graphics.updatePerspective(observer, center, scale);
+
+	if (IG_DATA::INTERPOLATED_VIEW != -1)
+	{
+		static float t = 0.f;
+		t += 0.01f;
+		Interpolations[IG_DATA::INTERPOLATED_VIEW]->updateInterpolation(window.graphics, t);
+		Interpolations[IG_DATA::INTERPOLATED_VIEW]->updateRotation(window.graphics, rotation);
+		window.graphics.clearBuffer(Color::Black);
+		Interpolations[IG_DATA::INTERPOLATED_VIEW]->Draw(window.graphics);
+		IG_Fourier::render();
+		window.graphics.pushFrame();
+		return;
+	}
 
 	INTERPRET_FIGURE_VIEW(IG_DATA::FIGURE_VIEW, updateRotation(window.graphics, rotation));
 

@@ -168,8 +168,9 @@ LRESULT CALLBACK Window::HandleMsgThunk(HWND hWnd, UINT msg, WPARAM wParam, LPAR
 
 LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noexcept
 {
-	if (iGManager::WndProcHandler(hWnd, msg, (unsigned int)wParam, (unsigned int)lParam))
-		return DefWindowProc(hWnd, msg, wParam, lParam);
+	//	This function handles all the messages send by the computer to the application
+
+	// Priority cases I want to always take care of
 
 	switch (msg)
 	{
@@ -177,6 +178,35 @@ LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noe
 		PostQuitMessage(0);
 		return 0;
 
+	case WM_SIZE:
+		Dimensions.x = LOWORD(lParam);
+		Dimensions.y = HIWORD(lParam);
+		if (graphics.isInitialized())
+			graphics.setWindowDimensions(Dimensions);
+		break;
+
+	case WM_MOVE:
+		noFrameUpdate = true;
+		Position.x = LOWORD(lParam);
+		Position.y = HIWORD(lParam);
+		break;
+
+	case WM_KILLFOCUS:
+		Keyboard::clearKeyStates();
+		Mouse::resetWheel();
+		Mouse::clearBuffer();
+		break;
+	}
+
+	// Let ImGui handle the rest if he has focus
+
+	if (iGManager::WndProcHandler(hWnd, msg, (unsigned int)wParam, (unsigned int)lParam))
+		return DefWindowProc(hWnd, msg, wParam, lParam);
+
+	// Other lesser cases
+
+	switch (msg)
+	{
 	case WM_CHAR:
 		Keyboard::pushChar((char)wParam);
 		break;
@@ -230,25 +260,6 @@ LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noe
 		Mouse::setPosition(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
 		Mouse::setScPosition(GET_X_LPARAM(lParam) + Position.x, GET_Y_LPARAM(lParam) + Position.y);
 		Mouse::pushEvent(Mouse::event::Type::Moved, Mouse::None, Mouse::Position);
-		break;
-
-	case WM_SIZE:
-		Dimensions.x = LOWORD(lParam);
-		Dimensions.y = HIWORD(lParam);
-		if(graphics.isInitialized())
-			graphics.setWindowDimensions(Dimensions);
-		break;
-
-	case WM_MOVE:
-		noFrameUpdate = true;
-		Position.x = LOWORD(lParam);
-		Position.y = HIWORD(lParam);
-		break;
-
-	case WM_KILLFOCUS:
-		Keyboard::clearKeyStates();
-		Mouse::resetWheel();
-		Mouse::clearBuffer();
 		break;
 
 	case WM_MOUSEWHEEL:
