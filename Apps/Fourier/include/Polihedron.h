@@ -7,6 +7,7 @@ class Polihedron : public Drawable
 public:
 
 	Polihedron() {}
+	~Polihedron() = default;
 	Polihedron(Graphics& gfx, const Vector3f* vertexs, const Vector3i* triangles, UINT numT, const Color* colors = NULL, bool vertexColor = false, bool transparency = true, bool doubleSided = true, std::mutex* mtx = NULL);
 	Polihedron(Graphics& gfx, const Vector3f* vertexs, const unsigned short* triangles, UINT numT, const Color* colors = NULL, bool vertexColor = false, bool transparency = true, bool doubleSided = true, std::mutex* mtx = NULL);
 

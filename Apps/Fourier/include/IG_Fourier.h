@@ -5,6 +5,9 @@ class IG_Fourier : public iGManager
 {
 private:
 	static bool loadMenuOpen;
+	static bool saveMenuOpen;
+	static bool addName;
+	static int iMenu;
 	static bool colorPickerOpen;
 	static char** interpolationsNames;
 	static char** figureNames;
@@ -16,6 +19,7 @@ private:
 	static void loadLightState(int id);
 	static void doLightEditor(int& id);
 	static void loadMenu();
+	static void saveMenu();
 	static void colorPicker();
 	static void interpolationEditor();
 

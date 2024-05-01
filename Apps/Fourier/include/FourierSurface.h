@@ -30,7 +30,6 @@ public:
 		Color color;
 	};
 
-private:
 	class Functions
 	{
 	public:
@@ -60,6 +59,7 @@ private:
 		static float Klm(unsigned int l, int m);
 		static void generateConstants();
 	};
+private:
 
 	struct infoVect
 	{
@@ -67,7 +67,6 @@ private:
 		float cosphi;
 		float sintheta;
 		float costheta;
-
 	};
 
 	class Curves : public Drawable
@@ -133,6 +132,8 @@ public:
 
 	Quaternion getRotation();
 	Vertex* getVertexPtr();
+	Coefficient* getCoefficients();
+	unsigned int getNcoefficients();
 
 	void DrawCurves(Graphics& gfx);
 
@@ -164,3 +165,14 @@ private:
 
 void createShape(const char* filename);
 void formatFile(const char* srcFile, const char* newFile);
+
+template<typename C>
+void add1to(C*& MyStruct, unsigned int size)
+{
+	C* temp = (C*)calloc(size + 1, sizeof(C));
+	for (unsigned int i = 0; i < size; i++)
+		temp[i] = MyStruct[i];
+	if (MyStruct)
+		free(MyStruct);
+	MyStruct = temp;
+}

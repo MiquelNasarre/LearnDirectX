@@ -5,66 +5,69 @@
 
 #define INTERPRET_FIGURE_VIEW(view, call) \
 if (view == -1) harmonics.call; \
+else if (view >= int(IG::NFIG)) Interpolations[view-IG::NFIG]->call; \
 else if (view > -1) Figure[view]->call; \
 else DataPlots[-view - 2]->call
 
 #define INTERPRET_FIGURE_VIEW_NT(view, call) \
 if (view == -1) harmonics.call; \
+else if (view >= int(IG::NFIG)) Interpolations[view-IG::NFIG]->call; \
 else if (view > -1) Figure[view]->call
 
-int				IG_DATA::L = 7;
-int				IG_DATA::M = -4;
-float			IG_DATA::theta = 0.f;
-float			IG_DATA::phi = 0.f;
-bool			IG_DATA::UPDATE = false;
-bool			IG_DATA::UPDATE_CURVES = false;
-bool			IG_DATA::CURVES = false;
-bool			IG_DATA::MENU = true;
+int				IG::L = 7;
+int				IG::M = -4;
+float			IG::theta = 0.f;
+float			IG::phi = 0.f;
+bool			IG::UPDATE = false;
+bool			IG::UPDATE_CURVES = false;
+bool			IG::CURVES = false;
+bool			IG::MENU = true;
 
-bool 			IG_DATA::DOUBLE_VIEW = false;
-int 			IG_DATA::FIGURE_VIEW = -1;
-int 			IG_DATA::SECOND_VIEW = -1;
-Vector2i*		IG_DATA::PAIRS = NULL;
-unsigned int	IG_DATA::PAIRS_SIZE = 0u;
-bool			IG_DATA::ALREADY_EXISTS = false;
-int				IG_DATA::COPY = -1;
+bool 			IG::DOUBLE_VIEW = false;
+int 			IG::VIEW1 = -1;
+int 			IG::VIEW2 = -1;
+Vector2i*		IG::PAIRS = NULL;
+unsigned int	IG::PAIRS_SIZE = 0u;
+bool			IG::ALREADY_EXISTS = false;
+int				IG::COPY = -1;
+bool			IG::SAVE = false;
+char*			IG::SAVE_NAME = NULL;
+bool			IG::DELETE_VIEW = false;
 
-bool			IG_DATA::CALCULATE_FIGURE = false;
-bool			IG_DATA::FIGURE_FILE = true;
-bool			IG_DATA::LOADING = false;
-const char*		IG_DATA::FILENAME = (const char*)calloc(100, sizeof(char));
-unsigned int	IG_DATA::MAXL = 0u;
-unsigned int	IG_DATA::NFIG = 0u;
-unsigned int	IG_DATA::NPLOT = 0u;
-Vector2i		IG_DATA::WindowDim = { 0, 0 };
+bool			IG::CALCULATE_FIGURE = false;
+bool			IG::FIGURE_FILE = true;
+bool			IG::LOADING = false;
+char*			IG::FILENAME = (char*)calloc(100, sizeof(char));
+unsigned int	IG::MAXL = 0u;
+unsigned int	IG::NFIG = 0u;
+unsigned int	IG::NPLOT = 0u;
+Vector2i		IG::WindowDim = { 0, 0 };
 
-unsigned int	IG_DATA::NINT = 0u;
-float			IG_DATA::TVALUE = 0.f;
-int				IG_DATA::INTERPOLATION_MENU = -1;
-int**			IG_DATA::INTERPOLATION_DATA = NULL;
-unsigned int*	IG_DATA::INTERPOLATION_DATA_SIZE = NULL;
-bool			IG_DATA::ADD_INTERPOLATION = false;
-bool			IG_DATA::DELETE_INTERPOLATION = false;
-int				IG_DATA::ADD_FIGURE = -1;
-int				IG_DATA::DELETE_FIGURE = -1;
+unsigned int	IG::NINT = 0u;
+float			IG::TVALUE = 0.f;
+bool			IG::PLAY = false;
+float			IG::PLAY_SPEED = 0.01f;
+int**			IG::I_DATA = NULL;
+unsigned int*	IG::I_DATA_SIZE = NULL;
+bool			IG::I_ADD = false;
+int				IG::ADD_FIGURE = -1;
+int				IG::DELETE_FIGURE = -1;
 
-int				IG_DATA::INTERPOLATED_VIEW = -1;
+bool			IG::UPDATE_TEXTURE = false;
+_float4color	IG::TEXTURE = { -1.f,0.f,0.f,0.f };
 
-bool			IG_DATA::UPDATE_TEXTURE = false;
-_float4color	IG_DATA::TEXTURE = { -1.f,0.f,0.f,0.f };
-
-int						IG_DATA::UPDATE_LIGHT = -1;
-IG_DATA::lightsource*	IG_DATA::LIGHTS = (IG_DATA::lightsource*)calloc(sizeof(IG_DATA::lightsource), 8);
+int						IG::UPDATE_LIGHT = -1;
+IG::lightsource*		IG::LIGHTS = (IG::lightsource*)calloc(sizeof(IG::lightsource), 8);
 
 Fourier::Fourier()
 	: window(960, 720, "Fourier", "", true)
 {
 	window.setFramerateLimit(60);
 
-	IG_DATA::LIGHTS[0].is_on = true;
-	IG_DATA::LIGHTS[0].color = { 1.f, 1.f, 1.f, 1.f };
-	IG_DATA::LIGHTS[0].intensities = { 600.f, 320.f, 0.f, 0.f };
-	IG_DATA::LIGHTS[0].position = { 30.f, 10.f, 20.f, 0.f };
+	IG::LIGHTS[0].is_on = true;
+	IG::LIGHTS[0].color = { 1.f, 1.f, 1.f, 1.f };
+	IG::LIGHTS[0].intensities = { 600.f, 320.f, 0.f, 0.f };
+	IG::LIGHTS[0].position = { 30.f, 10.f, 20.f, 0.f };
 
 	harmonics.create(window.graphics, &C, 1u);
 }
@@ -196,10 +199,10 @@ void Fourier::eventManager()
 	{
 		if (persists == false)
 		{
-			if (IG_DATA::MENU)
-				IG_DATA::MENU = false;
+			if (IG::MENU)
+				IG::MENU = false;
 			else
-				IG_DATA::MENU = true;
+				IG::MENU = true;
 		}
 		persists = true;
 	}
@@ -238,19 +241,18 @@ void Fourier::eventManager()
 
 	if (dragging)
 	{
-		if (IG_DATA::DOUBLE_VIEW)
+		if (IG::DOUBLE_VIEW)
 			drag_dynamic_plane();
 		else
 			drag_dynamic_space();
 	}
-
 
 	else
 		scale *= powf(1.1f, Mouse::getWheel() / 120.f);
 
 	rotation *= rotationQuaternion(axis, dangle * window.getFrameTime() * 60.f);
 
-	IG_DATA::WindowDim = window.getDimensions();
+	IG::WindowDim = window.getDimensions();
 
 	if (!(rotation.abs() < 10.f))
 	{
@@ -261,59 +263,60 @@ void Fourier::eventManager()
 
 	// Multithread
 
-	if (IG_DATA::CALCULATE_FIGURE)
+	if (IG::CALCULATE_FIGURE)
 	{
-		IG_DATA::CALCULATE_FIGURE = false;
-		IG_DATA::LOADING = true;
+		IG::CALCULATE_FIGURE = false;
+		IG::LOADING = true;
 
-		FourierSurface** tFigure = (FourierSurface**)calloc(IG_DATA::NFIG + 1, sizeof(void*));
-		for (unsigned int i = 0; i < IG_DATA::NFIG; i++)
+		FourierSurface** tFigure = (FourierSurface**)calloc(IG::NFIG + 1, sizeof(void*));
+		for (unsigned int i = 0; i < IG::NFIG; i++)
 			tFigure[i] = Figure[i];
-		if(IG_DATA::NFIG)
+		if(IG::NFIG)
 			free(Figure);
 		Figure = tFigure;
-		Figure[IG_DATA::NFIG] = new(FourierSurface);
+		Figure[IG::NFIG] = new(FourierSurface);
 
-		if (IG_DATA::FIGURE_FILE)
+		if (IG::FIGURE_FILE)
 		{
-			extractedFigure = FourierSurface::FileManager::extractFigureFromFile(IG_DATA::FILENAME);
+			extractedFigure = FourierSurface::FileManager::extractFigureFromFile(IG::FILENAME);
 
-			if (!IG_DATA::ALREADY_EXISTS)
+			if (!IG::ALREADY_EXISTS)
 			{
-				Polihedron** tPlots = (Polihedron**)calloc(IG_DATA::NPLOT + 1, sizeof(void*));
-				for (unsigned int i = 0; i < IG_DATA::NPLOT; i++)
+				Polihedron** tPlots = (Polihedron**)calloc(IG::NPLOT + 1, sizeof(void*));
+				for (unsigned int i = 0; i < IG::NPLOT; i++)
 					tPlots[i] = DataPlots[i];
-				if (IG_DATA::NPLOT)
+				if (IG::NPLOT)
 					free(DataPlots);
 				DataPlots = tPlots;
-				DataPlots[IG_DATA::NPLOT] = new(Polihedron);
-				std::thread(createPlotAsync, &window.graphics, DataPlots[IG_DATA::NPLOT], extractedFigure, &Fplot, &mtx).detach();
+				DataPlots[IG::NPLOT] = new(Polihedron);
+				std::thread(createPlotAsync, &window.graphics, DataPlots[IG::NPLOT], extractedFigure, &Fplot, &mtx).detach();
 			}
 			else
 			{
 				Fplot = true;
 			}
 
-			std::thread(calculateCoefficientsAsync, &coef, extractedFigure, IG_DATA::MAXL, &Fcoef).detach();
-			std::thread(createFigureAsync, &window.graphics, Figure[IG_DATA::NFIG], &coef, (IG_DATA::MAXL + 1) * (IG_DATA::MAXL + 1), &Ffigu, &mtx, &Fcoef).detach();
+			std::thread(calculateCoefficientsAsync, &coef, extractedFigure, IG::MAXL, &Fcoef).detach();
+			std::thread(createFigureAsync, &window.graphics, Figure[IG::NFIG], &coef, (IG::MAXL + 1) * (IG::MAXL + 1), &Ffigu, &mtx, &Fcoef).detach();
 		}
 		else
 		{
-			coef = FourierSurface::FileManager::loadCoefficientsFromFile(IG_DATA::FILENAME);
+			coef = FourierSurface::FileManager::loadCoefficientsFromFile(IG::FILENAME);
 			Fcoef = true;
-			std::thread(createFigureAsync, &window.graphics, Figure[IG_DATA::NFIG], &coef, FourierSurface::FileManager::ncoefFromFile(IG_DATA::FILENAME), &Ffigu, &mtx, &Fcoef).detach();
+			std::thread(createFigureAsync, &window.graphics, Figure[IG::NFIG], &coef, FourierSurface::FileManager::ncoefFromFile(IG::FILENAME), &Ffigu, &mtx, &Fcoef).detach();
 		}
 	}
 
-	if (Ffigu && !IG_DATA::FIGURE_FILE)
+	if (Ffigu && !IG::FIGURE_FILE)
 	{
 		Ffigu = false;
-		IG_DATA::NFIG++;
-		IG_DATA::LOADING = false;
-		IG_DATA::FIGURE_VIEW = IG_DATA::NFIG - 1;
-		IG_DATA::UPDATE_CURVES = true;
-		IG_DATA::UPDATE_LIGHT = -2;
-		IG_DATA::DOUBLE_VIEW = false;
+		IG::NFIG++;
+		IG::LOADING = false;
+		IG::VIEW1 = IG::NFIG - 1;
+		IG::UPDATE_CURVES = true;
+		IG::UPDATE_LIGHT = -2;
+		IG::DOUBLE_VIEW = false;
+
 		free(coef);
 	}
 
@@ -322,23 +325,22 @@ void Fourier::eventManager()
 		Ffigu = false;
 		Fplot = false;
 
+		IG::NFIG++;
+		IG::DOUBLE_VIEW = true;
+		IG::LOADING = false;
+		IG::VIEW1 = IG::NFIG - 1;
+		IG::UPDATE_CURVES = true;
+		IG::UPDATE_LIGHT = -2;
 
-		IG_DATA::NFIG++;
-		IG_DATA::DOUBLE_VIEW = true;
-		IG_DATA::LOADING = false;
-		IG_DATA::FIGURE_VIEW = IG_DATA::NFIG - 1;
-		IG_DATA::UPDATE_CURVES = true;
-		IG_DATA::UPDATE_LIGHT = -2;
-
-		if (IG_DATA::ALREADY_EXISTS)
+		if (IG::ALREADY_EXISTS)
 		{
-			IG_DATA::SECOND_VIEW = IG_DATA::COPY;
-			IG_DATA::ALREADY_EXISTS = false;
+			IG::VIEW2 = IG::COPY;
+			IG::ALREADY_EXISTS = false;
 		}
 		else
 		{
-			IG_DATA::NPLOT++;
-			IG_DATA::SECOND_VIEW = -int(IG_DATA::NPLOT) - 1;
+			IG::NPLOT++;
+			IG::VIEW2 = -int(IG::NPLOT) - 1;
 		}
 
 		free((void*)extractedFigure[0]);
@@ -348,130 +350,200 @@ void Fourier::eventManager()
 		free(coef);
 	}
 
-	//	Shape updates
-
-	if (IG_DATA::UPDATE)
-	{
-		IG_DATA::UPDATE = false;
-
-		C.L = (unsigned int)IG_DATA::L;
-		C.M = IG_DATA::M;
-
-		harmonics.updateShape(window.graphics, &C, 1u);
-
-		if (IG_DATA::CURVES)
-			harmonics.updateCurves(window.graphics, IG_DATA::phi, IG_DATA::theta);
-	}
-
-	if (IG_DATA::UPDATE_CURVES)
-	{
-		IG_DATA::UPDATE_CURVES = false;
-
-		INTERPRET_FIGURE_VIEW_NT(IG_DATA::FIGURE_VIEW, updateCurves(window.graphics, IG_DATA::phi, IG_DATA::theta));
-
-		if (IG_DATA::DOUBLE_VIEW)
-			{INTERPRET_FIGURE_VIEW_NT(IG_DATA::SECOND_VIEW, updateCurves(window.graphics, IG_DATA::phi, IG_DATA::theta));}
-	}
-
-	//	Set lights & textures
-
-	int l = IG_DATA::UPDATE_LIGHT;
-	if (l == -2) {
-		for (int i = 0; i < 8; i++) {
-			harmonics.updateLight(window.graphics, i, IG_DATA::LIGHTS[i].intensities, IG_DATA::LIGHTS[i].color, IG_DATA::LIGHTS[i].position);
-			for (unsigned int j = 0; j < IG_DATA::NFIG; j++)
-				Figure[j]->updateLight(window.graphics, i, IG_DATA::LIGHTS[i].intensities, IG_DATA::LIGHTS[i].color, IG_DATA::LIGHTS[i].position);
-		}
-	}
-	if (l > -1) {
-		harmonics.updateLight(window.graphics, l, IG_DATA::LIGHTS[l].intensities, IG_DATA::LIGHTS[l].color, IG_DATA::LIGHTS[l].position);
-		for (unsigned int j = 0; j < IG_DATA::NFIG; j++)
-			Figure[j]->updateLight(window.graphics, l, IG_DATA::LIGHTS[l].intensities, IG_DATA::LIGHTS[l].color, IG_DATA::LIGHTS[l].position);
-		IG_DATA::UPDATE_LIGHT = -1;
-	}
-
-	if (IG_DATA::UPDATE_TEXTURE)
-	{
-		IG_DATA::UPDATE_TEXTURE = false;
-		if (IG_DATA::TEXTURE.r == -1.f)
-		{
-			INTERPRET_FIGURE_VIEW_NT(IG_DATA::FIGURE_VIEW, updateTexture(window.graphics, Color::White, true));
-			if(IG_DATA::DOUBLE_VIEW)
-				{INTERPRET_FIGURE_VIEW_NT(IG_DATA::SECOND_VIEW, updateTexture(window.graphics, Color::White, true));}
-		}
-		else if (IG_DATA::TEXTURE.g == -1.f)
-		{
-			INTERPRET_FIGURE_VIEW_NT(IG_DATA::FIGURE_VIEW, updateTexture(window.graphics, Color::White, false, true));
-			if(IG_DATA::DOUBLE_VIEW)
-				{INTERPRET_FIGURE_VIEW_NT(IG_DATA::SECOND_VIEW, updateTexture(window.graphics, Color::White, false, true));}
-		}
-		else
-		{
-			INTERPRET_FIGURE_VIEW_NT(IG_DATA::FIGURE_VIEW, updateTexture(window.graphics, Color((float*)&IG_DATA::TEXTURE)));
-			if (IG_DATA::DOUBLE_VIEW)
-				{INTERPRET_FIGURE_VIEW_NT(IG_DATA::SECOND_VIEW, updateTexture(window.graphics, Color((float*)&IG_DATA::TEXTURE)));}
-		}
-
-	}
-
-	//	Double view
-
-	if (IG_DATA::DOUBLE_VIEW)
-	{
-		INTERPRET_FIGURE_VIEW(IG_DATA::FIGURE_VIEW, updateScreenPosition(window.graphics, {-0.5f, 0.f }));
-		INTERPRET_FIGURE_VIEW(IG_DATA::SECOND_VIEW, updateScreenPosition(window.graphics, { 0.5f, 0.f }));
-	}
-	else
-		{INTERPRET_FIGURE_VIEW(IG_DATA::FIGURE_VIEW, updateScreenPosition(window.graphics, { 0.f, 0.f }));}
-
 	//	Interpolation
 
-	if (IG_DATA::ADD_INTERPOLATION)
+	if (IG::I_ADD)
 	{
-		InterpolatedString** temp = (InterpolatedString**)calloc(IG_DATA::NINT + 1, sizeof(void*));
-		for (unsigned int i = 0; i < IG_DATA::NINT; i++)
+		InterpolatedString** temp = (InterpolatedString**)calloc(IG::NINT + 1, sizeof(void*));
+		for (unsigned int i = 0; i < IG::NINT; i++)
 			temp[i] = Interpolations[i];
 		if (Interpolations)
 			free(Interpolations);
 		Interpolations = temp;
 
-		Interpolations[IG_DATA::NINT] = new(InterpolatedString);
+		Interpolations[IG::NINT] = new(InterpolatedString);
 
-		IG_DATA::DOUBLE_VIEW = false;
-		IG_DATA::ADD_INTERPOLATION = false;
-		IG_DATA::INTERPOLATED_VIEW = IG_DATA::NINT;
-		IG_DATA::NINT++;
+		IG::DOUBLE_VIEW = false;
+		IG::I_ADD = false;
+		IG::VIEW1 = IG::NINT + IG::NFIG;
+		IG::NINT++;
+		IG::TEXTURE = { -1.f,0.f,0.f,0.f };
+		IG::UPDATE_LIGHT = -2;
+	}
+
+	if (IG::ADD_FIGURE != -1)
+	{
+		Interpolations[IG::VIEW1 - IG::NFIG]->addSurface(window.graphics, Figure[IG::ADD_FIGURE]);
+		IG::ADD_FIGURE = -1;
+		IG::UPDATE_LIGHT = -2;
+		IG::UPDATE_TEXTURE = true;
+		IG::UPDATE_CURVES = true;
+	}
+
+	if (IG::DELETE_FIGURE != -1)
+	{
+		Interpolations[IG::VIEW1 - IG::NFIG]->deleteSurface(window.graphics, IG::DELETE_FIGURE);
+		IG::DELETE_FIGURE = -1;
+		IG::UPDATE_LIGHT = -2;
+		IG::UPDATE_TEXTURE = true;
+		IG::UPDATE_CURVES = true;
+	}
+
+	//	Interpolation T update
+
+	if (IG::VIEW1 >= int(IG::NFIG))
+		Interpolations[IG::VIEW1 - IG::NFIG]->updateInterpolation(window.graphics, IG::TVALUE);
+
+	//	Shape updates
+
+	if (IG::UPDATE)
+	{
+		IG::UPDATE = false;
+
+		C.L = (unsigned int)IG::L;
+		C.M = IG::M;
+
+		harmonics.updateShape(window.graphics, &C, 1u);
+
+		if (IG::CURVES)
+			harmonics.updateCurves(window.graphics, IG::phi, IG::theta);
+	}
+
+	if (IG::UPDATE_CURVES)
+	{
+		IG::UPDATE_CURVES = false;
+
+		INTERPRET_FIGURE_VIEW_NT(IG::VIEW1, updateCurves(window.graphics, IG::phi, IG::theta));
+
+		if (IG::DOUBLE_VIEW)
+			{INTERPRET_FIGURE_VIEW_NT(IG::VIEW2, updateCurves(window.graphics, IG::phi, IG::theta));}
+	}
+
+	//	Set lights & textures
+
+	int l = IG::UPDATE_LIGHT;
+	if (l == -2) {
+		for (int i = 0; i < 8; i++) {
+			harmonics.updateLight(window.graphics, i, IG::LIGHTS[i].intensities, IG::LIGHTS[i].color, IG::LIGHTS[i].position);
+			for (unsigned int j = 0; j < IG::NFIG; j++)
+				Figure[j]->updateLight(window.graphics, i, IG::LIGHTS[i].intensities, IG::LIGHTS[i].color, IG::LIGHTS[i].position);
+			for (unsigned int j = 0; j < IG::NINT; j++)
+				Interpolations[j]->updateLight(window.graphics, i, IG::LIGHTS[i].intensities, IG::LIGHTS[i].color, IG::LIGHTS[i].position);
+		}
+		IG::UPDATE_LIGHT = -1;
+	}
+	if (l > -1) {
+		harmonics.updateLight(window.graphics, l, IG::LIGHTS[l].intensities, IG::LIGHTS[l].color, IG::LIGHTS[l].position);
+		for (unsigned int j = 0; j < IG::NFIG; j++)
+			Figure[j]->updateLight(window.graphics, l, IG::LIGHTS[l].intensities, IG::LIGHTS[l].color, IG::LIGHTS[l].position);
+		for (unsigned int j = 0; j < IG::NINT; j++)
+			Interpolations[j]->updateLight(window.graphics, l, IG::LIGHTS[l].intensities, IG::LIGHTS[l].color, IG::LIGHTS[l].position);
+		IG::UPDATE_LIGHT = -1;
+	}
+
+	if (IG::UPDATE_TEXTURE)
+	{
+		IG::UPDATE_TEXTURE = false;
+		if (IG::TEXTURE.r == -1.f)
+		{
+			INTERPRET_FIGURE_VIEW_NT(IG::VIEW1, updateTexture(window.graphics, Color::White, true));
+			if(IG::DOUBLE_VIEW)
+				{INTERPRET_FIGURE_VIEW_NT(IG::VIEW2, updateTexture(window.graphics, Color::White, true));}
+		}
+		else if (IG::TEXTURE.g == -1.f)
+		{
+			INTERPRET_FIGURE_VIEW_NT(IG::VIEW1, updateTexture(window.graphics, Color::White, false, true));
+			if(IG::DOUBLE_VIEW)
+				{INTERPRET_FIGURE_VIEW_NT(IG::VIEW2, updateTexture(window.graphics, Color::White, false, true));}
+		}
+		else
+		{
+			INTERPRET_FIGURE_VIEW_NT(IG::VIEW1, updateTexture(window.graphics, Color((float*)&IG::TEXTURE)));
+			if (IG::DOUBLE_VIEW)
+				{INTERPRET_FIGURE_VIEW_NT(IG::VIEW2, updateTexture(window.graphics, Color((float*)&IG::TEXTURE)));}
+		}
 
 	}
 
-	if (IG_DATA::DELETE_INTERPOLATION)
+	//	Delete view
+
+	if (IG::DELETE_VIEW)
 	{
-		Interpolations[IG_DATA::INTERPOLATION_MENU]->~InterpolatedString();
+		IG::DELETE_VIEW = false;
 
-		for (unsigned int i = IG_DATA::INTERPOLATION_MENU; i < IG_DATA::NINT - 1; i++)
-			Interpolations[i] = Interpolations[i + 1];
+		if (IG::VIEW1 >= int(IG::NFIG))
+		{
+			Interpolations[IG::VIEW1 - IG::NFIG]->~InterpolatedString();
+			free(Interpolations[IG::VIEW1 - IG::NFIG]);
 
-		IG_DATA::INTERPOLATION_MENU = -1;
-		IG_DATA::DELETE_INTERPOLATION = false;
-		IG_DATA::INTERPOLATED_VIEW = -1;
-		IG_DATA::NINT--;
+			for (unsigned int i = IG::VIEW1 - IG::NFIG; i < IG::NINT - 1; i++)
+				Interpolations[i] = Interpolations[i + 1];
 
-		if (IG_DATA::NINT == 0)
-			free(Interpolations);
+			IG::VIEW1 = -1;
+			IG::NINT--;
 
-		Interpolations = NULL;
+			if (IG::NINT == 0)
+			{
+				free(Interpolations);
+				Interpolations = NULL;
+			}
+		}
+		else if (IG::VIEW1 > -1)
+		{
+			Figure[IG::VIEW1]->~FourierSurface();
+			free(Figure[IG::VIEW1]);
+			for (unsigned int i = IG::VIEW1; i < IG::NFIG - 1; i++)
+				Figure[i] = Figure[i + 1];
+
+			IG::NFIG--;
+			IG::VIEW1 = -1;
+			IG::DOUBLE_VIEW = false;
+
+			if (IG::NFIG == 0)
+			{
+				free(Figure);
+				Figure = NULL;
+			}
+		}
+		else
+		{
+			unsigned int p = -IG::VIEW1 - 2;
+			DataPlots[p]->~Polihedron();
+			free(DataPlots[p]);
+			for (unsigned int i = p; i < IG::NPLOT - 1; i++)
+				DataPlots[i] = DataPlots[i + 1];
+
+			IG::NPLOT--;
+			IG::VIEW1 = -1;
+			IG::DOUBLE_VIEW = false;
+
+			if (IG::NPLOT == 0)
+			{
+				free(DataPlots);
+				DataPlots = NULL;
+			}
+		}
 	}
 
-	if (IG_DATA::ADD_FIGURE != -1)
-	{
-		Interpolations[IG_DATA::INTERPOLATION_MENU]->addSurface(window.graphics, Figure[IG_DATA::ADD_FIGURE]);
-		IG_DATA::ADD_FIGURE = -1;
-	}
+	//	Double view
 
-	if (IG_DATA::DELETE_FIGURE != -1)
+	if (IG::DOUBLE_VIEW)
 	{
-		Interpolations[IG_DATA::INTERPOLATION_MENU]->deleteSurface(window.graphics, IG_DATA::DELETE_FIGURE);
-		IG_DATA::DELETE_FIGURE = -1;
+		INTERPRET_FIGURE_VIEW(IG::VIEW1, updateScreenPosition(window.graphics, {-0.5f, 0.f }));
+		INTERPRET_FIGURE_VIEW(IG::VIEW2, updateScreenPosition(window.graphics, { 0.5f, 0.f }));
+	}
+	else
+		{INTERPRET_FIGURE_VIEW(IG::VIEW1, updateScreenPosition(window.graphics, { 0.f, 0.f }));}
+
+	//	Save file
+
+	if (IG::SAVE)
+	{
+		IG::SAVE = false;
+		if (IG::VIEW1 >= int(IG::NFIG))
+			Interpolations[IG::VIEW1 - IG::NFIG]->saveCoefficients(IG::SAVE_NAME);
+		else
+			Figure[IG::VIEW1]->saveCoefficients(IG::SAVE_NAME);
 	}
 
 }
@@ -486,38 +558,25 @@ void Fourier::doFrame()
 
 	window.graphics.updatePerspective(observer, center, scale);
 
-	if (IG_DATA::INTERPOLATED_VIEW != -1)
-	{
-		static float t = 0.f;
-		t += 0.01f;
-		Interpolations[IG_DATA::INTERPOLATED_VIEW]->updateInterpolation(window.graphics, t);
-		Interpolations[IG_DATA::INTERPOLATED_VIEW]->updateRotation(window.graphics, rotation);
-		window.graphics.clearBuffer(Color::Black);
-		Interpolations[IG_DATA::INTERPOLATED_VIEW]->Draw(window.graphics);
-		IG_Fourier::render();
-		window.graphics.pushFrame();
-		return;
-	}
+	INTERPRET_FIGURE_VIEW(IG::VIEW1, updateRotation(window.graphics, rotation));
 
-	INTERPRET_FIGURE_VIEW(IG_DATA::FIGURE_VIEW, updateRotation(window.graphics, rotation));
-
-	if(IG_DATA::DOUBLE_VIEW)
-		{INTERPRET_FIGURE_VIEW(IG_DATA::SECOND_VIEW, updateRotation(window.graphics, rotation));}
+	if(IG::DOUBLE_VIEW)
+		{INTERPRET_FIGURE_VIEW(IG::VIEW2, updateRotation(window.graphics, rotation));}
 
 	//	Rendering
 
 	window.graphics.clearBuffer(Color::Black);
 
-	INTERPRET_FIGURE_VIEW(IG_DATA::FIGURE_VIEW, Draw(window.graphics));
+	INTERPRET_FIGURE_VIEW(IG::VIEW1, Draw(window.graphics));
 
-	if(IG_DATA::DOUBLE_VIEW)
-		{INTERPRET_FIGURE_VIEW(IG_DATA::SECOND_VIEW, Draw(window.graphics));}
+	if(IG::DOUBLE_VIEW)
+		{INTERPRET_FIGURE_VIEW(IG::VIEW2, Draw(window.graphics));}
 
-	if (IG_DATA::CURVES)
-		{INTERPRET_FIGURE_VIEW_NT(IG_DATA::FIGURE_VIEW, DrawCurves(window.graphics));}
+	if (IG::CURVES)
+		{INTERPRET_FIGURE_VIEW_NT(IG::VIEW1, DrawCurves(window.graphics));}
 
-	if(IG_DATA::CURVES && IG_DATA::DOUBLE_VIEW)
-		{INTERPRET_FIGURE_VIEW_NT(IG_DATA::SECOND_VIEW, DrawCurves(window.graphics));}
+	if(IG::CURVES && IG::DOUBLE_VIEW)
+		{INTERPRET_FIGURE_VIEW_NT(IG::VIEW2, DrawCurves(window.graphics));}
 
 
 	//	ImGui crap

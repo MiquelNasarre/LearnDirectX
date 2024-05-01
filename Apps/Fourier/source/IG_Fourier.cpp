@@ -4,6 +4,9 @@
 #include "imgui/imgui_internal.h"
 
 bool			IG_Fourier::loadMenuOpen = false;
+bool			IG_Fourier::saveMenuOpen = false;
+bool			IG_Fourier::addName = false;
+int				IG_Fourier::iMenu = -1;
 bool			IG_Fourier::colorPickerOpen = false;
 char**			IG_Fourier::interpolationsNames = NULL;
 char**			IG_Fourier::figureNames = NULL;
@@ -12,18 +15,18 @@ int*			IG_Fourier::figureSizes = NULL;
 int				IG_Fourier::light = -1;
 
 static _float4color	harmonicsTexture = { -1.f,0.f,0.f,0.f };
-static IG_DATA::lightsource savestate;
+static IG::lightsource savestate;
 
 //	Private
 
 void IG_Fourier::saveLightState(int id)
 {
-	savestate = IG_DATA::LIGHTS[id];
+	savestate = IG::LIGHTS[id];
 }
 
 void IG_Fourier::loadLightState(int id)
 {
-	IG_DATA::LIGHTS[id] = savestate;
+	IG::LIGHTS[id] = savestate;
 }
 
 void IG_Fourier::doLightEditor(int& id)
@@ -33,30 +36,30 @@ void IG_Fourier::doLightEditor(int& id)
 		ImGui::SetWindowSize(ImVec2(340, 430));
 
 		ImGui::Text("Color:");
-		if (ImGui::ColorPicker4("", (float*)&IG_DATA::LIGHTS[id].color))
-			IG_DATA::UPDATE_LIGHT = id;
+		if (ImGui::ColorPicker4("", (float*)&IG::LIGHTS[id].color))
+			IG::UPDATE_LIGHT = id;
 		ImGui::Spacing();
 		ImGui::Text("Intensities:");
-		if (ImGui::SliderFloat2("", (float*)&IG_DATA::LIGHTS[id].intensities, 0.f, 100000.f, "%.3f", ImGuiSliderFlags_Logarithmic))
-			IG_DATA::UPDATE_LIGHT = id;
+		if (ImGui::SliderFloat2("", (float*)&IG::LIGHTS[id].intensities, 0.f, 100000.f, "%.3f", ImGuiSliderFlags_Logarithmic))
+			IG::UPDATE_LIGHT = id;
 		ImGui::Spacing();
 		ImGui::Text("Position:");
-		if (ImGui::SliderFloat3(" ", (float*)&IG_DATA::LIGHTS[id].position, -1000.f, 1000.f, "%.3f", ImGuiSliderFlags_Logarithmic))
-			IG_DATA::UPDATE_LIGHT = id;
+		if (ImGui::SliderFloat3(" ", (float*)&IG::LIGHTS[id].position, -1000.f, 1000.f, "%.3f", ImGuiSliderFlags_Logarithmic))
+			IG::UPDATE_LIGHT = id;
 
 		ImGui::SetCursorPos(ImVec2(245, 235));
 		if (ImGui::Button("Cancel", ImVec2(80, 45))) {
 			loadLightState(id);
-			IG_DATA::UPDATE_LIGHT = id;
+			IG::UPDATE_LIGHT = id;
 			id = -1;
 		}
 		ImGui::SetCursorPos(ImVec2(245, 290));
 		if (ImGui::Button("Delete", ImVec2(80, 45))) {
-			IG_DATA::LIGHTS[id].is_on = false;
-			IG_DATA::LIGHTS[id].position = { 0.f,0.f,0.f,0.f };
-			IG_DATA::LIGHTS[id].intensities = { 0.f,0.f,0.f,0.f };
-			IG_DATA::LIGHTS[id].color = { 0.f,0.f,0.f,0.f };
-			IG_DATA::UPDATE_LIGHT = id;
+			IG::LIGHTS[id].is_on = false;
+			IG::LIGHTS[id].position = { 0.f,0.f,0.f,0.f };
+			IG::LIGHTS[id].intensities = { 0.f,0.f,0.f,0.f };
+			IG::LIGHTS[id].color = { 0.f,0.f,0.f,0.f };
+			IG::UPDATE_LIGHT = id;
 			id = -1;
 		}
 		ImGui::SetCursorPos(ImVec2(245, 345));
@@ -71,9 +74,9 @@ void IG_Fourier::loadMenu()
 {
 	if (ImGui::Begin("Load Menu", NULL, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar))
 	{
-		ImGui::SetWindowPos(ImVec2(IG_DATA::WindowDim.x / 2.f - 100.f, IG_DATA::WindowDim.y / 2.f - 52.f));
+		ImGui::SetWindowPos(ImVec2(IG::WindowDim.x / 2.f - 100.f, IG::WindowDim.y / 2.f - 52.f));
 
-		if(IG_DATA::FIGURE_FILE)
+		if(IG::FIGURE_FILE)
 			ImGui::SetWindowSize(ImVec2(200, 104));
 
 		else
@@ -88,7 +91,7 @@ void IG_Fourier::loadMenu()
 				ImGui::EndMenu();
 
 			const char* label;
-			if (IG_DATA::FIGURE_FILE)
+			if (IG::FIGURE_FILE)
 				label = "Figure";
 			else
 				label = "Coefficients";
@@ -97,12 +100,12 @@ void IG_Fourier::loadMenu()
 			{
 				if (ImGui::MenuItem("Figure"))
 				{
-					IG_DATA::FIGURE_FILE = true;
+					IG::FIGURE_FILE = true;
 					change = true;
 				}
 				if (ImGui::MenuItem("Coefficients"))
 				{
-					IG_DATA::FIGURE_FILE = false;
+					IG::FIGURE_FILE = false;
 					change = true;
 				}
 
@@ -112,27 +115,24 @@ void IG_Fourier::loadMenu()
 			ImGui::EndMenuBar();
 		}
 
-		static char* filename = (char*)calloc(100,sizeof(char));
 		static const char* existance;
 		static bool exists = false;
 		
-		if (ImGui::InputText("File", filename, 100, ImGuiInputTextFlags_AutoSelectAll) || change)
+		if (ImGui::InputText(" File", IG::FILENAME, 100, ImGuiInputTextFlags_AutoSelectAll) || change)
 		{
 			change = false;
 			FILE* file;
-			if (IG_DATA::FIGURE_FILE)
-				file = fopen((FIGURES_DIR + std::string(filename) + ".dat").c_str(), "r");
+			if (IG::FIGURE_FILE)
+				file = fopen((FIGURES_DIR + std::string(IG::FILENAME) + ".dat").c_str(), "r");
 			else
-				file = fopen((COEFFICIENTS_DIR + std::string(filename) + ".dat").c_str(), "r");
+				file = fopen((COEFFICIENTS_DIR + std::string(IG::FILENAME) + ".dat").c_str(), "r");
 
 			exists = file;
 			if (file)
 				fclose(file);
 		}
 
-		IG_DATA::FILENAME = filename;
-
-		if (IG_DATA::FIGURE_FILE)
+		if (IG::FIGURE_FILE)
 		{
 			static int L = 20;
 			ImGui::InputInt(" Max L", &L);
@@ -140,147 +140,118 @@ void IG_Fourier::loadMenu()
 				L = 0;
 			if (L > MAX_L)
 				L = MAX_L;
-			IG_DATA::MAXL = (unsigned int)L;
+			IG::MAXL = (unsigned int)L;
 		}
-		
+		ImGui::Spacing();
 		if (!exists)
 			ImGui::BeginDisabled();
-		if (ImGui::Button("Load") || (ImGui::IsKeyPressed(ImGuiKey_Enter) && exists))
+		if (ImGui::Button("Load", ImVec2(89, 19)) || (ImGui::IsKeyPressed(ImGuiKey_Enter) && exists))
 		{
-			if (IG_DATA::FIGURE_FILE)
+			if (IG::FIGURE_FILE)
 			{
-				for (unsigned int i = 0; i < IG_DATA::NFIG; i++)
+				for (unsigned int i = 0; i < IG::NFIG; i++)
 				{
-					if (std::string(figureNames[i]) == IG_DATA::FILENAME && figureSizes[i]!= -1)
+					if (std::string(figureNames[i]) == IG::FILENAME && figureSizes[i]!= -1)
 					{
-						if (figureSizes[i] == IG_DATA::MAXL)
+						if (figureSizes[i] == IG::MAXL)
 						{
-							IG_DATA::FIGURE_VIEW = i;
-							for(unsigned int j = 0; j<IG_DATA::PAIRS_SIZE;j++)
+							IG::VIEW1 = i;
+							for(unsigned int j = 0; j<IG::PAIRS_SIZE;j++)
 							{
-								if (IG_DATA::PAIRS[j].x == i)
-									IG_DATA::SECOND_VIEW = IG_DATA::PAIRS[j].y;
+								if (IG::PAIRS[j].x == i)
+								{
+									IG::VIEW2 = IG::PAIRS[j].y;
+									IG::DOUBLE_VIEW = true;
+								}
 							}
-							IG_DATA::DOUBLE_VIEW = true;
-							IG_DATA::UPDATE_CURVES = true;
-							IG_DATA::UPDATE_LIGHT = -2;
+							IG::UPDATE_CURVES = true;
+							IG::UPDATE_LIGHT = -2;
 							loadMenuOpen = false;
 							ImGui::End();
 							return;
 						}
-						IG_DATA::ALREADY_EXISTS = true;
-						for (unsigned int j = 0; j < IG_DATA::PAIRS_SIZE; j++)
+
+						for (unsigned int j = 0; j < IG::PAIRS_SIZE; j++)
 						{
-							if (IG_DATA::PAIRS[j].x == i)
-								IG_DATA::COPY = IG_DATA::PAIRS[j].y;
+							if (IG::PAIRS[j].x == i)
+							{
+								IG::COPY = IG::PAIRS[j].y;
+								IG::ALREADY_EXISTS = true;
+							}
 						}
 					}
 				}
 
-				IG_DATA::PAIRS_SIZE++;
-				Vector2i* Pairs = (Vector2i*)calloc(IG_DATA::PAIRS_SIZE, sizeof(Vector2i));
-				for (unsigned int i = 0; i < IG_DATA::PAIRS_SIZE - 1; i++)
-					Pairs[i] = IG_DATA::PAIRS[i];
-				if (IG_DATA::PAIRS)
-					free(IG_DATA::PAIRS);
-				IG_DATA::PAIRS = Pairs;
-				IG_DATA::PAIRS[IG_DATA::PAIRS_SIZE - 1] = { int(IG_DATA::NFIG), IG_DATA::ALREADY_EXISTS ? IG_DATA::COPY : -int(IG_DATA::NPLOT) - 2 };
+				add1to(IG::PAIRS, IG::PAIRS_SIZE);
+				IG::PAIRS[IG::PAIRS_SIZE] = { int(IG::NFIG), IG::ALREADY_EXISTS ? IG::COPY : -int(IG::NPLOT) - 2 };
+				IG::PAIRS_SIZE++;
 
-
-				char** tNames = (char**)calloc(IG_DATA::NFIG + 1, sizeof(void*));
-				for (unsigned int i = 0; i < IG_DATA::NFIG; i++)
-					tNames[i] = figureNames[i];
-				if(figureNames)
-					free(figureNames);
-				figureNames = tNames;
-				
-				figureNames[IG_DATA::NFIG] = (char*)calloc(100, sizeof(char));
+				add1to(figureNames, IG::NFIG);
+				figureNames[IG::NFIG] = (char*)calloc(100, sizeof(char));
 				for (unsigned int i = 0; i < 100; i++)
 				{
-					char c = filename[i];
+					char c = IG::FILENAME[i];
 					if (c <= 90 && c >= 65)
 						c += 32;
-					figureNames[IG_DATA::NFIG][i] = c;
+					figureNames[IG::NFIG][i] = c;
 					if (!c)
 						break;
 				}
 
-				if (!IG_DATA::ALREADY_EXISTS)
+				if (!IG::ALREADY_EXISTS)
 				{
-					tNames = (char**)calloc(IG_DATA::NPLOT + 1, sizeof(void*));
-					for (unsigned int i = 0; i < IG_DATA::NPLOT; i++)
-						tNames[i] = plotsNames[i];
-					if (plotsNames)
-						free(plotsNames);
-
-					plotsNames = tNames;
-
-					plotsNames[IG_DATA::NPLOT] = (char*)calloc(100, sizeof(char));
+					add1to(plotsNames, IG::NPLOT);
+					plotsNames[IG::NPLOT] = (char*)calloc(100, sizeof(char));
 					for (unsigned int i = 0; i < 100; i++)
 					{
-						char c = filename[i];
+						char c = IG::FILENAME[i];
 						if (c <= 90 && c >= 65)
 							c += 32;
-						plotsNames[IG_DATA::NPLOT][i] = c;
+						plotsNames[IG::NPLOT][i] = c;
 						if (!c)
 							break;
 					}
 				}
 
-				int* tSizes = (int*)calloc(IG_DATA::NFIG + 1, sizeof(int));
-				for (unsigned int i = 0; i < IG_DATA::NFIG; i++)
-					tSizes[i] = figureSizes[i];
-				if (figureSizes)
-					free(figureSizes);
-				figureSizes = tSizes;
-				figureSizes[IG_DATA::NFIG] = IG_DATA::MAXL;
+				add1to(figureSizes, IG::NFIG);
+				figureSizes[IG::NFIG] = IG::MAXL;
 
-				IG_DATA::CALCULATE_FIGURE = true;
+				IG::CALCULATE_FIGURE = true;
 				loadMenuOpen = false;
 			}
 			
 			else
 			{
-				for (unsigned int i = 0; i < IG_DATA::NFIG; i++)
+				for (unsigned int i = 0; i < IG::NFIG; i++)
 				{
-					if (std::string(figureNames[i]) == IG_DATA::FILENAME && figureSizes[i] == -1)
+					if (std::string(figureNames[i]) == IG::FILENAME && figureSizes[i] == -1)
 					{
-						IG_DATA::FIGURE_VIEW = i;
-						IG_DATA::DOUBLE_VIEW = false;
-						IG_DATA::UPDATE_CURVES = true;
-						IG_DATA::UPDATE_LIGHT = -2;
+						IG::VIEW1 = i;
+						IG::DOUBLE_VIEW = false;
+						IG::UPDATE_CURVES = true;
+						IG::UPDATE_LIGHT = -2;
 						loadMenuOpen = false;
 						ImGui::End();
 						return;
 					}
 				}
 
-				char** tNames = (char**)calloc(IG_DATA::NFIG + 1, sizeof(void*));
-				for (unsigned int i = 0; i < IG_DATA::NFIG; i++)
-					tNames[i] = figureNames[i];
-				free((void*)figureNames);
-				figureNames = tNames;
-
-				figureNames[IG_DATA::NFIG] = (char*)calloc(100, sizeof(char));
+				add1to(figureNames, IG::NFIG);
+				figureNames[IG::NFIG] = (char*)calloc(100, sizeof(char));
 				for (unsigned int i = 0; i < 100; i++)
 				{
-					char c = filename[i];
+					char c = IG::FILENAME[i];
 					if (c <= 90 && c >= 65)
 						c += 32;
-					figureNames[IG_DATA::NFIG][i] = c;
+					figureNames[IG::NFIG][i] = c;
 					if (!c)
 						break;
 				}
 
-				int* tSizes = (int*)calloc(IG_DATA::NFIG + 1, sizeof(int));
-				for (unsigned int i = 0; i < IG_DATA::NFIG; i++)
-					tSizes[i] = figureSizes[i];
-				if (figureSizes)
-					free(figureSizes);
-				figureSizes = tSizes;
-				figureSizes[IG_DATA::NFIG] = -1;
+				add1to(figureSizes, IG::NFIG);
+				figureSizes[IG::NFIG] = -1;
 
-				IG_DATA::CALCULATE_FIGURE = true;
+				IG::CALCULATE_FIGURE = true;
 				loadMenuOpen = false;
 
 			}
@@ -289,13 +260,65 @@ void IG_Fourier::loadMenu()
 		if (!exists)
 			ImGui::EndDisabled();
 
-		ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX() + 45.f, ImGui::GetCursorPosY() - 23.f));
-		if (ImGui::Button("Cancel"))
+		ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX() + 95.f, ImGui::GetCursorPosY() - 23.f));
+		if (ImGui::Button("Cancel", ImVec2(89, 19)))
 			loadMenuOpen = false;
 
 	}
 	ImGui::End();
 
+}
+
+void IG_Fourier::saveMenu()
+{
+	if(ImGui::Begin("Save Menu", NULL, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize))
+	{
+		ImGui::SetWindowPos(ImVec2(IG::WindowDim.x / 2.f - 100.f, IG::WindowDim.y / 2.f - 52.f));
+		ImGui::SetWindowSize(ImVec2(200, 82));
+
+		if (addName)
+		{
+			if (IG::SAVE_NAME)
+				free(IG::SAVE_NAME);
+
+			IG::SAVE_NAME = (char*)calloc(110, sizeof(char));
+
+			if (IG::VIEW1 >= int(IG::NFIG))
+			{
+				int i = -1;
+				while (interpolationsNames[IG::VIEW1 - IG::NFIG][++i])
+					IG::SAVE_NAME[i] = interpolationsNames[IG::VIEW1 - IG::NFIG][i];
+			}
+			else
+			{
+				int i = -1;
+				while (figureNames[IG::VIEW1][++i])
+					IG::SAVE_NAME[i] = figureNames[IG::VIEW1][i];
+				IG::SAVE_NAME[i] = '_';
+				IG::SAVE_NAME[i + 1] = std::to_string(figureSizes[IG::VIEW1]).c_str()[0];
+				IG::SAVE_NAME[i + 2] = std::to_string(figureSizes[IG::VIEW1]).c_str()[1];
+			}
+			addName = false;
+		}
+
+		ImGui::InputText(" Name", IG::SAVE_NAME, 100, ImGuiInputTextFlags_AutoSelectAll);
+
+		ImGui::Spacing();
+		if (!IG::SAVE_NAME[0])
+			ImGui::BeginDisabled();
+		if (ImGui::Button("Save", ImVec2(89, 19)) || (ImGui::IsKeyPressed(ImGuiKey_Enter) && IG::SAVE_NAME[0]))
+		{
+			IG::SAVE = true;
+			saveMenuOpen = false;
+		}
+		if (!IG::SAVE_NAME[0])
+			ImGui::EndDisabled();
+
+		ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX() + 95.f, ImGui::GetCursorPosY() - 23.f));
+		if (ImGui::Button("Cancel", ImVec2(89, 19)))
+			saveMenuOpen = false;
+	}
+	ImGui::End();
 }
 
 void IG_Fourier::colorPicker()
@@ -312,7 +335,7 @@ void IG_Fourier::colorPicker()
 		ImGui::SetCursorPos(ImVec2(8, 321));
 		if (ImGui::Button("Cancel", ImVec2(110, 45))) 
 		{
-			color = IG_DATA::TEXTURE;
+			color = IG::TEXTURE;
 			colorPickerOpen = false;
 		}
 		ImGui::SetCursorPos(ImVec2(125, 321));
@@ -320,10 +343,10 @@ void IG_Fourier::colorPicker()
 		if (ImGui::Button("Apply", ImVec2(110, 45)))
 		{
 			colorPickerOpen = false;
-			IG_DATA::UPDATE_TEXTURE = true;
-			IG_DATA::TEXTURE = color;
-			if (IG_DATA::FIGURE_VIEW == -1)
-				harmonicsTexture = IG_DATA::TEXTURE;
+			IG::UPDATE_TEXTURE = true;
+			IG::TEXTURE = color;
+			if (IG::VIEW1 == -1)
+				harmonicsTexture = IG::TEXTURE;
 		}
 	}
 	ImGui::End();
@@ -331,32 +354,26 @@ void IG_Fourier::colorPicker()
 
 void IG_Fourier::interpolationEditor()
 {
-	int m = IG_DATA::INTERPOLATION_MENU;
-	unsigned int s = IG_DATA::INTERPOLATION_DATA_SIZE[m];
+	int m = iMenu;
+	unsigned int s = IG::I_DATA_SIZE[m];
 	if (ImGui::Begin("Interpolation Editor", NULL, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_MenuBar))
 	{
 		if(ImGui::BeginMenuBar())
 		{
 			if (ImGui::BeginMenu("Add figure"))
 			{
-				for (unsigned int i = 0; i < IG_DATA::NFIG; i++)
+				for (unsigned int i = 0; i < IG::NFIG; i++)
 				{
-					if (ImGui::MenuItem(figureNames[i], std::to_string(figureSizes[i]).c_str()))
+					if (ImGui::MenuItem(figureNames[i], figureSizes[i] != -1 ? std::to_string(figureSizes[i]).c_str() : ""))
 					{
-						IG_DATA::ADD_FIGURE = i;
-						int* temp = (int*)calloc(s + 1, sizeof(int));
-						for (unsigned int j = 0; j < s; j++)
-							temp[j] = IG_DATA::INTERPOLATION_DATA[m][j];
-						if (IG_DATA::INTERPOLATION_DATA[m])
-							free(IG_DATA::INTERPOLATION_DATA[m]);
-						IG_DATA::INTERPOLATION_DATA[m] = temp;
-						IG_DATA::INTERPOLATION_DATA[m][IG_DATA::INTERPOLATION_DATA_SIZE[m]] = i;
-						IG_DATA::INTERPOLATION_DATA_SIZE[m]++;
+						IG::ADD_FIGURE = i;
+						add1to(IG::I_DATA[m], s);
+						IG::I_DATA[m][s] = i;
+						IG::I_DATA_SIZE[m]++;
 					}
 				}
 				ImGui::EndMenu();
 			}
-
 			ImGui::EndMenuBar();
 		}
 
@@ -366,12 +383,12 @@ void IG_Fourier::interpolationEditor()
 		{
 			for (unsigned int i = 0; i < s; i++)
 			{
-				if (ImGui::Selectable(figureNames[IG_DATA::INTERPOLATION_DATA[m][i]]))
+				if (ImGui::Selectable(IG::I_DATA[m][i] != -1 ? figureNames[IG::I_DATA[m][i]] : "**************"))
 				{
-					IG_DATA::DELETE_FIGURE = i;
+					IG::DELETE_FIGURE = i;
 					for (unsigned int j = i; j < s - 1; j++)
-						IG_DATA::INTERPOLATION_DATA[m][j] = IG_DATA::INTERPOLATION_DATA[m][j + 1];
-					IG_DATA::INTERPOLATION_DATA_SIZE[m]--;
+						IG::I_DATA[m][j] = IG::I_DATA[m][j + 1];
+					IG::I_DATA_SIZE[m]--;
 				}
 			}
 			ImGui::EndListBox();
@@ -381,24 +398,10 @@ void IG_Fourier::interpolationEditor()
 
 		if (!interpolationsNames[m][0])
 			ImGui::BeginDisabled();
-		if (ImGui::Button("Save", ImVec2(88, 19)))
-			IG_DATA::INTERPOLATION_MENU = -1;
+		if (ImGui::Button("Save", ImVec2(180, 19)) || (interpolationsNames[m][0] && ImGui::IsKeyPressed(ImGuiKey_Enter)))
+			iMenu = -1;
 		else if (!interpolationsNames[m][0])
 			ImGui::EndDisabled();
-
-		ImGui::SetCursorPos(ImVec2(100, 163));
-		if (ImGui::Button("Delete", ImVec2(88, 19)))
-		{
-
-			for (unsigned int i = m; i < IG_DATA::NINT - 1; i++)
-			{
-				IG_DATA::INTERPOLATION_DATA[i] = IG_DATA::INTERPOLATION_DATA[i + 1];
-				IG_DATA::INTERPOLATION_DATA_SIZE[i] = IG_DATA::INTERPOLATION_DATA_SIZE[i + 1];
-				interpolationsNames[i] = interpolationsNames[i + 1];
-			}
-
-			IG_DATA::DELETE_INTERPOLATION = true;
-		}
 
 	}
 	ImGui::End();
@@ -410,64 +413,64 @@ void IG_Fourier::mainMenu()
 	{
 		if (ImGui::BeginMenuBar())
 		{
-			if (IG_DATA::INTERPOLATION_MENU != -1)
+			if (iMenu != -1)
 				ImGui::BeginDisabled();
 			if (ImGui::BeginMenu("Figure"))
 			{
 				if (ImGui::MenuItem("Spherical Harmonics"))
 				{
-					IG_DATA::FIGURE_VIEW = -1;
-					IG_DATA::UPDATE_CURVES = true;
-					IG_DATA::DOUBLE_VIEW = false;
+					IG::VIEW1 = -1;
+					IG::UPDATE_CURVES = true;
+					IG::DOUBLE_VIEW = false;
 				}
 
-				if (IG_DATA::NFIG)
+				if (IG::NFIG)
 				{
 					ImGui::MenuItem("Fourier Series", "", false, false);
 
-					for (unsigned int i = 0; i < IG_DATA::NFIG; i++)
+					for (unsigned int i = 0; i < IG::NFIG; i++)
 					{
 						if (ImGui::MenuItem(figureNames[i], figureSizes[i] == -1 ? "" : std::to_string(figureSizes[i]).c_str()))
 						{
-							IG_DATA::FIGURE_VIEW = i;
-							IG_DATA::UPDATE_CURVES = true;
-							IG_DATA::DOUBLE_VIEW = false;
+							IG::VIEW1 = i;
+							IG::UPDATE_CURVES = true;
+							IG::DOUBLE_VIEW = false;
 						}
 					}
 				}
 
-				if (IG_DATA::NPLOT)
+				if (IG::NPLOT)
 				{
 					ImGui::MenuItem("Data Plots", "", false, false);
 
-					for (unsigned int i = 0; i < IG_DATA::NPLOT; i++)
+					for (unsigned int i = 0; i < IG::NPLOT; i++)
 					{
 						if (ImGui::MenuItem(plotsNames[i]))
 						{
-							IG_DATA::FIGURE_VIEW = -int(i) - 2;
-							IG_DATA::DOUBLE_VIEW = false;
+							IG::VIEW1 = -int(i) - 2;
+							IG::DOUBLE_VIEW = false;
 						}
 
 					}
 				}
 
-				if (IG_DATA::NINT)
+				if (IG::NINT)
 				{
 					ImGui::MenuItem("Interpolations", "", false, false);
 
-					for (unsigned int i = 0; i < IG_DATA::NINT; i++)
+					for (unsigned int i = 0; i < IG::NINT; i++)
 					{
 						if (ImGui::MenuItem(interpolationsNames[i]))
 						{
-							IG_DATA::INTERPOLATION_MENU = i;
+							IG::VIEW1 = IG::NFIG + i;
+							IG::DOUBLE_VIEW = false;
 						}
-
 					}
 				}
 
 				ImGui::EndMenu();
 			}
-			else if (IG_DATA::INTERPOLATION_MENU != -1)
+			else if (iMenu != -1)
 				ImGui::EndDisabled();
 
 			if (ImGui::BeginMenu("Advanced"))
@@ -497,7 +500,7 @@ void IG_Fourier::mainMenu()
 			if (ImGui::BeginMenu("Lights"))
 			{
 				for (int i = 0; i < 8; i++) {
-					if (IG_DATA::LIGHTS[i].is_on && ImGui::MenuItem(std::string("Light " + std::to_string(i)).c_str()))
+					if (IG::LIGHTS[i].is_on && ImGui::MenuItem(std::string("Light " + std::to_string(i)).c_str()))
 					{
 						light = i;
 						saveLightState(i);
@@ -508,9 +511,9 @@ void IG_Fourier::mainMenu()
 				if (ImGui::MenuItem("New"))
 				{
 					for (int i = 0; i < 8; i++) {
-						if (!IG_DATA::LIGHTS[i].is_on) {
+						if (!IG::LIGHTS[i].is_on) {
 							saveLightState(i);
-							IG_DATA::LIGHTS[i].is_on = true;
+							IG::LIGHTS[i].is_on = true;
 							light = i;
 							break;
 						}
@@ -519,13 +522,13 @@ void IG_Fourier::mainMenu()
 
 				if (ImGui::MenuItem("Reset"))
 				{
-					free(IG_DATA::LIGHTS);
-					IG_DATA::LIGHTS = (IG_DATA::lightsource*)calloc(8, sizeof(IG_DATA::lightsource));
-					IG_DATA::LIGHTS[0].is_on = true;
-					IG_DATA::LIGHTS[0].color = { 1.f, 1.f, 1.f, 1.f };
-					IG_DATA::LIGHTS[0].intensities = { 600.f, 320.f, 0.f, 0.f };
-					IG_DATA::LIGHTS[0].position = { 30.f, 10.f, 20.f, 0.f };
-					IG_DATA::UPDATE_LIGHT = -2;
+					free(IG::LIGHTS);
+					IG::LIGHTS = (IG::lightsource*)calloc(8, sizeof(IG::lightsource));
+					IG::LIGHTS[0].is_on = true;
+					IG::LIGHTS[0].color = { 1.f, 1.f, 1.f, 1.f };
+					IG::LIGHTS[0].intensities = { 600.f, 320.f, 0.f, 0.f };
+					IG::LIGHTS[0].position = { 30.f, 10.f, 20.f, 0.f };
+					IG::UPDATE_LIGHT = -2;
 					light = -1;
 				}
 
@@ -536,18 +539,18 @@ void IG_Fourier::mainMenu()
 			{
 				if (ImGui::MenuItem("Default"))
 				{
-					IG_DATA::UPDATE_TEXTURE = true;
-					IG_DATA::TEXTURE = { -1.f,0.f,0.f,0.f };
+					IG::UPDATE_TEXTURE = true;
+					IG::TEXTURE = { -1.f,0.f,0.f,0.f };
 				}
 				if (ImGui::MenuItem("Pick Color"))
 					colorPickerOpen = true;
 				if (ImGui::MenuItem("Randomized"))
 				{
-					IG_DATA::UPDATE_TEXTURE = true;
-					IG_DATA::TEXTURE = { 0.f,-1.f,0.f,0.f };
+					IG::UPDATE_TEXTURE = true;
+					IG::TEXTURE = { 0.f,-1.f,0.f,0.f };
 				}
-				if (IG_DATA::FIGURE_VIEW == -1)
-					harmonicsTexture = IG_DATA::TEXTURE;
+				if (IG::VIEW1 == -1)
+					harmonicsTexture = IG::TEXTURE;
 
 				ImGui::EndMenu();
 			}
@@ -559,80 +562,260 @@ void IG_Fourier::mainMenu()
 		ImGui::SetWindowCollapsed(true, ImGuiCond_Once);
 		ImGui::SetWindowSize(ImVec2(330, 120), ImGuiCond_Once);
 
-		if (IG_DATA::FIGURE_VIEW == -1)
+		if (IG::VIEW1 == -1)
 		{
-			if (ImGui::SliderInt("L value", &IG_DATA::L, 0, MAX_L))
+			if (ImGui::SliderInt(" L value", &IG::L, 0, MAX_L))
 			{
-				IG_DATA::UPDATE = true;
-				IG_DATA::UPDATE_TEXTURE = true;
-				IG_DATA::TEXTURE = harmonicsTexture;
+				IG::UPDATE = true;
+				IG::UPDATE_TEXTURE = true;
+				IG::TEXTURE = harmonicsTexture;
 			}
 
-			if (ImGui::SliderInt("M value", &IG_DATA::M, -IG_DATA::L, IG_DATA::L))
+			if (ImGui::SliderInt(" M value", &IG::M, -IG::L, IG::L))
 			{
-				IG_DATA::UPDATE = true;
-				IG_DATA::UPDATE_TEXTURE = true;
-				IG_DATA::TEXTURE = harmonicsTexture;
+				IG::UPDATE = true;
+				IG::UPDATE_TEXTURE = true;
+				IG::TEXTURE = harmonicsTexture;
 			}
 
-			if (IG_DATA::M > IG_DATA::L) IG_DATA::M = IG_DATA::L;
-			if (-IG_DATA::M > IG_DATA::L) IG_DATA::M = -IG_DATA::L;
+			if (IG::M > IG::L) IG::M = IG::L;
+			if (-IG::M > IG::L) IG::M = -IG::L;
 		}
 
 		else
 		{
-			int m = IG_DATA::INTERPOLATION_MENU;
-			if (IG_DATA::NFIG < 2 || m != -1 || IG_DATA::FIGURE_VIEW < 0)
-				ImGui::BeginDisabled();
-			if (ImGui::Button("Create Interpolation", ImVec2(300, 19)))
+			if (IG::VIEW1 >= int(IG::NFIG))
 			{
-				IG_DATA::ADD_FIGURE = IG_DATA::FIGURE_VIEW;
+				if (IG::I_DATA_SIZE[IG::VIEW1 - IG::NFIG] < 2)
+					ImGui::BeginDisabled();
+				if (ImGui::Button(IG::PLAY ? "S" : "P", ImVec2(28, 19)))
+				{
+					if (IG::PLAY)
+						IG::PLAY = false;
+					else
+						IG::PLAY = true;
+				}
 
-				int** temp = (int**)calloc(IG_DATA::NINT + 1, sizeof(void*));
-				for (unsigned int i = 0; i < IG_DATA::NINT; i++)
-					temp[i] = IG_DATA::INTERPOLATION_DATA[i];
-				if (IG_DATA::INTERPOLATION_DATA)
-					free(IG_DATA::INTERPOLATION_DATA);
-				IG_DATA::INTERPOLATION_DATA = temp;
+				ImGui::SetCursorPos(ImVec2(40, 46));
+				if (ImGui::Button("<", ImVec2(15, 19)))
+					IG::PLAY_SPEED /= 1.1f;
 
-				IG_DATA::INTERPOLATION_DATA[IG_DATA::NINT] = (int*)calloc(1, sizeof(int));
-				IG_DATA::INTERPOLATION_DATA[IG_DATA::NINT][0] = IG_DATA::FIGURE_VIEW;
+				ImGui::SetCursorPos(ImVec2(56, 46));
+				if (ImGui::Button(">", ImVec2(15, 19)))
+					IG::PLAY_SPEED *= 1.1f;
 
-				unsigned int* temp0 = (unsigned int*)calloc(IG_DATA::NINT + 1, sizeof(int));
-				for (unsigned int i = 0; i < IG_DATA::NINT; i++)
-					temp0[i] = IG_DATA::INTERPOLATION_DATA_SIZE[i];
-				if (IG_DATA::INTERPOLATION_DATA_SIZE)
-					free(IG_DATA::INTERPOLATION_DATA_SIZE);
-				IG_DATA::INTERPOLATION_DATA_SIZE = temp0;
-
-				IG_DATA::INTERPOLATION_DATA_SIZE[IG_DATA::NINT] = 1u;
-
-				char** tNames = (char**)calloc(IG_DATA::NINT + 1, sizeof(void*));
-				for (unsigned int i = 0; i < IG_DATA::NINT; i++)
-					tNames[i] = interpolationsNames[i];
-				if (interpolationsNames)
-					free(interpolationsNames);
-				interpolationsNames = tNames;
-				interpolationsNames[IG_DATA::NINT] = (char*)calloc(100, sizeof(char));
-
-				IG_DATA::ADD_INTERPOLATION = true;
-				IG_DATA::INTERPOLATION_MENU = IG_DATA::NINT;
+				ImGui::SetCursorPos(ImVec2(75, 46));
+				if (ImGui::SliderFloat("T", &IG::TVALUE, 0.f, float(IG::I_DATA_SIZE[IG::VIEW1 - IG::NFIG] - 1.f)) && IG::CURVES)
+					IG::UPDATE_CURVES = true;
+				if (IG::I_DATA_SIZE[IG::VIEW1 - IG::NFIG] < 2)
+				{
+					ImGui::EndDisabled();
+					IG::TVALUE = 0.f;
+					IG::PLAY = false;
+				}
+				else
+				{
+					if (IG::PLAY)
+					{
+						if (IG::CURVES)
+							IG::UPDATE_CURVES = true;
+						IG::TVALUE += IG::PLAY_SPEED;
+					}
+					while (IG::TVALUE > float(IG::I_DATA_SIZE[IG::VIEW1 - IG::NFIG]) - 1.f)IG::TVALUE -= IG::I_DATA_SIZE[IG::VIEW1 - IG::NFIG] - 1;
+					while (IG::TVALUE < 0.f) IG::TVALUE += IG::I_DATA_SIZE[IG::VIEW1 - IG::NFIG] - 1;
+				}
 			}
-			else if (IG_DATA::NFIG < 2 || m != -1 || IG_DATA::FIGURE_VIEW < 0)
+			else
+			{
+				int m = iMenu;
+				if (IG::NFIG < 2 || m != -1 || IG::VIEW1 < 0)
+					ImGui::BeginDisabled();
+				if (ImGui::Button("Create Interpolation", ImVec2(295, 19)))
+				{
+					IG::ADD_FIGURE = IG::VIEW1;
+
+					add1to(IG::I_DATA, IG::NINT);
+					IG::I_DATA[IG::NINT] = (int*)calloc(1, sizeof(int));
+					IG::I_DATA[IG::NINT][0] = IG::VIEW1;
+
+					add1to(IG::I_DATA_SIZE, IG::NINT);
+					IG::I_DATA_SIZE[IG::NINT] = 1u;
+
+					add1to(interpolationsNames, IG::NINT);
+					interpolationsNames[IG::NINT] = (char*)calloc(100, sizeof(char));
+
+					IG::I_ADD = true;
+					iMenu = IG::NINT;
+				}
+				else if (IG::NFIG < 2 || m != -1 || IG::VIEW1 < 0)
+					ImGui::EndDisabled();
+			}
+
+			if (IG::VIEW1 < 0 || iMenu != -1)
+				ImGui::BeginDisabled();
+			if (ImGui::Button("Save Figure", ImVec2(95, 19)))
+			{
+				IG::DOUBLE_VIEW = false;
+				IG::PLAY = false;
+				iMenu = -1;
+				saveMenuOpen = true;
+				addName = true;
+			}
+			if (IG::VIEW1 < 0 || iMenu != -1)
 				ImGui::EndDisabled();
 
-			if (ImGui::Button("Compare View", ImVec2(95, 19)))
+			ImGui::SetCursorPos(ImVec2(108, 69));
+			if (IG::VIEW1 >= int(IG::NFIG))
 			{
+				if (IG::LOADING)
+					ImGui::BeginDisabled();
+				if (ImGui::Button("Editor", ImVec2(95, 19)))
+					iMenu = IG::VIEW1 - IG::NFIG;
+				if (IG::LOADING)
+					ImGui::EndDisabled();
+			}
+			else if (IG::DOUBLE_VIEW)
+			{
+				if (ImGui::Button("Single View", ImVec2(95, 19)))
+					IG::DOUBLE_VIEW = false;
+			}
+			else
+			{
+				bool haspair = false;
+				for (unsigned int i = 0; i < IG::PAIRS_SIZE; i++)
+				{
+					if (IG::VIEW1 == IG::PAIRS[i].x || IG::VIEW1 == IG::PAIRS[i].y)
+					{
+						if (ImGui::Button("Double View", ImVec2(95, 19)))
+						{
+							IG::DOUBLE_VIEW = true;
+							IG::VIEW2 = IG::VIEW1 == IG::PAIRS[i].x ? IG::PAIRS[i].y : IG::PAIRS[i].x;
+						}
+						haspair = true;
+					}
+				}
+				if (!haspair)
+				{
+					ImGui::BeginDisabled();
+					ImGui::Button("Double View", ImVec2(95, 19));
+					ImGui::EndDisabled();
+				}
+			}
 
+			ImGui::SetCursorPos(ImVec2(208, 69));
+			if (ImGui::Button("Delete", ImVec2(95, 19)))
+			{
+				IG::DELETE_VIEW = true;
+
+				if (IG::VIEW1 >= int(IG::NFIG))
+				{
+					free(interpolationsNames[IG::VIEW1 - IG::NFIG]);
+					free(IG::I_DATA[IG::VIEW1 - IG::NFIG]);
+
+					for (unsigned int i = IG::VIEW1 - IG::NFIG; i < IG::NINT - 1; i++)
+					{
+						IG::I_DATA[i] = IG::I_DATA[i + 1];
+						IG::I_DATA_SIZE[i] = IG::I_DATA_SIZE[i + 1];
+						interpolationsNames[i] = interpolationsNames[i + 1];
+					}
+					iMenu = -1;
+
+					if (IG::NINT == 1)
+					{
+						free(IG::I_DATA);
+						free(IG::I_DATA_SIZE);
+						free(interpolationsNames);
+						interpolationsNames = NULL;
+						IG::I_DATA = NULL;
+						IG::I_DATA_SIZE = NULL;
+
+					}
+				}
+				else if (IG::VIEW1 > -1)
+				{
+					free(figureNames[IG::VIEW1]);
+					for (unsigned int i = IG::VIEW1; i < IG::NFIG - 1; i++)
+						figureNames[i] = figureNames[i + 1];
+
+					for (unsigned int i = 0; i < IG::PAIRS_SIZE; i++)
+					{
+						if (IG::PAIRS[i].x == IG::VIEW1)
+						{
+							for (unsigned int j = i; j < IG::PAIRS_SIZE - 1; j++)
+								IG::PAIRS[j] = IG::PAIRS[j + 1];
+							IG::PAIRS_SIZE--;
+							i--;
+						}
+					}
+					for (unsigned int i = 0; i < IG::PAIRS_SIZE; i++)
+					{
+						if (IG::PAIRS[i].x > IG::VIEW1)
+							IG::PAIRS[i].x--;
+					}
+					if (!IG::PAIRS_SIZE)
+					{
+						free(IG::PAIRS);
+						IG::PAIRS = NULL;
+					}
+					for (unsigned int i = 0; i < IG::NINT; i++)
+					{
+						for (unsigned int j = 0; j < IG::I_DATA_SIZE[i]; j++)
+							IG::I_DATA[i][j] = -1;
+					}
+					if (IG::NFIG == 1u)
+					{
+						free(figureNames);
+						free(figureSizes);
+						figureSizes = NULL;
+						figureNames = NULL;
+					}
+				}
+				else
+				{
+					unsigned int p = -IG::VIEW1 - 2;
+					free(plotsNames[p]);
+					for (unsigned int i = p; i < IG::NPLOT - 1; i++)
+						plotsNames[i] = plotsNames[i + 1];
+
+					for (unsigned int i = 0; i < IG::PAIRS_SIZE; i++)
+					{
+						if (IG::PAIRS[i].y == IG::VIEW1)
+						{
+							for (unsigned int j = i; j < IG::PAIRS_SIZE - 1; j++)
+								IG::PAIRS[j] = IG::PAIRS[j + 1];
+							IG::PAIRS_SIZE--;
+							i--;
+						}
+					}
+					for (unsigned int i = 0; i < IG::PAIRS_SIZE; i++)
+					{
+						if (IG::PAIRS[i].y < IG::VIEW1)
+							IG::PAIRS[i].y++;
+					}
+					if (!IG::PAIRS_SIZE)
+					{
+						free(IG::PAIRS);
+						IG::PAIRS = NULL;
+					}
+					if (IG::NPLOT == 1u)
+					{
+						free(plotsNames);
+						plotsNames = NULL;
+					}
+				}
 			}
 		}
 
-		if (!IG_DATA::LOADING && ImGui::Button("Load Figure", ImVec2(95, 19)))
+		if (iMenu != -1)
+			ImGui::BeginDisabled();
+		if (!IG::LOADING && ImGui::Button("Load Figure", ImVec2(95, 19)))
 			loadMenuOpen = true;
+		if (iMenu != -1)
+			ImGui::EndDisabled();
 
 		static int counter = 0;
-		static std::string loadText = "Loading...";
-		if (IG_DATA::LOADING)
+		static std::string loadText;
+		if (IG::LOADING)
 		{
 			counter++;
 			counter %= 120;
@@ -649,49 +832,42 @@ void IG_Fourier::mainMenu()
 			ImGui::EndDisabled();
 		}
 
-		ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX() + 100.f, ImGui::GetCursorPosY() - 23.f));
-
-		if (IG_DATA::DOUBLE_VIEW)
+		ImGui::SetCursorPos(ImVec2(108, 92));
+		if (!IG::DOUBLE_VIEW && IG::VIEW1 < -1)
 		{
-			if (ImGui::Button("Single View", ImVec2(95, 19)))
-				IG_DATA::DOUBLE_VIEW = false;
-			ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX() + 200.f, ImGui::GetCursorPosY() - 23.f));
+			ImGui::BeginDisabled();
+			IG::CURVES = false;
+			ImGui::SetWindowSize(ImVec2(330, 120));
 		}
-		else
-		{
-			for (unsigned int i = 0; i < IG_DATA::PAIRS_SIZE; i++)
-			{
-				if (IG_DATA::FIGURE_VIEW == IG_DATA::PAIRS[i].x || IG_DATA::FIGURE_VIEW == IG_DATA::PAIRS[i].y)
-				{
-					if (ImGui::Button("Double View", ImVec2(95, 19)))
-					{
-						IG_DATA::DOUBLE_VIEW = true;
-						IG_DATA::SECOND_VIEW = IG_DATA::FIGURE_VIEW == IG_DATA::PAIRS[i].x ? IG_DATA::PAIRS[i].y : IG_DATA::PAIRS[i].x;
-					}
-					ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX() + 200.f, ImGui::GetCursorPosY() - 23.f));
-				}
-
-			}
-		}
-
-		if (IG_DATA::CURVES)
+		if (IG::CURVES)
 		{
 			if (ImGui::Button("Hide Curves", ImVec2(95, 19)))
 			{
-				IG_DATA::CURVES = false;
+				IG::CURVES = false;
 				ImGui::SetWindowSize(ImVec2(330, 120));
 			}
 
-			if (ImGui::SliderFloat("Phi", &IG_DATA::phi, 0.f, 2 * pi)) IG_DATA::UPDATE_CURVES = true;
-			if (ImGui::SliderFloat("Theta", &IG_DATA::theta, 0.f, pi)) IG_DATA::UPDATE_CURVES = true;
+			if (ImGui::SliderFloat("Phi", &IG::phi, 0.f, 2 * pi)) IG::UPDATE_CURVES = true;
+			if (ImGui::SliderFloat("Theta", &IG::theta, 0.f, pi)) IG::UPDATE_CURVES = true;
 		}
 		else if (ImGui::Button("Show Curves", ImVec2(95, 19)))
 		{
 			ImGui::SetWindowSize(ImVec2(330, 168));
-			IG_DATA::CURVES = true;
-			IG_DATA::UPDATE_CURVES = true;
+			IG::CURVES = true;
+			IG::UPDATE_CURVES = true;
 		}
+		if (!IG::DOUBLE_VIEW && IG::VIEW1 < -1)
+			ImGui::EndDisabled();
 
+		ImGui::SetCursorPos(ImVec2(208, 92));
+		ImGui::BeginDisabled();
+		if (ImGui::Button("Coefficients", ImVec2(95, 19)))
+		{
+			
+
+
+		}
+		ImGui::EndDisabled();
 	}
 	ImGui::End();
 }
@@ -700,14 +876,22 @@ void IG_Fourier::mainMenu()
 
 void IG_Fourier::render()
 {
-	if (!IG_DATA::MENU)
+
+	if (!IG::MENU)
 		return;
 
 	newFrame();
 
+	if (saveMenuOpen)
+	{
+		saveMenu();
+		drawFrame();
+		return;
+	}
+
 	mainMenu();
 
-	if (IG_DATA::INTERPOLATION_MENU > -1)
+	if (iMenu > -1)
 		interpolationEditor();
 
 	if (loadMenuOpen)

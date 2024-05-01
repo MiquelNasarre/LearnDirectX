@@ -1,5 +1,15 @@
 #include "Interpolated.h"
 
+Interpolated::~Interpolated()
+{
+	if (Vertexs)
+		free(Vertexs);
+	if (Coef0)
+		free(Coef0);
+	if (Coef1)
+		free(Coef1);
+}
+
 Interpolated::Interpolated(Graphics& gfx, FourierSurface* surface0, FourierSurface* surface1, float t)
 {
 	create(gfx, surface0, surface1, t);
@@ -22,17 +32,29 @@ void Interpolated::create(Graphics& gfx, FourierSurface* surface0, FourierSurfac
 	FourierSurface::Vertex* V1 = surface1->getVertexPtr();
 	unsigned int N = FourierSurface::getNvertexs();
 
-	InterpolatedVertex* vertexs = (InterpolatedVertex*)calloc(N, sizeof(InterpolatedVertex));
+	Vertexs = (InterpolatedVertex*)calloc(N, sizeof(InterpolatedVertex));
 
 	for (unsigned int i = 0; i < N; i++)
 	{
-		vertexs[i].vector = V0[i].vector;
-		vertexs[i].dYlm0 = V0[i].dYlm;
-		vertexs[i].dYlm1 = V1[i].dYlm;
-		vertexs[i].color = Color::White;
+		Vertexs[i].vector = V0[i].vector;
+		Vertexs[i].dYlm0 = V0[i].dYlm;
+		Vertexs[i].dYlm1 = V1[i].dYlm;
+		Vertexs[i].color = Color::White;
 	}
 
-	AddBind(std::make_unique<VertexBuffer>(gfx, vertexs, N));
+	Ncoef0 = surface0->getNcoefficients();
+	Ncoef1 = surface1->getNcoefficients();
+	Coef0 = (FourierSurface::Coefficient*)calloc(Ncoef0, sizeof(FourierSurface::Coefficient));
+	Coef1 = (FourierSurface::Coefficient*)calloc(Ncoef1, sizeof(FourierSurface::Coefficient));
+
+	FourierSurface::Coefficient* pCoef = surface0->getCoefficients();
+	for (unsigned int i = 0; i < Ncoef0; i++)
+		Coef0[i] = pCoef[i];
+	pCoef = surface1->getCoefficients();
+	for (unsigned int i = 0; i < Ncoef1; i++)
+		Coef1[i] = pCoef[i];
+
+	AddBind(std::make_unique<VertexBuffer>(gfx, Vertexs, N));
 
 	AddBind(std::make_unique<IndexBuffer>(gfx, FourierSurface::getTrianglesIcosphere(), 3 * FourierSurface::getNtriangles()));
 
@@ -60,7 +82,40 @@ void Interpolated::create(Graphics& gfx, FourierSurface* surface0, FourierSurfac
 
 	pPSCB = (ConstantBuffer<PSconstBuffer>*)AddBind(std::make_unique<ConstantBuffer<PSconstBuffer>>(gfx, pscBuff, PIXEL_CONSTANT_BUFFER_TYPE));
 
-	free(vertexs);
+	// Create curves
+
+	unsigned int L = 0;
+	for (unsigned int i = 0; i < Ncoef0; i++)
+	{
+		if (Coef0[i].L > L) L = Coef0[i].L;
+	}
+	for (unsigned int i = 0; i < Ncoef1; i++)
+	{
+		if (Coef1[i].L > L) L = Coef1[i].L;
+	}
+	FourierSurface::Coefficient* Coef = (FourierSurface::Coefficient*)calloc((L + 1) * (L + 1), sizeof(FourierSurface::Coefficient));
+
+	for (unsigned int l = 0; l <= L; l++)
+	{
+		for (int m = -int(l); m <= int(l); m++)
+		{
+			Coef[l * l + m + l].L = l;
+			Coef[l * l + m + l].M = m;
+			Coef[l * l + m + l].C = 0.f;
+
+			for (unsigned int i = 0; i < Ncoef0; i++)
+			{
+				if (Coef0[i].L == l && Coef0[i].M == m) Coef[i].C += (1 - T) * Coef0[i].C;
+			}
+			for (unsigned int i = 0; i < Ncoef1; i++)
+			{
+				if (Coef1[i].L == l && Coef1[i].M == m) Coef[i].C += T * Coef1[i].C;
+			}
+		}
+	}
+
+	curves.create(gfx, Coef, (L + 1) * (L + 1), 0.f, 0.f, NULL);
+	free(Coef);
 }
 
 void Interpolated::updateShape(Graphics& gfx, FourierSurface* surface0, FourierSurface* surface1, float t)
@@ -78,21 +133,33 @@ void Interpolated::updateShape(Graphics& gfx, FourierSurface* surface0, FourierS
 	FourierSurface::Vertex* V1 = surface1->getVertexPtr();
 	unsigned int N = FourierSurface::getNvertexs();
 
-	InterpolatedVertex* vertexs = (InterpolatedVertex*)calloc(N, sizeof(InterpolatedVertex));
-
 	for (unsigned int i = 0; i < N; i++)
 	{
-		vertexs[i].vector = V0[i].vector;
-		vertexs[i].dYlm0 = V0[i].dYlm;
-		vertexs[i].dYlm1 = V1[i].dYlm;
-		vertexs[i].color = Color::White;
+		Vertexs[i].vector = V0[i].vector;
+		Vertexs[i].dYlm0 = V0[i].dYlm;
+		Vertexs[i].dYlm1 = V1[i].dYlm;
+		Vertexs[i].color = Color::White;
 	}
 
-	changeBind(std::make_unique<VertexBuffer>(gfx, vertexs, N), 0u);
+	free(Coef0);
+	free(Coef1);
+	Ncoef0 = surface0->getNcoefficients();
+	Ncoef1 = surface1->getNcoefficients();
+	Coef0 = (FourierSurface::Coefficient*)calloc(Ncoef0, sizeof(FourierSurface::Coefficient));
+	Coef1 = (FourierSurface::Coefficient*)calloc(Ncoef1, sizeof(FourierSurface::Coefficient));
+
+	FourierSurface::Coefficient* pCoef = surface0->getCoefficients();
+	for (unsigned int i = 0; i < Ncoef0; i++)
+		Coef0[i] = pCoef[i];
+	pCoef = surface1->getCoefficients();
+	for (unsigned int i = 0; i < Ncoef1; i++)
+		Coef1[i] = pCoef[i];
+
+	changeBind(std::make_unique<VertexBuffer>(gfx, Vertexs, N), 0u);
 
 	pVSCB->Update(gfx, vscBuff);
 	
-	free(vertexs);
+
 }
 
 void Interpolated::updateInterpolation(Graphics& gfx, float t)
@@ -103,12 +170,44 @@ void Interpolated::updateInterpolation(Graphics& gfx, float t)
 	while (t > 1)t--;
 	while (t < 0)t++;
 	vscBuff.tvalue.x = t;
+	T = t;
 
 	pVSCB->Update(gfx, vscBuff);
 }
 
 void Interpolated::saveCoefficients(const char* filename)
 {
+	unsigned int L = 0;
+	for (unsigned int i = 0; i < Ncoef0; i++)
+	{
+		if (Coef0[i].L > L) L = Coef0[i].L;
+	}
+	for (unsigned int i = 0; i < Ncoef1; i++)
+	{
+		if (Coef1[i].L > L) L = Coef1[i].L;
+	}
+	FourierSurface::Coefficient* Coef = (FourierSurface::Coefficient*)calloc((L + 1) * (L + 1), sizeof(FourierSurface::Coefficient));
+
+	for (unsigned int l = 0; l <= L; l++)
+	{
+		for (int m = -int(l); m <= int(l); m++)
+		{
+			Coef[l * l + m + l].L = l;
+			Coef[l * l + m + l].M = m;
+			Coef[l * l + m + l].C = 0.f;
+		
+			for (unsigned int i = 0; i < Ncoef0; i++)
+			{
+				if (Coef0[i].L == l && Coef0[i].M == m) Coef[i].C += (1 - T) * Coef0[i].C;
+			}
+			for (unsigned int i = 0; i < Ncoef1; i++)
+			{
+				if (Coef1[i].L == l && Coef1[i].M == m) Coef[i].C += T * Coef1[i].C;
+			}
+		}
+	}
+
+	FourierSurface::FileManager::saveCoefficients(Coef, (L + 1) * (L + 1), filename);
 }
 
 void Interpolated::saveInterpolation(const char* filename)
@@ -144,6 +243,20 @@ void Interpolated::clearLights(Graphics& gfx)
 
 void Interpolated::updateTexture(Graphics& gfx, Color color, bool def, bool random)
 {
+	if (!isInit)
+		throw std::exception("You cannot update texture to an uninitialized surface");
+
+	for (unsigned int i = 0; i < FourierSurface::getNvertexs(); i++)
+	{
+		if (def)
+			Vertexs[i].color = Color::White;
+		else if (random)
+			Vertexs[i].color = Color(rand() % 256, rand() % 256, rand() % 256);
+		else
+			Vertexs[i].color = color;
+	}
+
+	changeBind(std::make_unique<VertexBuffer>(gfx, Vertexs, FourierSurface::getNvertexs()), 0u);
 }
 
 void Interpolated::updateRotation(Graphics& gfx, Vector3f axis, float angle, bool multiplicative)
@@ -158,6 +271,8 @@ void Interpolated::updateRotation(Graphics& gfx, Vector3f axis, float angle, boo
 
 	vscBuff.rotation.normalize();
 	pVSCB->Update(gfx, vscBuff);
+
+	curves.updateRotation(gfx, rotationQuaternion(axis, angle), multiplicative);
 }
 
 void Interpolated::updateRotation(Graphics& gfx, Quaternion rotation, bool multiplicative)
@@ -172,6 +287,8 @@ void Interpolated::updateRotation(Graphics& gfx, Quaternion rotation, bool multi
 
 	vscBuff.rotation.normalize();
 	pVSCB->Update(gfx, vscBuff);
+
+	curves.updateRotation(gfx, rotation, multiplicative);
 }
 
 void Interpolated::updateScreenPosition(Graphics& gfx, Vector2f screenDisplacement)
@@ -182,10 +299,44 @@ void Interpolated::updateScreenPosition(Graphics& gfx, Vector2f screenDisplaceme
 	vscBuff.screenDisplacement = screenDisplacement.getVector4();
 
 	pVSCB->Update(gfx, vscBuff);
+
+	curves.updateScreenPosition(gfx, screenDisplacement);
 }
 
 void Interpolated::updateCurves(Graphics& gfx, float phi, float theta)
 {
+	unsigned int L = 0;
+	for (unsigned int i = 0; i < Ncoef0; i++)
+	{
+		if (Coef0[i].L > L) L = Coef0[i].L;
+	}
+	for (unsigned int i = 0; i < Ncoef1; i++)
+	{
+		if (Coef1[i].L > L) L = Coef1[i].L;
+	}
+	FourierSurface::Coefficient* Coef = (FourierSurface::Coefficient*)calloc((L + 1) * (L + 1), sizeof(FourierSurface::Coefficient));
+
+	for (unsigned int l = 0; l <= L; l++)
+	{
+		for (int m = -int(l); m <= int(l); m++)
+		{
+			Coef[l * l + m + l].L = l;
+			Coef[l * l + m + l].M = m;
+			Coef[l * l + m + l].C = 0.f;
+
+			for (unsigned int i = 0; i < Ncoef0; i++)
+			{
+				if (Coef0[i].L == l && Coef0[i].M == m) Coef[i].C += (1 - T) * Coef0[i].C;
+			}
+			for (unsigned int i = 0; i < Ncoef1; i++)
+			{
+				if (Coef1[i].L == l && Coef1[i].M == m) Coef[i].C += T * Coef1[i].C;
+			}
+		}
+	}
+
+	curves.updateShape(gfx, Coef, (L + 1) * (L + 1), phi, theta);
+	free(Coef);
 }
 
 Quaternion Interpolated::getRotation()
@@ -195,6 +346,7 @@ Quaternion Interpolated::getRotation()
 
 void Interpolated::DrawCurves(Graphics& gfx)
 {
+	curves.Draw(gfx);
 }
 
 //	Interpolated String Functions
@@ -204,7 +356,16 @@ InterpolatedString::~InterpolatedString()
 	if (!Nsurfaces)
 		return;
 	for (unsigned int i = 0; i < Nsurfaces - 1; i++)
+	{
 		Interpolations[i]->~Interpolated();
+		free(Interpolations[i]);
+	}
+	if (Nsurfaces == 1u)
+	{
+		Interpolations[0]->~Interpolated();
+		free(Interpolations[0]);
+	}
+
 	if (Interpolations)
 		free(Interpolations);
 	if (Surfaces)
@@ -221,7 +382,13 @@ void InterpolatedString::create(Graphics& gfx, FourierSurface** surfaces, unsign
 	if (Surfaces)
 		free(Surfaces);
 	if (Interpolations)
+	{
+		Interpolations[0]->~Interpolated();
+		for (unsigned int i = 1; i < Nsurfaces - 1; i++)
+			Interpolations[i]->~Interpolated();
 		free(Interpolations);
+	}
+	
 	Nsurfaces = nsurfaces;
 	Surfaces = NULL;
 	Interpolations = NULL;
@@ -248,28 +415,36 @@ void InterpolatedString::create(Graphics& gfx, FourierSurface** surfaces, unsign
 		if (t >= i && t < i + 1)
 			Interpolations[i]->updateInterpolation(gfx, t - i);
 	}
+
+	if (Nsurfaces == 1)
+	{
+		Interpolations = (Interpolated**)calloc(1, sizeof(void*));
+		Interpolations[0] = new(Interpolated);
+		Interpolations[0]->create(gfx, surfaces[0], surfaces[0]);
+	}
 }
 
 void InterpolatedString::addSurface(Graphics& gfx, FourierSurface* surface)
 {
+	if (Nsurfaces == 1)
+	{
+		Interpolations[0]->~Interpolated();
+		free(Interpolations[0]);
+	}
+
+	add1to(Surfaces, Nsurfaces);
+	Surfaces[Nsurfaces] = surface;
 	Nsurfaces++;
-	FourierSurface** tSurfaces = (FourierSurface**)calloc(Nsurfaces, sizeof(void*));
-	for (unsigned int i = 0; i < Nsurfaces - 1; i++)
-		tSurfaces[i] = Surfaces[i];
-	if (Surfaces)
-		free(Surfaces);
-	Surfaces = tSurfaces;
-	Surfaces[Nsurfaces - 1] = surface;
 
 	if (Nsurfaces == 1u)
+	{
+		Interpolations = (Interpolated**)calloc(1, sizeof(void*));
+		Interpolations[0] = new(Interpolated);
+		Interpolations[0]->create(gfx, surface, surface);
 		return;
+	}
 
-	Interpolated** tInterpolations = (Interpolated**)calloc(Nsurfaces - 1, sizeof(void*));
-	for (unsigned int i = 0; i < Nsurfaces - 2; i++)
-		tInterpolations[i] = Interpolations[i];
-	if (Interpolations)
-		free(Interpolations);
-	Interpolations = tInterpolations;
+	add1to(Interpolations, Nsurfaces - 2);
 	Interpolations[Nsurfaces - 2] = new(Interpolated);
 	Interpolations[Nsurfaces - 2]->create(gfx, Surfaces[Nsurfaces - 2], surface);
 }
@@ -281,28 +456,46 @@ void InterpolatedString::deleteSurface(Graphics& gfx, unsigned int s)
 		free(Surfaces);
 		Surfaces = NULL;
 		Nsurfaces = 0u;
+
+		Interpolations[0]->~Interpolated();
+		free(Interpolations[0]);
+		free(Interpolations);
+		Interpolations = NULL;
 		return;
 	}
 
-	if (s != Nsurfaces - 1 && Nsurfaces > 1)
+	if (s != Nsurfaces - 1)
+	{
 		Interpolations[s]->~Interpolated();
+		free(Interpolations[s]);
+	}
 
-	for (unsigned int i = s; i < Nsurfaces; i++)
+	for (unsigned int i = s; i < Nsurfaces - 1; i++)
 	{
 		Surfaces[i] = Surfaces[i + 1];
-		if (i < Nsurfaces - 1)
+		if (i < Nsurfaces - 2)
 			Interpolations[i] = Interpolations[i + 1];
 	}
 
 	if (s != 0 && s != Nsurfaces - 1)
 	{
 		Interpolations[s-1]->~Interpolated();
-		Interpolations[s-1] = new(Interpolated);
+		free(Interpolations[s - 1]);
+		Interpolations[s - 1] = new(Interpolated);
 		Interpolations[s - 1]->create(gfx, Surfaces[s - 1], Surfaces[s]);
 	}
 
-	if (--Nsurfaces == 1u)
-		Interpolations = NULL;
+	Nsurfaces--;
+	if (Nsurfaces == 1u)
+	{
+		if (s)
+		{
+			Interpolations[0]->~Interpolated();
+			free(Interpolations[0]);
+		}
+		Interpolations[0] = new(Interpolated);
+		Interpolations[0]->create(gfx, Surfaces[0], Surfaces[0]);
+	}
 }
 
 void InterpolatedString::updateInterpolation(Graphics& gfx, float t)
@@ -323,6 +516,16 @@ void InterpolatedString::updateInterpolation(Graphics& gfx, float t)
 
 void InterpolatedString::saveCoefficients(const char* filename)
 {
+	if (!Nsurfaces)
+		return;
+	if (Nsurfaces == 1)
+		return Interpolations[0]->saveCoefficients(filename);
+
+	for (unsigned int i = 0; i < Nsurfaces - 1u; i++)
+	{
+		if (T >= i && T <= i + 1)
+			return Interpolations[i]->saveCoefficients(filename);
+	}
 }
 
 void InterpolatedString::saveInterpolation(const char* filename)
@@ -333,6 +536,9 @@ void InterpolatedString::updateLight(Graphics& gfx, UINT id, Vector2f intensity,
 {
 	if (!Nsurfaces)return;
 
+	if (Nsurfaces == 1u)
+		Interpolations[0]->updateLight(gfx, id, intensity, color, position);
+
 	for (unsigned int i = 0; i < Nsurfaces - 1; i++)
 		Interpolations[i]->updateLight(gfx, id, intensity, color, position);
 }
@@ -340,6 +546,9 @@ void InterpolatedString::updateLight(Graphics& gfx, UINT id, Vector2f intensity,
 void InterpolatedString::updateLight(Graphics& gfx, UINT id, _float4vector intensity, _float4color color, _float4vector position)
 {
 	if (!Nsurfaces)return;
+
+	if (Nsurfaces == 1u)
+		Interpolations[0]->updateLight(gfx, id, intensity, color, position);
 
 	for (unsigned int i = 0; i < Nsurfaces - 1; i++)
 		Interpolations[i]->updateLight(gfx, id, intensity, color, position);
@@ -349,6 +558,9 @@ void InterpolatedString::clearLights(Graphics& gfx)
 {
 	if (!Nsurfaces)return;
 
+	if (Nsurfaces == 1u)
+		Interpolations[0]->clearLights(gfx);
+
 	for (unsigned int i = 0; i < Nsurfaces - 1; i++)
 		Interpolations[i]->clearLights(gfx);
 }
@@ -356,6 +568,9 @@ void InterpolatedString::clearLights(Graphics& gfx)
 void InterpolatedString::updateTexture(Graphics& gfx, Color color, bool def, bool random)
 {
 	if (!Nsurfaces)return;
+
+	if (Nsurfaces == 1u)
+		Interpolations[0]->updateTexture(gfx, color, def, random);
 
 	for (unsigned int i = 0; i < Nsurfaces - 1; i++)
 		Interpolations[i]->updateTexture(gfx, color, def, random);
@@ -365,19 +580,20 @@ void InterpolatedString::updateRotation(Graphics& gfx, Vector3f axis, float angl
 {
 	if (!Nsurfaces)return;
 
-	if (Nsurfaces == 1)
-		Surfaces[0]->updateRotation(gfx, axis, angle, multiplicative);
+	if (Nsurfaces == 1u)
+		Interpolations[0]->updateRotation(gfx, axis, angle, multiplicative);
 
 	for (unsigned int i = 0; i < Nsurfaces - 1; i++)
 		Interpolations[i]->updateRotation(gfx, axis, angle, multiplicative);
+
 }
 
 void InterpolatedString::updateRotation(Graphics& gfx, Quaternion rotation, bool multiplicative)
 {
 	if (!Nsurfaces)return;
 
-	if (Nsurfaces == 1)
-		Surfaces[0]->updateRotation(gfx, rotation, multiplicative);
+	if (Nsurfaces == 1u)
+		Interpolations[0]->updateRotation(gfx, rotation, multiplicative);
 
 	for (unsigned int i = 0; i < Nsurfaces - 1; i++)
 		Interpolations[i]->updateRotation(gfx, rotation, multiplicative);
@@ -387,8 +603,8 @@ void InterpolatedString::updateScreenPosition(Graphics& gfx, Vector2f screenDisp
 {
 	if (!Nsurfaces)return;
 
-	if (Nsurfaces == 1)
-		Surfaces[0]->updateScreenPosition(gfx, screenDisplacement);
+	if (Nsurfaces == 1u)
+		Interpolations[0]->updateScreenPosition(gfx, screenDisplacement);
 
 	for (unsigned int i = 0; i < Nsurfaces - 1; i++)
 		Interpolations[i]->updateScreenPosition(gfx, screenDisplacement);
@@ -396,16 +612,22 @@ void InterpolatedString::updateScreenPosition(Graphics& gfx, Vector2f screenDisp
 
 void InterpolatedString::updateCurves(Graphics& gfx, float phi, float theta)
 {
-	if (!Nsurfaces)return;
+	if (!Nsurfaces)
+		return;
+	if (Nsurfaces == 1)
+		return Interpolations[0]->updateCurves(gfx, phi, theta);
 
-	for (unsigned int i = 0; i < Nsurfaces - 1; i++)
-		Interpolations[i]->updateCurves(gfx, phi, theta);
+	for (unsigned int i = 0; i < Nsurfaces - 1u; i++)
+	{
+		if (T >= i && T <= i + 1)
+			return Interpolations[i]->updateCurves(gfx, phi, theta);
+	}
 }
 
 Quaternion InterpolatedString::getRotation()
 {
-	if (Nsurfaces)
-		return Surfaces[0]->getRotation();
+	if (Interpolations)
+		return Interpolations[0]->getRotation();
 	else
 		return 0.f;
 }
@@ -415,7 +637,7 @@ void InterpolatedString::Draw(Graphics& gfx)
 	if (!Nsurfaces)
 		return;
 	if (Nsurfaces == 1)
-		return Surfaces[0]->Draw(gfx);
+		return Interpolations[0]->Draw(gfx);
 
 	for (unsigned int i = 0; i < Nsurfaces - 1u; i++)
 	{
@@ -426,9 +648,150 @@ void InterpolatedString::Draw(Graphics& gfx)
 
 void InterpolatedString::DrawCurves(Graphics& gfx)
 {
+	if (!Nsurfaces)
+		return;
+	if (Nsurfaces == 1)
+		return Interpolations[0]->DrawCurves(gfx);
+
 	for (unsigned int i = 0; i < Nsurfaces - 1u; i++)
 	{
 		if (T >= i && T <= i + 1)
 			return Interpolations[i]->DrawCurves(gfx);
 	}
 }
+
+//	Curves functions
+
+//	Private static
+
+void Interpolated::Curves::generatePhiCurveAsync(const unsigned int t0, const unsigned int t1, const FourierSurface::Coefficient* coef, const unsigned int ncoef, const float phi, const float theta, Vertex* V)
+{
+	constexpr float error = 1.0035f;
+
+	for (unsigned int j = t0; j <= t1; j++)
+	{
+		float iphi = j * 2 * pi / Npoints + phi;
+		float Z = 0.f;
+		for (unsigned int k = 0; k < ncoef; k++)
+			Z += coef[k].C * FourierSurface::Functions::Ylm(coef[k].L, coef[k].M, iphi, theta);
+
+		V[unsigned int(theta * Npoints / pi) + j + 1] = { (error * Z * Vector3f(sinf(theta) * cosf(iphi), sinf(theta) * sinf(iphi), cosf(theta))).getVector4(), { 1.f, 1.f, 1.f, 1.f } };
+	}
+}
+
+void Interpolated::Curves::generateThetaCurveAsync(const unsigned int t0, const unsigned int t1, const FourierSurface::Coefficient* coef, const unsigned int ncoef, const float phi, const float theta, Vertex* V)
+{
+	constexpr float error = 1.0035f;
+
+	for (unsigned int i = t0; i <= t1; i++)
+	{
+		float itheta = i * pi / Npoints;
+		float Y = 0.f;
+
+		for (unsigned int k = 0; k < ncoef; k++)
+			Y += coef[k].C * FourierSurface::Functions::Ylm(coef[k].L, coef[k].M, phi, itheta);
+
+		if (i <= unsigned int(theta * Npoints / pi))
+			V[i] = { (error * Y * Vector3f(sinf(itheta) * cosf(phi), sinf(itheta) * sinf(phi), cosf(itheta))).getVector4(), { 1.f, 1.f, 1.f, 1.f } };
+		else
+			V[i + Npoints + 1] = { (error * Y * Vector3f(sinf(itheta) * cosf(phi), sinf(itheta) * sinf(phi), cosf(itheta))).getVector4(), { 1.f, 1.f, 1.f, 1.f } };
+	}
+}
+
+//	Construction
+
+void Interpolated::Curves::create(Graphics& gfx, const FourierSurface::Coefficient* coef, const unsigned int ncoef, const float phi, const float theta, std::mutex* mtx)
+{
+	constexpr float error = 1.0035f;
+	if (isInit)
+		throw std::exception("You cannot create a curve over one that is already initialized");
+	else
+		isInit = true;
+
+	Vertex* vertexs = (Vertex*)calloc(2 * (Npoints + 1), sizeof(Vertex));
+
+	std::thread worker0 = std::thread(generatePhiCurveAsync, 0u, Npoints / 2u, coef, ncoef, phi, theta, vertexs);
+	std::thread worker1 = std::thread(generatePhiCurveAsync, Npoints / 2u + 1, Npoints, coef, ncoef, phi, theta, vertexs);
+	std::thread worker2 = std::thread(generateThetaCurveAsync, 0u, Npoints / 2u, coef, ncoef, phi, theta, vertexs);
+	std::thread worker3 = std::thread(generateThetaCurveAsync, Npoints / 2u + 1, Npoints, coef, ncoef, phi, theta, vertexs);
+
+	unsigned short* indexs = (unsigned short*)calloc(2 * (Npoints + 1), sizeof(unsigned short));
+	for (UINT i = 0; i <= 2 * Npoints + 1; i++)
+		indexs[i] = i;
+
+	worker0.join();
+	worker1.join();
+	worker2.join();
+	worker3.join();
+
+	if (mtx)
+		mtx->lock();
+
+	AddBind(std::make_unique<VertexBuffer>(gfx, vertexs, 2 * (Npoints + 1)));
+	AddBind(std::make_unique<IndexBuffer>(gfx, indexs, 2 * (Npoints + 1)));
+
+	auto pvs = (VertexShader*)AddBind(std::move(std::make_unique<VertexShader>(gfx, SHADERS_DIR + std::wstring(L"CurvesVS.cso"))));
+	AddBind(std::make_unique<PixelShader>(gfx, SHADERS_DIR + std::wstring(L"CurvesPS.cso")));
+
+	std::vector<D3D11_INPUT_ELEMENT_DESC> ied =
+	{
+		{ "Position",0,DXGI_FORMAT_R32G32B32A32_FLOAT,0,0,D3D11_INPUT_PER_VERTEX_DATA,0 },
+		{ "Color",0,DXGI_FORMAT_R32G32B32A32_FLOAT,0,D3D11_APPEND_ALIGNED_ELEMENT,D3D11_INPUT_PER_VERTEX_DATA,0 },
+	};
+
+	AddBind(std::make_unique<InputLayout>(gfx, ied, pvs->GetBytecode()));
+	AddBind(std::make_unique<Topology>(D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP));
+	AddBind(std::make_unique<Blender>(gfx, false));
+
+	pVSCB = (ConstantBuffer<VSconstBuffer>*)AddBind(std::make_unique<ConstantBuffer<VSconstBuffer>>(gfx, vscBuff, VERTEX_CONSTANT_BUFFER_TYPE));
+
+	free(vertexs);
+	free(indexs);
+
+	if (mtx)
+		mtx->unlock();
+}
+
+void Interpolated::Curves::updateShape(Graphics& gfx, const FourierSurface::Coefficient* coef, const unsigned int ncoef, const float phi, const float theta)
+{
+	constexpr float error = 1.0035f;
+	if (!isInit)
+		throw std::exception("You cannot update the shape of a curve if you havent initialized it first");
+
+	Vertex* vertexs = (Vertex*)calloc(2 * (Npoints + 1), sizeof(Vertex));
+
+	std::thread worker0 = std::thread(generatePhiCurveAsync, 0u, Npoints / 2u, coef, ncoef, phi, theta, vertexs);
+	std::thread worker1 = std::thread(generatePhiCurveAsync, Npoints / 2u + 1, Npoints, coef, ncoef, phi, theta, vertexs);
+	std::thread worker2 = std::thread(generateThetaCurveAsync, 0u, Npoints / 2u, coef, ncoef, phi, theta, vertexs);
+	std::thread worker3 = std::thread(generateThetaCurveAsync, Npoints / 2u + 1, Npoints, coef, ncoef, phi, theta, vertexs);
+
+	worker0.join();
+	worker1.join();
+	worker2.join();
+	worker3.join();
+
+	changeBind(std::make_unique<VertexBuffer>(gfx, vertexs, 2 * (Npoints + 1)), 0u);
+
+	free(vertexs);
+}
+
+//	User friendly
+
+void Interpolated::Curves::updateRotation(Graphics& gfx, Quaternion rotation, bool multiplicative)
+{
+	if (!multiplicative)
+		vscBuff.rotation = rotation;
+	else
+		vscBuff.rotation *= rotation;
+
+	vscBuff.rotation.normalize();
+	pVSCB->Update(gfx, vscBuff);
+}
+
+void Interpolated::Curves::updateScreenPosition(Graphics& gfx, Vector2f screenDisplacement)
+{
+	vscBuff.screenDisplacement = screenDisplacement.getVector4();
+
+	pVSCB->Update(gfx, vscBuff);
+}
+

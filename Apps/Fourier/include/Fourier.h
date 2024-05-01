@@ -4,7 +4,7 @@
 #include "Polihedron.h"
 #include "Interpolated.h"
 
-struct IG_DATA {
+struct IG {
 
 	static int L;
 	static int M;
@@ -17,34 +17,35 @@ struct IG_DATA {
 	static bool UPDATE_CURVES;
 
 	static bool DOUBLE_VIEW;
-	static int FIGURE_VIEW;
-	static int SECOND_VIEW;
+	static int VIEW1;
+	static int VIEW2;
 	static Vector2i* PAIRS;
 	static unsigned int PAIRS_SIZE;
 	static bool ALREADY_EXISTS;
 	static int COPY;
+	static bool SAVE;
+	static char* SAVE_NAME;
 
 	static bool CALCULATE_FIGURE;
 	static bool FIGURE_FILE;
 	static unsigned int NFIG;
 	static unsigned int NPLOT;
 	static bool LOADING;
-	static const char* FILENAME;
+	static char* FILENAME;
 	static unsigned int MAXL;
 	static bool UPDATE_TEXTURE;
 	static _float4color TEXTURE;
+	static bool DELETE_VIEW;
 
 	static unsigned int NINT;
 	static float TVALUE;
-	static int INTERPOLATION_MENU;
-	static int** INTERPOLATION_DATA;
-	static unsigned int* INTERPOLATION_DATA_SIZE;
-	static bool ADD_INTERPOLATION;
-	static bool DELETE_INTERPOLATION;
+	static bool PLAY;
+	static float PLAY_SPEED;
+	static int** I_DATA;
+	static unsigned int* I_DATA_SIZE;
+	static bool I_ADD;
 	static int ADD_FIGURE;
 	static int DELETE_FIGURE;
-
-	static int INTERPOLATED_VIEW;
 
 	static Vector2i WindowDim;
 
@@ -100,7 +101,7 @@ private:
 	//	Harmonics
 
 	FourierSurface harmonics;
-	FourierSurface::Coefficient C = { (unsigned int)IG_DATA::L, IG_DATA::M, 1 };
+	FourierSurface::Coefficient C = { (unsigned int)IG::L, IG::M, 1 };
 
 	//	Surfaces
 

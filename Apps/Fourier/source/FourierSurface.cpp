@@ -1140,7 +1140,17 @@ FourierSurface::Vertex* FourierSurface::getVertexPtr()
 	return Vertexs;
 }
 
-unsigned int FourierSurface::getNvertexs()
+FourierSurface::Coefficient* FourierSurface::getCoefficients()
+{
+	return Coef;
+}
+
+unsigned int	FourierSurface::getNcoefficients()
+{
+	return Ncoef;
+}
+
+unsigned int	FourierSurface::getNvertexs()
 {
 	return nvertexs;
 }
@@ -1150,22 +1160,22 @@ unsigned short* FourierSurface::getTrianglesIcosphere()
 	return trianglesIcosphere;
 }
 
-unsigned int FourierSurface::getNtriangles()
+unsigned int	FourierSurface::getNtriangles()
 {
 	return ntriangles;
 }
 
-void		FourierSurface::DrawCurves(Graphics& gfx)
+void			FourierSurface::DrawCurves(Graphics& gfx)
 {
 	curves.Draw(gfx);
 }
 
-void		FourierSurface::generateDataSet()
+void			FourierSurface::generateDataSet()
 {
 	std::thread(Functions::generateHarmonicsAsync).detach();
 }
 
-unsigned int FourierSurface::depthDataset()
+unsigned int	FourierSurface::depthDataset()
 {
 	if (!Functions::DatasetYlmi[0]) return 0;
 	int l = -1;
@@ -1175,7 +1185,7 @@ unsigned int FourierSurface::depthDataset()
 
 //	Curves
 
-//	Private ftatic
+//	Private static
 
 void FourierSurface::Curves::generatePhiCurveAsync(const unsigned int t0, const unsigned int t1, const Coefficient* coef, const unsigned int ncoef, const float phi, const float theta, Vertex* V)
 {
