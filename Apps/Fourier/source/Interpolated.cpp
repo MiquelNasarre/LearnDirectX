@@ -15,6 +15,16 @@ Interpolated::Interpolated(Graphics& gfx, FourierSurface* surface0, FourierSurfa
 	create(gfx, surface0, surface1, t);
 }
 
+Interpolated::Interpolated(Graphics& gfx, Interpolated* interpolation0, Interpolated* interpolation1, int s0, int s1, float t)
+{
+	create(gfx, interpolation0, interpolation1, s0, s1, t);
+}
+
+Interpolated::Interpolated(Graphics& gfx, Interpolated* interpolation0, FourierSurface* surface1, float t)
+{
+	create(gfx, interpolation0, surface1, t);
+}
+
 void Interpolated::create(Graphics& gfx, FourierSurface* surface0, FourierSurface* surface1, float t)
 {
 	if (isInit)
@@ -22,8 +32,6 @@ void Interpolated::create(Graphics& gfx, FourierSurface* surface0, FourierSurfac
 	else
 		isInit = true;
 
-	Surface0 = surface0;
-	Surface1 = surface1;
 	while (t > 1)t--;
 	while (t < 0)t++;
 	vscBuff.tvalue.x = t;
@@ -118,13 +126,222 @@ void Interpolated::create(Graphics& gfx, FourierSurface* surface0, FourierSurfac
 	free(Coef);
 }
 
+void Interpolated::create(Graphics& gfx, Interpolated* interpolation0, Interpolated* interpolation1, int s0, int s1, float t)
+{
+	if (isInit)
+		throw std::exception("You cannot create a surface over one that is already initialized");
+	else
+		isInit = true;
+
+	while (t > 1)t--;
+	while (t < 0)t++;
+	vscBuff.tvalue.x = t;
+
+	Interpolated::InterpolatedVertex* V0 = interpolation0->getVertexPtr();
+	Interpolated::InterpolatedVertex* V1 = interpolation1->getVertexPtr();
+	unsigned int N = FourierSurface::getNvertexs();
+
+	Vertexs = (InterpolatedVertex*)calloc(N, sizeof(InterpolatedVertex));
+
+	for (unsigned int i = 0; i < N; i++)
+	{
+		Vertexs[i].vector = V0[i].vector;
+
+		if(s0)
+			Vertexs[i].dYlm0 = V0[i].dYlm1;
+		else
+			Vertexs[i].dYlm0 = V0[i].dYlm0;
+		if(s1)
+			Vertexs[i].dYlm1 = V1[i].dYlm1;
+		else
+			Vertexs[i].dYlm1 = V1[i].dYlm0;
+
+		Vertexs[i].color = Color::White;
+	}
+
+	Ncoef0 = interpolation0->getNcoefficients(s0);
+	Ncoef1 = interpolation1->getNcoefficients(s1);
+
+	Coef0 = (FourierSurface::Coefficient*)calloc(Ncoef0, sizeof(FourierSurface::Coefficient));
+	Coef1 = (FourierSurface::Coefficient*)calloc(Ncoef1, sizeof(FourierSurface::Coefficient));
+
+	FourierSurface::Coefficient* pCoef = interpolation0->getCoefficients(s0);
+	for (unsigned int i = 0; i < Ncoef0; i++)
+		Coef0[i] = pCoef[i];
+	pCoef = interpolation1->getCoefficients(s1);
+	for (unsigned int i = 0; i < Ncoef1; i++)
+		Coef1[i] = pCoef[i];
+
+	AddBind(std::make_unique<VertexBuffer>(gfx, Vertexs, N));
+
+	AddBind(std::make_unique<IndexBuffer>(gfx, FourierSurface::getTrianglesIcosphere(), 3 * FourierSurface::getNtriangles()));
+
+	auto pvs = (VertexShader*)AddBind(std::move(std::make_unique<VertexShader>(gfx, SHADERS_DIR + std::wstring(L"InterpolatedVS.cso"))));
+
+	AddBind(std::make_unique<PixelShader>(gfx, SHADERS_DIR + std::wstring(L"InterpolatedPS.cso")));
+
+	std::vector<D3D11_INPUT_ELEMENT_DESC> ied =
+	{
+		{ "Position",0,DXGI_FORMAT_R32G32B32_FLOAT,0,0,D3D11_INPUT_PER_VERTEX_DATA,0 },
+		{ "Dylm0a",0,DXGI_FORMAT_R32G32B32_FLOAT,0,D3D11_APPEND_ALIGNED_ELEMENT,D3D11_INPUT_PER_VERTEX_DATA,0 },
+		{ "Dylm1a",0,DXGI_FORMAT_R32G32B32_FLOAT,0,D3D11_APPEND_ALIGNED_ELEMENT,D3D11_INPUT_PER_VERTEX_DATA,0 },
+		{ "Color",0,DXGI_FORMAT_B8G8R8A8_UNORM,0,D3D11_APPEND_ALIGNED_ELEMENT,D3D11_INPUT_PER_VERTEX_DATA,0 },
+	};
+
+	AddBind(std::make_unique<InputLayout>(gfx, ied, pvs->GetBytecode()));
+
+	AddBind(std::make_unique<Topology>(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST));
+
+	AddBind(std::make_unique<Rasterizer>(gfx, true));
+
+	pVSCB = (ConstantBuffer<VSconstBuffer>*)AddBind(std::make_unique<ConstantBuffer<VSconstBuffer>>(gfx, VERTEX_CONSTANT_BUFFER_TYPE));
+
+	pscBuff.lightsource[0] = { { 600.f, 320.f, 0.f, 0.f } , { 1.f, 1.f, 1.f, 1.f } , { 30.f, 10.f, 20.f, 0.f } };
+
+	pPSCB = (ConstantBuffer<PSconstBuffer>*)AddBind(std::make_unique<ConstantBuffer<PSconstBuffer>>(gfx, pscBuff, PIXEL_CONSTANT_BUFFER_TYPE));
+
+	// Create curves
+
+	unsigned int L = 0;
+	for (unsigned int i = 0; i < Ncoef0; i++)
+	{
+		if (Coef0[i].L > L) L = Coef0[i].L;
+	}
+	for (unsigned int i = 0; i < Ncoef1; i++)
+	{
+		if (Coef1[i].L > L) L = Coef1[i].L;
+	}
+	FourierSurface::Coefficient* Coef = (FourierSurface::Coefficient*)calloc((L + 1) * (L + 1), sizeof(FourierSurface::Coefficient));
+
+	for (unsigned int l = 0; l <= L; l++)
+	{
+		for (int m = -int(l); m <= int(l); m++)
+		{
+			Coef[l * l + m + l].L = l;
+			Coef[l * l + m + l].M = m;
+			Coef[l * l + m + l].C = 0.f;
+
+			for (unsigned int i = 0; i < Ncoef0; i++)
+			{
+				if (Coef0[i].L == l && Coef0[i].M == m) Coef[i].C += (1 - T) * Coef0[i].C;
+			}
+			for (unsigned int i = 0; i < Ncoef1; i++)
+			{
+				if (Coef1[i].L == l && Coef1[i].M == m) Coef[i].C += T * Coef1[i].C;
+			}
+		}
+	}
+
+	curves.create(gfx, Coef, (L + 1) * (L + 1), 0.f, 0.f, NULL);
+	free(Coef);
+}
+
+void Interpolated::create(Graphics& gfx, Interpolated* interpolation0, FourierSurface* surface1, float t)
+{
+	if (isInit)
+		throw std::exception("You cannot create a surface over one that is already initialized");
+	else
+		isInit = true;
+
+	while (t > 1)t--;
+	while (t < 0)t++;
+	vscBuff.tvalue.x = t;
+
+	Interpolated::InterpolatedVertex* V0 = interpolation0->getVertexPtr();
+	FourierSurface::Vertex* V1 = surface1->getVertexPtr();
+	unsigned int N = FourierSurface::getNvertexs();
+
+	Vertexs = (InterpolatedVertex*)calloc(N, sizeof(InterpolatedVertex));
+
+	for (unsigned int i = 0; i < N; i++)
+	{
+		Vertexs[i].vector = V0[i].vector;
+		Vertexs[i].dYlm0 = V0[i].dYlm1;
+		Vertexs[i].dYlm1 = V1[i].dYlm;
+		Vertexs[i].color = Color::White;
+	}
+
+	Ncoef0 = interpolation0->getNcoefficients(1);
+	Ncoef1 = surface1->getNcoefficients();
+	Coef0 = (FourierSurface::Coefficient*)calloc(Ncoef0, sizeof(FourierSurface::Coefficient));
+	Coef1 = (FourierSurface::Coefficient*)calloc(Ncoef1, sizeof(FourierSurface::Coefficient));
+
+	FourierSurface::Coefficient* pCoef = interpolation0->getCoefficients(1);
+	for (unsigned int i = 0; i < Ncoef0; i++)
+		Coef0[i] = pCoef[i];
+	pCoef = surface1->getCoefficients();
+	for (unsigned int i = 0; i < Ncoef1; i++)
+		Coef1[i] = pCoef[i];
+
+	AddBind(std::make_unique<VertexBuffer>(gfx, Vertexs, N));
+
+	AddBind(std::make_unique<IndexBuffer>(gfx, FourierSurface::getTrianglesIcosphere(), 3 * FourierSurface::getNtriangles()));
+
+	auto pvs = (VertexShader*)AddBind(std::move(std::make_unique<VertexShader>(gfx, SHADERS_DIR + std::wstring(L"InterpolatedVS.cso"))));
+
+	AddBind(std::make_unique<PixelShader>(gfx, SHADERS_DIR + std::wstring(L"InterpolatedPS.cso")));
+
+	std::vector<D3D11_INPUT_ELEMENT_DESC> ied =
+	{
+		{ "Position",0,DXGI_FORMAT_R32G32B32_FLOAT,0,0,D3D11_INPUT_PER_VERTEX_DATA,0 },
+		{ "Dylm0a",0,DXGI_FORMAT_R32G32B32_FLOAT,0,D3D11_APPEND_ALIGNED_ELEMENT,D3D11_INPUT_PER_VERTEX_DATA,0 },
+		{ "Dylm1a",0,DXGI_FORMAT_R32G32B32_FLOAT,0,D3D11_APPEND_ALIGNED_ELEMENT,D3D11_INPUT_PER_VERTEX_DATA,0 },
+		{ "Color",0,DXGI_FORMAT_B8G8R8A8_UNORM,0,D3D11_APPEND_ALIGNED_ELEMENT,D3D11_INPUT_PER_VERTEX_DATA,0 },
+	};
+
+	AddBind(std::make_unique<InputLayout>(gfx, ied, pvs->GetBytecode()));
+
+	AddBind(std::make_unique<Topology>(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST));
+
+	AddBind(std::make_unique<Rasterizer>(gfx, true));
+
+	pVSCB = (ConstantBuffer<VSconstBuffer>*)AddBind(std::make_unique<ConstantBuffer<VSconstBuffer>>(gfx, VERTEX_CONSTANT_BUFFER_TYPE));
+
+	pscBuff.lightsource[0] = { { 600.f, 320.f, 0.f, 0.f } , { 1.f, 1.f, 1.f, 1.f } , { 30.f, 10.f, 20.f, 0.f } };
+
+	pPSCB = (ConstantBuffer<PSconstBuffer>*)AddBind(std::make_unique<ConstantBuffer<PSconstBuffer>>(gfx, pscBuff, PIXEL_CONSTANT_BUFFER_TYPE));
+
+	// Create curves
+
+	unsigned int L = 0;
+	for (unsigned int i = 0; i < Ncoef0; i++)
+	{
+		if (Coef0[i].L > L) L = Coef0[i].L;
+	}
+	for (unsigned int i = 0; i < Ncoef1; i++)
+	{
+		if (Coef1[i].L > L) L = Coef1[i].L;
+	}
+	FourierSurface::Coefficient* Coef = (FourierSurface::Coefficient*)calloc((L + 1) * (L + 1), sizeof(FourierSurface::Coefficient));
+
+	for (unsigned int l = 0; l <= L; l++)
+	{
+		for (int m = -int(l); m <= int(l); m++)
+		{
+			Coef[l * l + m + l].L = l;
+			Coef[l * l + m + l].M = m;
+			Coef[l * l + m + l].C = 0.f;
+
+			for (unsigned int i = 0; i < Ncoef0; i++)
+			{
+				if (Coef0[i].L == l && Coef0[i].M == m) Coef[i].C += (1 - T) * Coef0[i].C;
+			}
+			for (unsigned int i = 0; i < Ncoef1; i++)
+			{
+				if (Coef1[i].L == l && Coef1[i].M == m) Coef[i].C += T * Coef1[i].C;
+			}
+		}
+	}
+
+	curves.create(gfx, Coef, (L + 1) * (L + 1), 0.f, 0.f, NULL);
+	free(Coef);
+}
+
 void Interpolated::updateShape(Graphics& gfx, FourierSurface* surface0, FourierSurface* surface1, float t)
 {
 	if (!isInit)
 		throw std::exception("You cannot update shape to an uninitialized surface");
 
-	Surface0 = surface0;
-	Surface1 = surface1;
 	while (t > 1)t--;
 	while (t < 0)t++;
 	vscBuff.tvalue.x = t;
@@ -344,6 +561,29 @@ Quaternion Interpolated::getRotation()
 	return vscBuff.rotation;
 }
 
+Interpolated::InterpolatedVertex* Interpolated::getVertexPtr()
+{
+	return Vertexs;
+}
+
+unsigned int Interpolated::getNcoefficients(int i)
+{
+	if (i == 0)
+		return Ncoef0;
+	if (i == 1)
+		return Ncoef1;
+	return 0;
+}
+
+FourierSurface::Coefficient* Interpolated::getCoefficients(int i)
+{
+	if (i == 0)
+		return Coef0;
+	if (i == 1)
+		return Coef1;
+	return NULL;
+}
+
 void Interpolated::DrawCurves(Graphics& gfx)
 {
 	curves.Draw(gfx);
@@ -368,8 +608,6 @@ InterpolatedString::~InterpolatedString()
 
 	if (Interpolations)
 		free(Interpolations);
-	if (Surfaces)
-		free(Surfaces);
 }
 
 InterpolatedString::InterpolatedString(Graphics& gfx, FourierSurface** surfaces, unsigned int nsurfaces, float t)
@@ -379,8 +617,6 @@ InterpolatedString::InterpolatedString(Graphics& gfx, FourierSurface** surfaces,
 
 void InterpolatedString::create(Graphics& gfx, FourierSurface** surfaces, unsigned int nsurfaces, float t)
 {
-	if (Surfaces)
-		free(Surfaces);
 	if (Interpolations)
 	{
 		Interpolations[0]->~Interpolated();
@@ -390,17 +626,10 @@ void InterpolatedString::create(Graphics& gfx, FourierSurface** surfaces, unsign
 	}
 	
 	Nsurfaces = nsurfaces;
-	Surfaces = NULL;
 	Interpolations = NULL;
 	T = 0.f;
 
-
 	if (!nsurfaces) return;
-
-	Surfaces = (FourierSurface**)calloc(nsurfaces, sizeof(void*));
-	for (unsigned int i = 0; i < nsurfaces; i++)
-		Surfaces[i] = surfaces[i];
-
 	if (nsurfaces == 1u) return;
 
 	while (t > float(nsurfaces) - 1.f) t -= nsurfaces - 1;
@@ -426,14 +655,6 @@ void InterpolatedString::create(Graphics& gfx, FourierSurface** surfaces, unsign
 
 void InterpolatedString::addSurface(Graphics& gfx, FourierSurface* surface)
 {
-	if (Nsurfaces == 1)
-	{
-		Interpolations[0]->~Interpolated();
-		free(Interpolations[0]);
-	}
-
-	add1to(Surfaces, Nsurfaces);
-	Surfaces[Nsurfaces] = surface;
 	Nsurfaces++;
 
 	if (Nsurfaces == 1u)
@@ -444,19 +665,27 @@ void InterpolatedString::addSurface(Graphics& gfx, FourierSurface* surface)
 		return;
 	}
 
+	if (Nsurfaces == 2u)
+	{
+		Interpolated* temp = new(Interpolated);
+		temp->create(gfx, Interpolations[0], surface);
+		Interpolations[0]->~Interpolated();
+		free(Interpolations[0]);
+		Interpolations[0] = temp;
+		return;
+	}
+
 	add1to(Interpolations, Nsurfaces - 2);
 	Interpolations[Nsurfaces - 2] = new(Interpolated);
-	Interpolations[Nsurfaces - 2]->create(gfx, Surfaces[Nsurfaces - 2], surface);
+	Interpolations[Nsurfaces - 2]->create(gfx, Interpolations[Nsurfaces - 3], surface);
 }
 
 void InterpolatedString::deleteSurface(Graphics& gfx, unsigned int s)
 {
-	if (Nsurfaces == 1u)
-	{
-		free(Surfaces);
-		Surfaces = NULL;
-		Nsurfaces = 0u;
+	Nsurfaces--;
 
+	if (!Nsurfaces)
+	{
 		Interpolations[0]->~Interpolated();
 		free(Interpolations[0]);
 		free(Interpolations);
@@ -464,38 +693,41 @@ void InterpolatedString::deleteSurface(Graphics& gfx, unsigned int s)
 		return;
 	}
 
-	if (s != Nsurfaces - 1)
-	{
-		Interpolations[s]->~Interpolated();
-		free(Interpolations[s]);
-	}
-
-	for (unsigned int i = s; i < Nsurfaces - 1; i++)
-	{
-		Surfaces[i] = Surfaces[i + 1];
-		if (i < Nsurfaces - 2)
-			Interpolations[i] = Interpolations[i + 1];
-	}
-
-	if (s != 0 && s != Nsurfaces - 1)
-	{
-		Interpolations[s-1]->~Interpolated();
-		free(Interpolations[s - 1]);
-		Interpolations[s - 1] = new(Interpolated);
-		Interpolations[s - 1]->create(gfx, Surfaces[s - 1], Surfaces[s]);
-	}
-
-	Nsurfaces--;
 	if (Nsurfaces == 1u)
 	{
-		if (s)
-		{
-			Interpolations[0]->~Interpolated();
-			free(Interpolations[0]);
-		}
-		Interpolations[0] = new(Interpolated);
-		Interpolations[0]->create(gfx, Surfaces[0], Surfaces[0]);
+		Interpolated* temp = new(Interpolated);
+		temp->create(gfx, Interpolations[0], Interpolations[0], 1 - s, 1 - s);
+		Interpolations[0]->~Interpolated();
+		free(Interpolations[0]);
+		Interpolations[0] = temp;
+		return;
 	}
+
+	if (!s)
+	{
+		Interpolations[0]->~Interpolated();
+		free(Interpolations[0]);
+		for (unsigned int i = 0; i < Nsurfaces - 1u; i++)
+			Interpolations[i] = Interpolations[i + 1];
+		return;
+	}
+
+	if (s == Nsurfaces)
+	{
+		Interpolations[Nsurfaces - 1u]->~Interpolated();
+		free(Interpolations[Nsurfaces - 1u]);
+		return;
+	}
+
+	Interpolated* temp = new(Interpolated);
+	temp->create(gfx, Interpolations[s - 1], Interpolations[s], 0, 1);
+	Interpolations[s - 1]->~Interpolated();
+	Interpolations[s]->~Interpolated();
+	free(Interpolations[s - 1]);
+	free(Interpolations[s]);
+	Interpolations[s - 1] = temp;
+	for (unsigned int i = s; i < Nsurfaces - 1u; i++)
+		Interpolations[i] = Interpolations[i + 1];
 }
 
 void InterpolatedString::updateInterpolation(Graphics& gfx, float t)

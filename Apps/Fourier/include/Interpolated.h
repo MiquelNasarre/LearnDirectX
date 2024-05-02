@@ -4,9 +4,6 @@
 class Interpolated : public Drawable
 {
 private:
-	FourierSurface* Surface0;
-	FourierSurface* Surface1;
-
 	float T = 0.f;
 
 	struct InterpolatedVertex
@@ -55,8 +52,12 @@ public:
 	Interpolated() {}
 	~Interpolated();
 	Interpolated(Graphics& gfx, FourierSurface* surface0, FourierSurface* surface1, float t = 0.f);
+	Interpolated(Graphics& gfx, Interpolated* interpolation0, Interpolated* interpolation1, int s0, int s1, float t = 0.f);
+	Interpolated(Graphics& gfx, Interpolated* interpolation0, FourierSurface* surface1, float t = 0.f);
 
 	void create(Graphics& gfx, FourierSurface* surface0, FourierSurface* surface1, float t = 0.f);
+	void create(Graphics& gfx, Interpolated* interpolation0, Interpolated* interpolation1, int s0, int s1, float t = 0.f);
+	void create(Graphics& gfx, Interpolated* interpolation0, FourierSurface* surface1, float t = 0.f);
 	void updateShape(Graphics& gfx, FourierSurface* surface0, FourierSurface* surface1, float t = 0.f);
 	void updateInterpolation(Graphics& gfx, float t);
 
@@ -71,6 +72,9 @@ public:
 	void updateScreenPosition(Graphics& gfx, Vector2f screenDisplacement);
 	void updateCurves(Graphics& gfx, float phi, float theta);
 	Quaternion getRotation();
+	InterpolatedVertex* getVertexPtr();
+	unsigned int getNcoefficients(int i);
+	FourierSurface::Coefficient* getCoefficients(int i);
 
 	void DrawCurves(Graphics& gfx);
 
@@ -97,7 +101,6 @@ private:
 class InterpolatedString
 {
 private:
-	FourierSurface** Surfaces = NULL;
 	Interpolated** Interpolations = NULL;
 	unsigned int Nsurfaces = 0u;
 	float T = 0.f;

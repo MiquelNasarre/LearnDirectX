@@ -14,6 +14,8 @@ if (view == -1) harmonics.call; \
 else if (view >= int(IG::NFIG)) Interpolations[view-IG::NFIG]->call; \
 else if (view > -1) Figure[view]->call
 
+#pragma region ImGui Data Initializations
+
 int				IG::L = 7;
 int				IG::M = -4;
 float			IG::theta = 0.f;
@@ -22,6 +24,7 @@ bool			IG::UPDATE = false;
 bool			IG::UPDATE_CURVES = false;
 bool			IG::CURVES = false;
 bool			IG::MENU = true;
+bool			IG::COEF_VIEW = false;
 
 bool 			IG::DOUBLE_VIEW = false;
 int 			IG::VIEW1 = -1;
@@ -58,6 +61,24 @@ _float4color	IG::TEXTURE = { -1.f,0.f,0.f,0.f };
 
 int						IG::UPDATE_LIGHT = -1;
 IG::lightsource*		IG::LIGHTS = (IG::lightsource*)calloc(sizeof(IG::lightsource), 8);
+
+#pragma endregion
+
+//	Coefficient window
+
+void Fourier::createCoefWindow()
+{
+}
+
+void Fourier::updateCoefWindow()
+{
+}
+
+void Fourier::deleteCoefWindow()
+{
+}
+
+//	Main Window
 
 Fourier::Fourier()
 	: window(960, 720, "Fourier", "", true)
@@ -208,6 +229,22 @@ void Fourier::eventManager()
 	}
 	else
 		persists = false;
+
+	//	Cowfficient View
+	
+	static bool exists = false;
+	if (IG::COEF_VIEW)
+	{
+		if(!exists)
+			createCoefWindow();
+		exists = true;
+	}
+	else
+	{
+		if (exists)
+			deleteCoefWindow();
+		exists = false;
+	}
 
 	// Full screen
 
@@ -389,10 +426,88 @@ void Fourier::eventManager()
 		IG::UPDATE_CURVES = true;
 	}
 
+	//	Delete view
+
+	if (IG::DELETE_VIEW)
+	{
+		IG::DELETE_VIEW = false;
+
+		if (IG::VIEW1 >= int(IG::NFIG))
+		{
+			Interpolations[IG::VIEW1 - IG::NFIG]->~InterpolatedString();
+			free(Interpolations[IG::VIEW1 - IG::NFIG]);
+
+			for (unsigned int i = IG::VIEW1 - IG::NFIG; i < IG::NINT - 1; i++)
+				Interpolations[i] = Interpolations[i + 1];
+
+			IG::VIEW1 = -1;
+			IG::NINT--;
+
+			if (IG::NINT == 0)
+			{
+				free(Interpolations);
+				Interpolations = NULL;
+			}
+		}
+		else if (IG::VIEW1 > -1)
+		{
+			Figure[IG::VIEW1]->~FourierSurface();
+			free(Figure[IG::VIEW1]);
+			for (unsigned int i = IG::VIEW1; i < IG::NFIG - 1; i++)
+				Figure[i] = Figure[i + 1];
+
+			IG::NFIG--;
+			IG::VIEW1 = -1;
+			IG::DOUBLE_VIEW = false;
+
+			if (IG::NFIG == 0)
+			{
+				free(Figure);
+				Figure = NULL;
+			}
+		}
+		else
+		{
+			unsigned int p = -IG::VIEW1 - 2;
+			DataPlots[p]->~Polihedron();
+			free(DataPlots[p]);
+			for (unsigned int i = p; i < IG::NPLOT - 1; i++)
+				DataPlots[i] = DataPlots[i + 1];
+
+			IG::NPLOT--;
+			IG::VIEW1 = -1;
+			IG::DOUBLE_VIEW = false;
+
+			if (IG::NPLOT == 0)
+			{
+				free(DataPlots);
+				DataPlots = NULL;
+			}
+		}
+	}
+
 	//	Interpolation T update
 
 	if (IG::VIEW1 >= int(IG::NFIG))
+	{
+		if (IG::I_DATA_SIZE[IG::VIEW1 - IG::NFIG] < 2)
+		{
+			IG::TVALUE = 0.f;
+			IG::PLAY = false;
+		}
+		else
+		{
+			if (IG::PLAY)
+			{
+				if (IG::CURVES)
+					IG::UPDATE_CURVES = true;
+				IG::TVALUE += IG::PLAY_SPEED;
+			}
+			while (IG::TVALUE > float(IG::I_DATA_SIZE[IG::VIEW1 - IG::NFIG]) - 1.f)IG::TVALUE -= IG::I_DATA_SIZE[IG::VIEW1 - IG::NFIG] - 1;
+			while (IG::TVALUE < 0.f) IG::TVALUE += IG::I_DATA_SIZE[IG::VIEW1 - IG::NFIG] - 1;
+		}
 		Interpolations[IG::VIEW1 - IG::NFIG]->updateInterpolation(window.graphics, IG::TVALUE);
+	}
 
 	//	Shape updates
 
@@ -465,66 +580,6 @@ void Fourier::eventManager()
 
 	}
 
-	//	Delete view
-
-	if (IG::DELETE_VIEW)
-	{
-		IG::DELETE_VIEW = false;
-
-		if (IG::VIEW1 >= int(IG::NFIG))
-		{
-			Interpolations[IG::VIEW1 - IG::NFIG]->~InterpolatedString();
-			free(Interpolations[IG::VIEW1 - IG::NFIG]);
-
-			for (unsigned int i = IG::VIEW1 - IG::NFIG; i < IG::NINT - 1; i++)
-				Interpolations[i] = Interpolations[i + 1];
-
-			IG::VIEW1 = -1;
-			IG::NINT--;
-
-			if (IG::NINT == 0)
-			{
-				free(Interpolations);
-				Interpolations = NULL;
-			}
-		}
-		else if (IG::VIEW1 > -1)
-		{
-			Figure[IG::VIEW1]->~FourierSurface();
-			free(Figure[IG::VIEW1]);
-			for (unsigned int i = IG::VIEW1; i < IG::NFIG - 1; i++)
-				Figure[i] = Figure[i + 1];
-
-			IG::NFIG--;
-			IG::VIEW1 = -1;
-			IG::DOUBLE_VIEW = false;
-
-			if (IG::NFIG == 0)
-			{
-				free(Figure);
-				Figure = NULL;
-			}
-		}
-		else
-		{
-			unsigned int p = -IG::VIEW1 - 2;
-			DataPlots[p]->~Polihedron();
-			free(DataPlots[p]);
-			for (unsigned int i = p; i < IG::NPLOT - 1; i++)
-				DataPlots[i] = DataPlots[i + 1];
-
-			IG::NPLOT--;
-			IG::VIEW1 = -1;
-			IG::DOUBLE_VIEW = false;
-
-			if (IG::NPLOT == 0)
-			{
-				free(DataPlots);
-				DataPlots = NULL;
-			}
-		}
-	}
-
 	//	Double view
 
 	if (IG::DOUBLE_VIEW)
@@ -590,7 +645,7 @@ void Fourier::doFrame()
 
 //  Threading utilities
 
-void createPlotAsync(Graphics* gfx, Polihedron* dataplot, const void** extractedFigure, bool* done, std::mutex* mtx)
+void Fourier::createPlotAsync(Graphics* gfx, Polihedron* dataplot, const void** extractedFigure, bool* done, std::mutex* mtx)
 {
 
 	const Vector3f* vertexs = (Vector3f*)extractedFigure[0];
@@ -602,7 +657,7 @@ void createPlotAsync(Graphics* gfx, Polihedron* dataplot, const void** extracted
 	*done = true;
 }
 
-void createFigureAsync(Graphics* gfx, FourierSurface* figure, FourierSurface::Coefficient** coef, unsigned int ncoef, bool* done, std::mutex* mtx, bool* begin)
+void Fourier::createFigureAsync(Graphics* gfx, FourierSurface* figure, FourierSurface::Coefficient** coef, unsigned int ncoef, bool* done, std::mutex* mtx, bool* begin)
 {
 	while (begin && !(*begin))
 		std::this_thread::sleep_for(std::chrono::milliseconds(10));
@@ -613,7 +668,7 @@ void createFigureAsync(Graphics* gfx, FourierSurface* figure, FourierSurface::Co
 	*done = true;
 }
 
-void calculateCoefficientsAsync(FourierSurface::Coefficient** coef, const void** extractedFigure, unsigned int maxL, bool* done)
+void Fourier::calculateCoefficientsAsync(FourierSurface::Coefficient** coef, const void** extractedFigure, unsigned int maxL, bool* done)
 {
 	*coef = FourierSurface::FileManager::calculateCoefficients(extractedFigure, maxL);
 	*done = true;

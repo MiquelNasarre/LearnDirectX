@@ -135,7 +135,6 @@ Window::Window(int width, int height, const char* Title, const char* IconFilenam
 
 Window::~Window()
 {
-	iGManager::closeWin32();
 	DestroyWindow(hWnd);
 }
 
@@ -404,6 +403,11 @@ bool Window::popMessage(MSG& clientMsg)
 	clientMsg = msgQueue.front();
 	msgQueue.pop();
 	return true;
+}
+
+void* Window::getImGuiContext()
+{
+	return imGui.getContext();
 }
 
 bool Window::processEvents()

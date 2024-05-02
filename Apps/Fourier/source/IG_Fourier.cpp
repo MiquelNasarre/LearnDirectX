@@ -608,22 +608,8 @@ void IG_Fourier::mainMenu()
 				if (ImGui::SliderFloat("T", &IG::TVALUE, 0.f, float(IG::I_DATA_SIZE[IG::VIEW1 - IG::NFIG] - 1.f)) && IG::CURVES)
 					IG::UPDATE_CURVES = true;
 				if (IG::I_DATA_SIZE[IG::VIEW1 - IG::NFIG] < 2)
-				{
 					ImGui::EndDisabled();
-					IG::TVALUE = 0.f;
-					IG::PLAY = false;
-				}
-				else
-				{
-					if (IG::PLAY)
-					{
-						if (IG::CURVES)
-							IG::UPDATE_CURVES = true;
-						IG::TVALUE += IG::PLAY_SPEED;
-					}
-					while (IG::TVALUE > float(IG::I_DATA_SIZE[IG::VIEW1 - IG::NFIG]) - 1.f)IG::TVALUE -= IG::I_DATA_SIZE[IG::VIEW1 - IG::NFIG] - 1;
-					while (IG::TVALUE < 0.f) IG::TVALUE += IG::I_DATA_SIZE[IG::VIEW1 - IG::NFIG] - 1;
-				}
+
 			}
 			else
 			{
@@ -860,14 +846,13 @@ void IG_Fourier::mainMenu()
 			ImGui::EndDisabled();
 
 		ImGui::SetCursorPos(ImVec2(208, 92));
-		ImGui::BeginDisabled();
 		if (ImGui::Button("Coefficients", ImVec2(95, 19)))
 		{
-			
-
-
+			if (IG::COEF_VIEW)
+				IG::COEF_VIEW = false;
+			else
+				IG::COEF_VIEW = true;
 		}
-		ImGui::EndDisabled();
 	}
 	ImGui::End();
 }

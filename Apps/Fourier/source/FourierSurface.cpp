@@ -132,7 +132,8 @@ FourierSurface::Coefficient* FourierSurface::FileManager::calculateCoefficients(
 			{
 				finished[w] = false;
 				std::thread(calculateCoefficientAsync, &Coef[l * l], l, centerTriangles, areaTriangles, distanceTriangles, numT, &finished[w]).detach();
-				l++;
+				if (++l > maxL)
+					break;
 			}
 		}
 	}
@@ -192,11 +193,7 @@ void FourierSurface::FileManager::saveCoefficients(Coefficient* coef, unsigned i
 
 void			FourierSurface::Functions::generateHarmonicsAsync()
 {
-	bool* finished = (bool*)calloc(4,sizeof(bool));
-	finished[0] = true;
-	finished[1] = true;
-	finished[2] = true;
-	finished[3] = true;
+	bool finished[4] = { true,true,true,true };
 
 	unsigned int l = 0;
 	while(l<=maxL)
@@ -209,10 +206,14 @@ void			FourierSurface::Functions::generateHarmonicsAsync()
 			{
 				finished[w] = false;
 				std::thread(generateDataAsync, DatasetYlmi, l, &finished[w]).detach();
-				l++;
+				if (++l > maxL)
+					break;
+				
 			}
 		}
 	}
+	while (!finished[0] || !finished[1] || !finished[2] || !finished[3])
+		std::this_thread::sleep_for(std::chrono::milliseconds(2));
 }
 
 void			FourierSurface::Functions::generateDataAsync(Vector3f*** dataset, unsigned int l, bool* done)

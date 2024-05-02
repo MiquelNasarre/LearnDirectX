@@ -59,6 +59,7 @@ struct IG {
 	static lightsource* LIGHTS;
 
 	static bool MENU;
+	static bool COEF_VIEW;
 };
 
 class Fourier {
@@ -117,6 +118,22 @@ private:
 	
 	InterpolatedString** Interpolations = NULL;
 
+	//	Coefficients view
+
+	bool isCoefWindowOpen = false;
+	unsigned int Ncoef = 0u;
+	FourierSurface::Coefficient* linkedCoef = NULL;
+
+	void createCoefWindow();
+	void updateCoefWindow();
+	void deleteCoefWindow();
+
+	//  Threading utlities
+
+	static void createPlotAsync(Graphics* gfx, Polihedron* dataplot, const void** extractedFigure, bool* done, std::mutex* mtx);
+	static void createFigureAsync(Graphics* gfx, FourierSurface* figure, FourierSurface::Coefficient** coef, unsigned int ncoef, bool* done, std::mutex* mtx, bool* begin);
+	static void calculateCoefficientsAsync(FourierSurface::Coefficient** coef, const void** extractedFigure, unsigned int maxL, bool* done);
+
 public:
 	Fourier();
 
@@ -127,8 +144,6 @@ public:
 	void doFrame();
 };
 
-//  Threading utlities
 
-void createPlotAsync(Graphics* gfx, Polihedron* dataplot, const void** extractedFigure, bool* done, std::mutex* mtx);
-void createFigureAsync(Graphics* gfx, FourierSurface* figure, FourierSurface::Coefficient** coef, unsigned int ncoef, bool* done, std::mutex* mtx, bool* begin);
-void calculateCoefficientsAsync(FourierSurface::Coefficient** coef, const void** extractedFigure, unsigned int maxL, bool* done);
+
+

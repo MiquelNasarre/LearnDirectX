@@ -9,7 +9,6 @@
 
 Graphics::~Graphics()
 {
-	iGManager::closeDX11();
 }
 
 Graphics::Graphics(HWND hWnd)

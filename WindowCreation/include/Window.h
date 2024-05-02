@@ -3,6 +3,7 @@
 #include "Exception/Exception.h"
 #include "Timer.h"
 #include "Graphics.h"
+#include "iGManager.h"
 
 class Window
 {
@@ -57,6 +58,7 @@ private:
 	float frame = 0;
 	float Frametime = 0;
 	Timer timer;
+	iGManager imGui;
 
 public:
 	Window(int width, int height, const char* Title, const char* IconFilename = "", bool darkTheme = true);
@@ -84,6 +86,7 @@ public:
 	float getFramerate();
 	float getFrameTime();
 	bool popMessage(MSG& clientMsg);
+	void* getImGuiContext();
 
 	bool processEvents();
 	void close();
