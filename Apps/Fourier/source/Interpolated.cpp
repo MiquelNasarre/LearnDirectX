@@ -52,10 +52,10 @@ void Interpolated::create(Graphics& gfx, FourierSurface* surface0, FourierSurfac
 
 	Ncoef0 = surface0->getNcoefficients();
 	Ncoef1 = surface1->getNcoefficients();
-	Coef0 = (FourierSurface::Coefficient*)calloc(Ncoef0, sizeof(FourierSurface::Coefficient));
-	Coef1 = (FourierSurface::Coefficient*)calloc(Ncoef1, sizeof(FourierSurface::Coefficient));
+	Coef0 = (Coefficient*)calloc(Ncoef0, sizeof(Coefficient));
+	Coef1 = (Coefficient*)calloc(Ncoef1, sizeof(Coefficient));
 
-	FourierSurface::Coefficient* pCoef = surface0->getCoefficients();
+	Coefficient* pCoef = surface0->getCoefficients();
 	for (unsigned int i = 0; i < Ncoef0; i++)
 		Coef0[i] = pCoef[i];
 	pCoef = surface1->getCoefficients();
@@ -101,7 +101,7 @@ void Interpolated::create(Graphics& gfx, FourierSurface* surface0, FourierSurfac
 	{
 		if (Coef1[i].L > L) L = Coef1[i].L;
 	}
-	FourierSurface::Coefficient* Coef = (FourierSurface::Coefficient*)calloc((L + 1) * (L + 1), sizeof(FourierSurface::Coefficient));
+	Coefficient* Coef = (Coefficient*)calloc((L + 1) * (L + 1), sizeof(Coefficient));
 
 	for (unsigned int l = 0; l <= L; l++)
 	{
@@ -162,10 +162,10 @@ void Interpolated::create(Graphics& gfx, Interpolated* interpolation0, Interpola
 	Ncoef0 = interpolation0->getNcoefficients(s0);
 	Ncoef1 = interpolation1->getNcoefficients(s1);
 
-	Coef0 = (FourierSurface::Coefficient*)calloc(Ncoef0, sizeof(FourierSurface::Coefficient));
-	Coef1 = (FourierSurface::Coefficient*)calloc(Ncoef1, sizeof(FourierSurface::Coefficient));
+	Coef0 = (Coefficient*)calloc(Ncoef0, sizeof(Coefficient));
+	Coef1 = (Coefficient*)calloc(Ncoef1, sizeof(Coefficient));
 
-	FourierSurface::Coefficient* pCoef = interpolation0->getCoefficients(s0);
+	Coefficient* pCoef = interpolation0->getCoefficients(s0);
 	for (unsigned int i = 0; i < Ncoef0; i++)
 		Coef0[i] = pCoef[i];
 	pCoef = interpolation1->getCoefficients(s1);
@@ -211,7 +211,7 @@ void Interpolated::create(Graphics& gfx, Interpolated* interpolation0, Interpola
 	{
 		if (Coef1[i].L > L) L = Coef1[i].L;
 	}
-	FourierSurface::Coefficient* Coef = (FourierSurface::Coefficient*)calloc((L + 1) * (L + 1), sizeof(FourierSurface::Coefficient));
+	Coefficient* Coef = (Coefficient*)calloc((L + 1) * (L + 1), sizeof(Coefficient));
 
 	for (unsigned int l = 0; l <= L; l++)
 	{
@@ -263,10 +263,10 @@ void Interpolated::create(Graphics& gfx, Interpolated* interpolation0, FourierSu
 
 	Ncoef0 = interpolation0->getNcoefficients(1);
 	Ncoef1 = surface1->getNcoefficients();
-	Coef0 = (FourierSurface::Coefficient*)calloc(Ncoef0, sizeof(FourierSurface::Coefficient));
-	Coef1 = (FourierSurface::Coefficient*)calloc(Ncoef1, sizeof(FourierSurface::Coefficient));
+	Coef0 = (Coefficient*)calloc(Ncoef0, sizeof(Coefficient));
+	Coef1 = (Coefficient*)calloc(Ncoef1, sizeof(Coefficient));
 
-	FourierSurface::Coefficient* pCoef = interpolation0->getCoefficients(1);
+	Coefficient* pCoef = interpolation0->getCoefficients(1);
 	for (unsigned int i = 0; i < Ncoef0; i++)
 		Coef0[i] = pCoef[i];
 	pCoef = surface1->getCoefficients();
@@ -312,7 +312,7 @@ void Interpolated::create(Graphics& gfx, Interpolated* interpolation0, FourierSu
 	{
 		if (Coef1[i].L > L) L = Coef1[i].L;
 	}
-	FourierSurface::Coefficient* Coef = (FourierSurface::Coefficient*)calloc((L + 1) * (L + 1), sizeof(FourierSurface::Coefficient));
+	Coefficient* Coef = (Coefficient*)calloc((L + 1) * (L + 1), sizeof(Coefficient));
 
 	for (unsigned int l = 0; l <= L; l++)
 	{
@@ -362,10 +362,10 @@ void Interpolated::updateShape(Graphics& gfx, FourierSurface* surface0, FourierS
 	free(Coef1);
 	Ncoef0 = surface0->getNcoefficients();
 	Ncoef1 = surface1->getNcoefficients();
-	Coef0 = (FourierSurface::Coefficient*)calloc(Ncoef0, sizeof(FourierSurface::Coefficient));
-	Coef1 = (FourierSurface::Coefficient*)calloc(Ncoef1, sizeof(FourierSurface::Coefficient));
+	Coef0 = (Coefficient*)calloc(Ncoef0, sizeof(Coefficient));
+	Coef1 = (Coefficient*)calloc(Ncoef1, sizeof(Coefficient));
 
-	FourierSurface::Coefficient* pCoef = surface0->getCoefficients();
+	Coefficient* pCoef = surface0->getCoefficients();
 	for (unsigned int i = 0; i < Ncoef0; i++)
 		Coef0[i] = pCoef[i];
 	pCoef = surface1->getCoefficients();
@@ -403,7 +403,7 @@ void Interpolated::saveCoefficients(const char* filename)
 	{
 		if (Coef1[i].L > L) L = Coef1[i].L;
 	}
-	FourierSurface::Coefficient* Coef = (FourierSurface::Coefficient*)calloc((L + 1) * (L + 1), sizeof(FourierSurface::Coefficient));
+	Coefficient* Coef = (Coefficient*)calloc((L + 1) * (L + 1), sizeof(Coefficient));
 
 	for (unsigned int l = 0; l <= L; l++)
 	{
@@ -531,7 +531,7 @@ void Interpolated::updateCurves(Graphics& gfx, float phi, float theta)
 	{
 		if (Coef1[i].L > L) L = Coef1[i].L;
 	}
-	FourierSurface::Coefficient* Coef = (FourierSurface::Coefficient*)calloc((L + 1) * (L + 1), sizeof(FourierSurface::Coefficient));
+	Coefficient* Coef = (Coefficient*)calloc((L + 1) * (L + 1), sizeof(Coefficient));
 
 	for (unsigned int l = 0; l <= L; l++)
 	{
@@ -575,7 +575,7 @@ unsigned int Interpolated::getNcoefficients(int i)
 	return 0;
 }
 
-FourierSurface::Coefficient* Interpolated::getCoefficients(int i)
+Coefficient* Interpolated::getCoefficients(int i)
 {
 	if (i == 0)
 		return Coef0;
@@ -896,7 +896,7 @@ void InterpolatedString::DrawCurves(Graphics& gfx)
 
 //	Private static
 
-void Interpolated::Curves::generatePhiCurveAsync(const unsigned int t0, const unsigned int t1, const FourierSurface::Coefficient* coef, const unsigned int ncoef, const float phi, const float theta, Vertex* V)
+void Interpolated::Curves::generatePhiCurveAsync(const unsigned int t0, const unsigned int t1, const Coefficient* coef, const unsigned int ncoef, const float phi, const float theta, Vertex* V)
 {
 	constexpr float error = 1.0035f;
 
@@ -911,7 +911,7 @@ void Interpolated::Curves::generatePhiCurveAsync(const unsigned int t0, const un
 	}
 }
 
-void Interpolated::Curves::generateThetaCurveAsync(const unsigned int t0, const unsigned int t1, const FourierSurface::Coefficient* coef, const unsigned int ncoef, const float phi, const float theta, Vertex* V)
+void Interpolated::Curves::generateThetaCurveAsync(const unsigned int t0, const unsigned int t1, const Coefficient* coef, const unsigned int ncoef, const float phi, const float theta, Vertex* V)
 {
 	constexpr float error = 1.0035f;
 
@@ -932,7 +932,7 @@ void Interpolated::Curves::generateThetaCurveAsync(const unsigned int t0, const 
 
 //	Construction
 
-void Interpolated::Curves::create(Graphics& gfx, const FourierSurface::Coefficient* coef, const unsigned int ncoef, const float phi, const float theta, std::mutex* mtx)
+void Interpolated::Curves::create(Graphics& gfx, const Coefficient* coef, const unsigned int ncoef, const float phi, const float theta, std::mutex* mtx)
 {
 	constexpr float error = 1.0035f;
 	if (isInit)
@@ -984,7 +984,7 @@ void Interpolated::Curves::create(Graphics& gfx, const FourierSurface::Coefficie
 		mtx->unlock();
 }
 
-void Interpolated::Curves::updateShape(Graphics& gfx, const FourierSurface::Coefficient* coef, const unsigned int ncoef, const float phi, const float theta)
+void Interpolated::Curves::updateShape(Graphics& gfx, const Coefficient* coef, const unsigned int ncoef, const float phi, const float theta)
 {
 	constexpr float error = 1.0035f;
 	if (!isInit)

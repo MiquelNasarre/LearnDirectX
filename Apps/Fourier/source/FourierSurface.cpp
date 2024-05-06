@@ -15,24 +15,6 @@ Vector3f***		FourierSurface::Functions::DatasetYlmi = (Vector3f***)calloc(MAX_L 
 
 // File Manager Functions
 
-void FourierSurface::FileManager::calculateCoefficientAsync(Coefficient* coef, const unsigned int l, const Vector3f* centerTriangles, const float* areaTriangles, const float* distanceTriangles, const unsigned int numT, bool* finished)
-{
-	for (int m = -int(l); m <= int(l); m++)
-	{
-		float C = 0.f;
-
-		for (unsigned int i = 0; i < numT; i++)
-			C += areaTriangles[i] * distanceTriangles[i] * Functions::Ylm(centerTriangles[i], l, m);
-
-		C *= 0.25f / pi;
-
-		coef[m + l].L = l;
-		coef[m + l].M = m;
-		coef[m + l].C = C;
-	}
-	*finished = true;
-}
-
 const void** FourierSurface::FileManager::extractFigureFromFile(const char* filename)
 {
 	FILE* file = fopen((FIGURES_DIR + std::string(filename) + ".dat").c_str(), "r");
@@ -78,75 +60,6 @@ const void** FourierSurface::FileManager::extractFigureFromFile(const char* file
 	return figure;
 }
 
-FourierSurface::Coefficient* FourierSurface::FileManager::calculateCoefficients(const void** extractedFigure, unsigned int maxL)
-{
-	const Vector3f* vertexs = (Vector3f*)extractedFigure[0];
-	const Vector3i* triangles = (Vector3i*)extractedFigure[1];
-	const int numT = ((int*)extractedFigure[2])[0];
-	const int numV = ((int*)extractedFigure[2])[1];
-
-	// Now we have the figure
-	// Lets calculate the coefficients
-
-	Vector3f* centerTriangles = (Vector3f*)calloc(numT, sizeof(Vector3f));
-	float* areaTriangles = (float*)calloc(numT, sizeof(float));
-	float* distanceTriangles = (float*)calloc(numT, sizeof(float));
-
-	for (int i = 0; i < numT; i++)
-	{
-		Vector3f V1 = vertexs[triangles[i].x];
-		Vector3f V2 = vertexs[triangles[i].y];
-		Vector3f V3 = vertexs[triangles[i].z];
-
-		Vector3f V12 = (V1 * V2 * V1).normalize();
-		Vector3f V13 = (V1 * V3 * V1).normalize();
-
-		float angle1 = acosf(V13 ^ V12);
-
-		Vector3f V21 = (V2 * V1 * V2).normalize();
-		Vector3f V23 = (V2 * V3 * V2).normalize();
-
-		float angle2 = acosf(V23 ^ V21);
-
-		Vector3f V32 = (V3 * V2 * V3).normalize();
-		Vector3f V31 = (V3 * V1 * V3).normalize();
-
-		float angle3 = acosf(V31 ^ V32);
-
-		centerTriangles[i] = (V1 + V2 + V3) / 3.f;
-		areaTriangles[i] = angle1 + angle2 + angle3 - pi;
-		distanceTriangles[i] = centerTriangles[i].abs();
-		centerTriangles[i].normalize();
-	}
-
-	Coefficient* Coef = (Coefficient*)calloc((maxL + 1) * (maxL + 1), sizeof(Coefficient));
-	bool finished[4] = { true,true,true,true };
-	unsigned int l = 0;
-	while (l <= maxL)
-	{
-		while (!finished[0] && !finished[1] && !finished[2] && !finished[3])
-			std::this_thread::sleep_for(std::chrono::milliseconds(2));
-		for (int w = 0; w < 4; w++)
-		{
-			if (finished[w])
-			{
-				finished[w] = false;
-				std::thread(calculateCoefficientAsync, &Coef[l * l], l, centerTriangles, areaTriangles, distanceTriangles, numT, &finished[w]).detach();
-				if (++l > maxL)
-					break;
-			}
-		}
-	}
-	while (!finished[0] || !finished[1] || !finished[2] || !finished[3])
-		std::this_thread::sleep_for(std::chrono::milliseconds(2));
-
-	free(centerTriangles);
-	free(areaTriangles);
-	free(distanceTriangles);
-	return Coef;
-
-}
-
 unsigned int FourierSurface::FileManager::ncoefFromFile(const char* filename)
 {
 	FILE* file = fopen((COEFFICIENTS_DIR + std::string(filename) + ".dat").c_str(), "r");
@@ -161,7 +74,7 @@ unsigned int FourierSurface::FileManager::ncoefFromFile(const char* filename)
 	return C;
 }
 
-FourierSurface::Coefficient* FourierSurface::FileManager::loadCoefficientsFromFile(const char* filename)
+Coefficient* FourierSurface::FileManager::loadCoefficientsFromFile(const char* filename)
 {
 	FILE* file = fopen((COEFFICIENTS_DIR + std::string(filename) + ".dat").c_str(), "r");
 	if (!file)
@@ -230,6 +143,131 @@ void			FourierSurface::Functions::generateDataAsync(Vector3f*** dataset, unsigne
 	*done = true;
 }
 
+void			FourierSurface::Functions::fillTriangleData(unsigned short depth, Vector3f V0, Vector3f V1, Vector3f V2, Vector3f* Centers, float* Distances)
+{
+	if (depth > 0)
+	{
+		unsigned int triangleDivisions = 1u;
+		for (unsigned short i = 0; i < depth - 1; i++)
+			triangleDivisions *= 4u;
+
+		Vector3f V01 = 0.5f * (V0 + V1);
+		Vector3f V12 = 0.5f * (V1 + V2);
+		Vector3f V20 = 0.5f * (V2 + V0);
+
+		fillTriangleData(depth - 1, V0, V01, V20, Centers, Distances);
+		fillTriangleData(depth - 1, V1, V12, V01, &Centers[triangleDivisions], &Distances[triangleDivisions]);
+		fillTriangleData(depth - 1, V2, V20, V12, &Centers[2 * triangleDivisions], &Distances[2 * triangleDivisions]);
+		fillTriangleData(depth - 1, V20, V01, V12, &Centers[3 * triangleDivisions], &Distances[3 * triangleDivisions]);
+		return;
+	}
+
+	Centers[0] = (V0 + V1 + V2) / 3.f;
+	Distances[0] = Centers[0].abs();
+	Centers[0] /= Distances[0];
+}
+
+void			FourierSurface::Functions::calculateCoefficientAsync(Coefficient* coef, const unsigned int l, const Vector3f* centerTriangles, const float* areaTriangles, const float* distanceTriangles, const unsigned int numT, bool* finished)
+{
+	for (int m = -int(l); m <= int(l); m++)
+	{
+		float C = 0.f;
+
+		for (unsigned int i = 0; i < numT; i++)
+			C += areaTriangles[i] * distanceTriangles[i] * Ylm(centerTriangles[i], l, m);
+
+		C *= 0.25f / pi;
+
+		coef[m + l].L = l;
+		coef[m + l].M = m;
+		coef[m + l].C = C;
+	}
+	*finished = true;
+}
+
+Coefficient*	FourierSurface::Functions::calculateCoefficients(const void** extractedFigure, const unsigned int maxL, const unsigned short triangleDepth)
+{
+	const Vector3f* vertexs = (Vector3f*)extractedFigure[0];
+	const Vector3i* triangles = (Vector3i*)extractedFigure[1];
+	const int numT = ((int*)extractedFigure[2])[0];
+	const int numV = ((int*)extractedFigure[2])[1];
+
+	// Now we have the figure
+	// Lets calculate the coefficients
+
+	unsigned int triangleDivisions = 1u;
+	for (unsigned short i = 0; i < triangleDepth; i++)
+		triangleDivisions *= 4u;
+
+	Vector3f* centerTriangles = (Vector3f*)calloc(triangleDivisions * numT, sizeof(Vector3f));
+	float* areaTriangles = (float*)calloc(triangleDivisions * numT, sizeof(float));
+	float* distanceTriangles = (float*)calloc(triangleDivisions * numT, sizeof(float));
+
+	for (int i = 0; i < numT; i++)
+	{
+		Vector3f V1 = vertexs[triangles[i].x];
+		Vector3f V2 = vertexs[triangles[i].y];
+		Vector3f V3 = vertexs[triangles[i].z];
+
+		Vector3f V12 = (V1 * V2 * V1).normalize();
+		Vector3f V13 = (V1 * V3 * V1).normalize();
+
+		float angle1 = acosf(V13 ^ V12);
+
+		Vector3f V21 = (V2 * V1 * V2).normalize();
+		Vector3f V23 = (V2 * V3 * V2).normalize();
+
+		float angle2 = acosf(V23 ^ V21);
+
+		Vector3f V32 = (V3 * V2 * V3).normalize();
+		Vector3f V31 = (V3 * V1 * V3).normalize();
+
+		float angle3 = acosf(V31 ^ V32);
+
+		if (triangleDepth)
+		{
+			fillTriangleData(triangleDepth, V1, V2, V3, &centerTriangles[i * triangleDivisions], &distanceTriangles[i * triangleDivisions]);
+			float area = (angle1 + angle2 + angle3 - pi) / triangleDivisions;
+			for (unsigned int j = 0; j < triangleDivisions; j++)
+				areaTriangles[triangleDivisions * i + j] = area;
+		}
+		else
+		{
+			centerTriangles[i] = (V1 + V2 + V3) / 3.f;
+			areaTriangles[i] = angle1 + angle2 + angle3 - pi;
+			distanceTriangles[i] = centerTriangles[i].abs();
+			centerTriangles[i].normalize();
+		}
+	}
+
+	Coefficient* Coef = (Coefficient*)calloc((maxL + 1) * (maxL + 1), sizeof(Coefficient));
+	bool finished[4] = { true,true,true,true };
+	unsigned int l = 0;
+	while (l <= maxL)
+	{
+		while (!finished[0] && !finished[1] && !finished[2] && !finished[3])
+			std::this_thread::sleep_for(std::chrono::milliseconds(2));
+		for (int w = 0; w < 4; w++)
+		{
+			if (finished[w])
+			{
+				finished[w] = false;
+				std::thread(calculateCoefficientAsync, &Coef[l * l], l, centerTriangles, areaTriangles, distanceTriangles, triangleDivisions * numT, &finished[w]).detach();
+				if (++l > maxL)
+					break;
+			}
+		}
+	}
+	while (!finished[0] || !finished[1] || !finished[2] || !finished[3])
+		std::this_thread::sleep_for(std::chrono::milliseconds(2));
+
+	free(centerTriangles);
+	free(areaTriangles);
+	free(distanceTriangles);
+	return Coef;
+
+}
+
 float			FourierSurface::Functions::Ylm(int l, int m, float phi, float theta)
 {
 	float costheta = cosf(theta);
@@ -247,7 +285,6 @@ float			FourierSurface::Functions::Ylm(int l, int m, float phi, float theta)
 
 float			FourierSurface::Functions::Ylm(Vector3f v, unsigned int l, int m)
 {
-	v.normalize();
 	float costheta = v.z;
 	float sintheta = sqrtf(1 - v.z * v.z);
 	float cosphi = v.x / sintheta;
@@ -1141,7 +1178,7 @@ FourierSurface::Vertex* FourierSurface::getVertexPtr()
 	return Vertexs;
 }
 
-FourierSurface::Coefficient* FourierSurface::getCoefficients()
+Coefficient* FourierSurface::getCoefficients()
 {
 	return Coef;
 }

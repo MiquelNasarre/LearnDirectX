@@ -42,6 +42,7 @@ bool			IG::FIGURE_FILE = true;
 bool			IG::LOADING = false;
 char*			IG::FILENAME = (char*)calloc(100, sizeof(char));
 unsigned int	IG::MAXL = 0u;
+unsigned short	IG::TDEPTH = 0u;
 unsigned int	IG::NFIG = 0u;
 unsigned int	IG::NPLOT = 0u;
 Vector2i		IG::WindowDim = { 0, 0 };
@@ -657,7 +658,7 @@ void Fourier::createPlotAsync(Graphics* gfx, Polihedron* dataplot, const void** 
 	*done = true;
 }
 
-void Fourier::createFigureAsync(Graphics* gfx, FourierSurface* figure, FourierSurface::Coefficient** coef, unsigned int ncoef, bool* done, std::mutex* mtx, bool* begin)
+void Fourier::createFigureAsync(Graphics* gfx, FourierSurface* figure, Coefficient** coef, unsigned int ncoef, bool* done, std::mutex* mtx, bool* begin)
 {
 	while (begin && !(*begin))
 		std::this_thread::sleep_for(std::chrono::milliseconds(10));
@@ -668,8 +669,8 @@ void Fourier::createFigureAsync(Graphics* gfx, FourierSurface* figure, FourierSu
 	*done = true;
 }
 
-void Fourier::calculateCoefficientsAsync(FourierSurface::Coefficient** coef, const void** extractedFigure, unsigned int maxL, bool* done)
+void Fourier::calculateCoefficientsAsync(Coefficient** coef, const void** extractedFigure, unsigned int maxL, bool* done)
 {
-	*coef = FourierSurface::FileManager::calculateCoefficients(extractedFigure, maxL);
+	*coef = FourierSurface::Functions::calculateCoefficients(extractedFigure, maxL, IG::TDEPTH);
 	*done = true;
 }

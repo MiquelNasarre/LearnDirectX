@@ -33,6 +33,7 @@ struct IG {
 	static bool LOADING;
 	static char* FILENAME;
 	static unsigned int MAXL;
+	static unsigned short TDEPTH;
 	static bool UPDATE_TEXTURE;
 	static _float4color TEXTURE;
 	static bool DELETE_VIEW;
@@ -102,7 +103,7 @@ private:
 	//	Harmonics
 
 	FourierSurface harmonics;
-	FourierSurface::Coefficient C = { (unsigned int)IG::L, IG::M, 1 };
+	Coefficient C = { (unsigned int)IG::L, IG::M, 1 };
 
 	//	Surfaces
 
@@ -110,7 +111,7 @@ private:
 	bool Fcoef = false;
 	bool Fplot = false;
 	const void** extractedFigure = NULL;
-	FourierSurface::Coefficient* coef;
+	Coefficient* coef;
 	std::mutex mtx;
 	FourierSurface** Figure;
 
@@ -122,7 +123,7 @@ private:
 
 	bool isCoefWindowOpen = false;
 	unsigned int Ncoef = 0u;
-	FourierSurface::Coefficient* linkedCoef = NULL;
+	Coefficient* linkedCoef = NULL;
 
 	void createCoefWindow();
 	void updateCoefWindow();
@@ -131,8 +132,8 @@ private:
 	//  Threading utlities
 
 	static void createPlotAsync(Graphics* gfx, Polihedron* dataplot, const void** extractedFigure, bool* done, std::mutex* mtx);
-	static void createFigureAsync(Graphics* gfx, FourierSurface* figure, FourierSurface::Coefficient** coef, unsigned int ncoef, bool* done, std::mutex* mtx, bool* begin);
-	static void calculateCoefficientsAsync(FourierSurface::Coefficient** coef, const void** extractedFigure, unsigned int maxL, bool* done);
+	static void createFigureAsync(Graphics* gfx, FourierSurface* figure, Coefficient** coef, unsigned int ncoef, bool* done, std::mutex* mtx, bool* begin);
+	static void calculateCoefficientsAsync(Coefficient** coef, const void** extractedFigure, unsigned int maxL, bool* done);
 
 public:
 	Fourier();

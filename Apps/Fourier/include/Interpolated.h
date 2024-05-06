@@ -15,8 +15,8 @@ private:
 	};
 
 	InterpolatedVertex* Vertexs = NULL;
-	FourierSurface::Coefficient* Coef0 = NULL;
-	FourierSurface::Coefficient* Coef1 = NULL;
+	Coefficient* Coef0 = NULL;
+	Coefficient* Coef1 = NULL;
 	unsigned int Ncoef0 = 0u;
 	unsigned int Ncoef1 = 0u;
 
@@ -37,13 +37,13 @@ private:
 
 		ConstantBuffer<VSconstBuffer>* pVSCB;
 
-		static void generatePhiCurveAsync(const unsigned int t0, const unsigned int t1, const FourierSurface::Coefficient* coef, const unsigned int ncoef, const float phi, const float theta, Vertex* V);
-		static void generateThetaCurveAsync(const unsigned int t0, const unsigned int t1, const FourierSurface::Coefficient* coef, const unsigned int ncoef, const float phi, const float theta, Vertex* V);
+		static void generatePhiCurveAsync(const unsigned int t0, const unsigned int t1, const Coefficient* coef, const unsigned int ncoef, const float phi, const float theta, Vertex* V);
+		static void generateThetaCurveAsync(const unsigned int t0, const unsigned int t1, const Coefficient* coef, const unsigned int ncoef, const float phi, const float theta, Vertex* V);
 
 	public:
 		Curves() {}
-		void create(Graphics& gfx, const FourierSurface::Coefficient* coef, const unsigned int ncoef, const float phi, const float theta, std::mutex* mtx);
-		void updateShape(Graphics& gfx, const FourierSurface::Coefficient* coef, const unsigned int ncoef, const float phi, const float theta);
+		void create(Graphics& gfx, const Coefficient* coef, const unsigned int ncoef, const float phi, const float theta, std::mutex* mtx);
+		void updateShape(Graphics& gfx, const Coefficient* coef, const unsigned int ncoef, const float phi, const float theta);
 		void updateRotation(Graphics& gfx, Quaternion rotation, bool multiplicative = false);
 		void updateScreenPosition(Graphics& gfx, Vector2f screenDisplacement);
 	} curves;
@@ -74,7 +74,7 @@ public:
 	Quaternion getRotation();
 	InterpolatedVertex* getVertexPtr();
 	unsigned int getNcoefficients(int i);
-	FourierSurface::Coefficient* getCoefficients(int i);
+	Coefficient* getCoefficients(int i);
 
 	void DrawCurves(Graphics& gfx);
 

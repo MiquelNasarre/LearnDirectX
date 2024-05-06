@@ -2,23 +2,20 @@
 #include "Drawable.h"
 #include <mutex>
 
+struct Coefficient
+{
+	unsigned int L;
+	int M;
+	float C;
+};
+
 class FourierSurface : public Drawable
 {
 public:
-	struct Coefficient
-	{
-		unsigned int L;
-		int M;
-		float C;
-	};
-
 	class FileManager
 	{
-	private:
-		static void calculateCoefficientAsync(Coefficient* coef, const unsigned int l, const Vector3f* centerTriangles, const float* areaTriangles, const float* distanceTriangles, const unsigned int numT, bool* finished);
 	public:
 		const static void** extractFigureFromFile(const char* filename);
-		static Coefficient* calculateCoefficients(const void** extractedFigure, unsigned int maxL);
 		static unsigned int ncoefFromFile(const char* filename);
 		static Coefficient* loadCoefficientsFromFile(const char* filename);
 		static void saveCoefficients(Coefficient* coef, unsigned int ncoef, const char* filename);
@@ -36,6 +33,10 @@ public:
 		static void				generateHarmonicsAsync();
 		static void				generateDataAsync(Vector3f*** dataset, unsigned int l, bool* done);
 		static Vector3f***		DatasetYlmi;
+
+		static void				fillTriangleData(unsigned short depth, Vector3f V0, Vector3f V1, Vector3f V2, Vector3f* Centers, float* Distances);
+		static void				calculateCoefficientAsync(Coefficient* coef, const unsigned int l, const Vector3f* centerTriangles, const float* areaTriangles, const float* distanceTriangles, const unsigned int numT, bool* finished);
+		static Coefficient*		calculateCoefficients(const void** extractedFigure, const unsigned int maxL, const unsigned short triangleDepth);
 
 		static float			Ylm(int l, int m, float phi, float theta);
 		static float			Ylm(Vector3f v, unsigned int l, int m);

@@ -77,7 +77,7 @@ void IG_Fourier::loadMenu()
 		ImGui::SetWindowPos(ImVec2(IG::WindowDim.x / 2.f - 100.f, IG::WindowDim.y / 2.f - 52.f));
 
 		if(IG::FIGURE_FILE)
-			ImGui::SetWindowSize(ImVec2(200, 104));
+			ImGui::SetWindowSize(ImVec2(200, 127));
 
 		else
 			ImGui::SetWindowSize(ImVec2(200, 81));
@@ -141,6 +141,14 @@ void IG_Fourier::loadMenu()
 			if (L > MAX_L)
 				L = MAX_L;
 			IG::MAXL = (unsigned int)L;
+
+			static int T = 0;
+			ImGui::InputInt(" Depth", &T);
+			if (T < 0)
+				T = 0;
+			if (T > MAX_T_DIV)
+				T = MAX_T_DIV;
+			IG::TDEPTH = T;
 		}
 		ImGui::Spacing();
 		if (!exists)
@@ -153,7 +161,7 @@ void IG_Fourier::loadMenu()
 				{
 					if (std::string(figureNames[i]) == IG::FILENAME && figureSizes[i]!= -1)
 					{
-						if (figureSizes[i] == IG::MAXL)
+						if (figureSizes[i] == IG::MAXL + 100 * IG::TDEPTH)
 						{
 							IG::VIEW1 = i;
 							for(unsigned int j = 0; j<IG::PAIRS_SIZE;j++)
@@ -214,7 +222,7 @@ void IG_Fourier::loadMenu()
 				}
 
 				add1to(figureSizes, IG::NFIG);
-				figureSizes[IG::NFIG] = IG::MAXL;
+				figureSizes[IG::NFIG] = IG::MAXL + 100 * IG::TDEPTH;
 
 				IG::CALCULATE_FIGURE = true;
 				loadMenuOpen = false;
@@ -295,8 +303,10 @@ void IG_Fourier::saveMenu()
 				while (figureNames[IG::VIEW1][++i])
 					IG::SAVE_NAME[i] = figureNames[IG::VIEW1][i];
 				IG::SAVE_NAME[i] = '_';
-				IG::SAVE_NAME[i + 1] = std::to_string(figureSizes[IG::VIEW1]).c_str()[0];
-				IG::SAVE_NAME[i + 2] = std::to_string(figureSizes[IG::VIEW1]).c_str()[1];
+				IG::SAVE_NAME[i + 1] = std::to_string(figureSizes[IG::VIEW1] / 100).c_str()[0];
+				IG::SAVE_NAME[i + 2] = '_';
+				IG::SAVE_NAME[i + 3] = std::to_string(figureSizes[IG::VIEW1] % 100).c_str()[0];
+				IG::SAVE_NAME[i + 4] = std::to_string(figureSizes[IG::VIEW1] % 100).c_str()[1];
 			}
 			addName = false;
 		}
@@ -364,7 +374,7 @@ void IG_Fourier::interpolationEditor()
 			{
 				for (unsigned int i = 0; i < IG::NFIG; i++)
 				{
-					if (ImGui::MenuItem(figureNames[i], figureSizes[i] != -1 ? std::to_string(figureSizes[i]).c_str() : ""))
+					if (ImGui::MenuItem(figureNames[i], figureSizes[i] != -1 ? (std::to_string(figureSizes[i] / 100) + " " + std::to_string(figureSizes[i] % 100)).c_str() : ""))
 					{
 						IG::ADD_FIGURE = i;
 						add1to(IG::I_DATA[m], s);
@@ -430,8 +440,8 @@ void IG_Fourier::mainMenu()
 
 					for (unsigned int i = 0; i < IG::NFIG; i++)
 					{
-						if (ImGui::MenuItem(figureNames[i], figureSizes[i] == -1 ? "" : std::to_string(figureSizes[i]).c_str()))
-						{
+						if (ImGui::MenuItem(figureNames[i], figureSizes[i] == -1 ? "" : (std::to_string(figureSizes[i] / 100) + " " + std::to_string(figureSizes[i] % 100)).c_str()))
+						{ 
 							IG::VIEW1 = i;
 							IG::UPDATE_CURVES = true;
 							IG::DOUBLE_VIEW = false;
