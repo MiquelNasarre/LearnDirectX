@@ -57,6 +57,10 @@ bool			IG::I_ADD = false;
 int				IG::ADD_FIGURE = -1;
 int				IG::DELETE_FIGURE = -1;
 
+bool			IG::COMPUTE_ERROR = false;
+bool			IG::ERROR_WINDOW = false;
+float*			IG::COMPUTED_ERRORS = NULL;
+
 bool			IG::UPDATE_TEXTURE = false;
 _float4color	IG::TEXTURE = { -1.f,0.f,0.f,0.f };
 
@@ -374,6 +378,8 @@ void Fourier::eventManager()
 		{
 			IG::VIEW2 = IG::COPY;
 			IG::ALREADY_EXISTS = false;
+			free((void*)extractedFigure[0]);
+			free((void*)extractedFigure[1]);
 		}
 		else
 		{
@@ -381,8 +387,6 @@ void Fourier::eventManager()
 			IG::VIEW2 = -int(IG::NPLOT) - 1;
 		}
 
-		free((void*)extractedFigure[0]);
-		free((void*)extractedFigure[1]);
 		free((void*)extractedFigure[2]);
 		free(extractedFigure);
 		free(coef);
@@ -591,6 +595,44 @@ void Fourier::eventManager()
 	else
 		{INTERPRET_FIGURE_VIEW(IG::VIEW1, updateScreenPosition(window.graphics, { 0.f, 0.f }));}
 
+	// Error Computing
+
+	static bool* computations = NULL;
+	static bool* cancelations = NULL;
+	if (IG::ERROR_WINDOW)
+	{
+		if (IG::COMPUTE_ERROR)
+		{
+			IG::COMPUTE_ERROR = false;
+			IG::COMPUTED_ERRORS = (float*)calloc(IG::PAIRS_SIZE, sizeof(float));
+			computations = (bool*)calloc(IG::PAIRS_SIZE, sizeof(bool));
+			cancelations = (bool*)calloc(IG::PAIRS_SIZE, sizeof(bool));
+
+			for (unsigned int i = 0u; i < IG::PAIRS_SIZE; i++)
+				std::thread(computeErrorsAsync, Figure[IG::PAIRS[i].x], DataPlots[-IG::PAIRS[i].y - 2], &IG::COMPUTED_ERRORS[i], &computations[i], &cancelations[i]).detach();
+		}
+	}
+	else if (cancelations)
+	{
+		bool done = true;
+		for (unsigned int i = 0; i < IG::PAIRS_SIZE; i++)
+		{
+			cancelations[i] = true;
+			if (computations[i] == false)
+				done = false;
+		}
+		if (done)
+		{
+			free(cancelations);
+			free(computations);
+			free(IG::COMPUTED_ERRORS);
+			IG::COMPUTED_ERRORS = NULL;
+			cancelations = NULL;
+			computations = NULL;
+		}
+
+	}
+
 	//	Save file
 
 	if (IG::SAVE)
@@ -673,4 +715,11 @@ void Fourier::calculateCoefficientsAsync(Coefficient** coef, const void** extrac
 {
 	*coef = FourierSurface::Functions::calculateCoefficients(extractedFigure, maxL, IG::TDEPTH);
 	*done = true;
+}
+
+void Fourier::computeErrorsAsync(FourierSurface* surface, Polihedron* poli, float* result, bool* finished, bool* cancel)
+{
+	float temp = surface->computeError(poli, cancel);
+	*result = temp;
+	*finished = true;
 }

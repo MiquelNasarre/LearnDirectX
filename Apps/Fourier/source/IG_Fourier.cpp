@@ -362,6 +362,53 @@ void IG_Fourier::colorPicker()
 	ImGui::End();
 }
 
+void IG_Fourier::errorsWindow()
+{
+	if (ImGui::Begin("L2-error computations", NULL, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_MenuBar))
+	{
+		ImGui::SetWindowSize(ImVec2(250, float(IG::PAIRS_SIZE * 17 + 80)));
+		ImGui::SetWindowCollapsed(false, ImGuiCond_Once);
+
+		if (ImGui::BeginMenuBar())
+		{
+			ImGui::BeginDisabled();
+
+			ImGui::BeginMenu("Name ");
+			ImGui::BeginMenu("Depth");
+			ImGui::BeginMenu("Max L");
+			ImGui::BeginMenu("     Error");
+
+			ImGui::EndDisabled();
+			ImGui::EndMenuBar();
+		}
+
+		bool finished = true;
+		for (unsigned int i = 0; i < IG::PAIRS_SIZE; i++)
+		{
+			ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX() + 5.f, ImGui::GetCursorPosY()));
+			ImGui::Text(figureNames[IG::PAIRS[i].x]);
+			ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX() + 80.f, ImGui::GetCursorPosY() - 17.f));
+			ImGui::Text(std::to_string(figureSizes[IG::PAIRS[i].x] / 100).c_str());
+			ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX() + 125.f, ImGui::GetCursorPosY() - 17.f));
+			ImGui::Text(std::to_string(figureSizes[IG::PAIRS[i].x] % 100).c_str());
+
+			ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX() + 158.f, ImGui::GetCursorPosY() - 17.f));
+			if (IG::COMPUTED_ERRORS[i])
+				ImGui::Text("%.8f", IG::COMPUTED_ERRORS[i]);
+			else
+			{
+				ImGui::Text("Computing..");
+				finished = false;
+			}
+		}
+
+		ImGui::Spacing();
+		if (ImGui::Button(finished ? "Done" : "Cancel", ImVec2(234, 19)))
+			IG::ERROR_WINDOW = false;
+	}
+	ImGui::End();
+}
+
 void IG_Fourier::interpolationEditor()
 {
 	int m = iMenu;
@@ -503,6 +550,16 @@ void IG_Fourier::mainMenu()
 					FourierSurface::generateDataSet();
 				}
 				ImGui::PopItemFlag();
+
+				if (IG::LOADING || !IG::PAIRS_SIZE)
+					ImGui::BeginDisabled();
+				if (ImGui::MenuItem("Compute L2-errors"))
+				{
+					IG::COMPUTE_ERROR = true;
+					IG::ERROR_WINDOW = true;
+				}
+				if (IG::LOADING || !IG::PAIRS_SIZE)
+					ImGui::EndDisabled();
 
 				ImGui::EndMenu();
 			}
@@ -880,6 +937,13 @@ void IG_Fourier::render()
 	if (saveMenuOpen)
 	{
 		saveMenu();
+		drawFrame();
+		return;
+	}
+
+	if (IG::ERROR_WINDOW)
+	{
+		errorsWindow();
 		drawFrame();
 		return;
 	}

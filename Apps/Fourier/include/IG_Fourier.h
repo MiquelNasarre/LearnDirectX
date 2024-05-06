@@ -21,6 +21,7 @@ private:
 	static void loadMenu();
 	static void saveMenu();
 	static void colorPicker();
+	static void errorsWindow();
 	static void interpolationEditor();
 
 	static void mainMenu();

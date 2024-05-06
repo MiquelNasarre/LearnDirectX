@@ -1,5 +1,6 @@
 #pragma once
 #include "Drawable.h"
+#include "Polihedron.h"
 #include <mutex>
 
 struct Coefficient
@@ -130,6 +131,8 @@ public:
 	void updateRotation(Graphics& gfx, Quaternion rotation, bool multiplicative = false);
 	void updateScreenPosition(Graphics& gfx, Vector2f screenDisplacement);
 	void updateCurves(Graphics& gfx, float phi, float theta);
+
+	float computeError(Polihedron* Poli, bool* cancel = NULL);
 
 	Quaternion getRotation();
 	Vertex* getVertexPtr();

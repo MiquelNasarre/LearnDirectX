@@ -1168,6 +1168,55 @@ void		FourierSurface::updateCurves(Graphics& gfx, float phi, float theta)
 	curves.updateShape(gfx, Coef, Ncoef, phi, theta);
 }
 
+float		FourierSurface::computeError(Polihedron* Poli, bool* cancel)
+{
+	const Vector3f* vertexs = Poli->getVertexs();
+	const Vector3i* triangles = Poli->getTriangles();
+	const unsigned int numTriangles = Poli->getNumTriangles();
+
+	float absPoli = 0.f;
+	float absDif = 0.f;
+
+	for (unsigned int i = 0u; i < numTriangles; i++)
+	{
+		if (cancel && *cancel)
+			break;
+
+		Vector3f V1 = vertexs[triangles[i].x];
+		Vector3f V2 = vertexs[triangles[i].y];
+		Vector3f V3 = vertexs[triangles[i].z];
+
+		Vector3f V12 = (V1 * V2 * V1).normalize();
+		Vector3f V13 = (V1 * V3 * V1).normalize();
+
+		float angle1 = acosf(V13 ^ V12);
+
+		Vector3f V21 = (V2 * V1 * V2).normalize();
+		Vector3f V23 = (V2 * V3 * V2).normalize();
+
+		float angle2 = acosf(V23 ^ V21);
+
+		Vector3f V32 = (V3 * V2 * V3).normalize();
+		Vector3f V31 = (V3 * V1 * V3).normalize();
+
+		float angle3 = acosf(V31 ^ V32);
+
+		Vector3f center = (V1 + V2 + V3) / 3.f;
+		float area = angle1 + angle2 + angle3 - pi;
+		float distance = center.abs();
+		center.normalize();
+
+		float value = 0.f;
+		for (unsigned int j = 0u; j < Ncoef; j++)
+			value += Coef[j].C * Functions::Ylm(center, Coef[j].L, Coef[j].M);
+
+		absPoli += area * distance * distance;
+		absDif += area * (distance - value) * (distance - value);
+	}
+
+	return absDif / absPoli;
+}
+
 Quaternion	FourierSurface::getRotation()
 {
 	return vscBuff.rotation;

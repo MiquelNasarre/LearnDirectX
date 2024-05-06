@@ -7,12 +7,12 @@ class Polihedron : public Drawable
 public:
 
 	Polihedron() {}
-	~Polihedron() = default;
+	~Polihedron();
 	Polihedron(Graphics& gfx, const Vector3f* vertexs, const Vector3i* triangles, UINT numT, const Color* colors = NULL, bool vertexColor = false, bool transparency = true, bool doubleSided = true, std::mutex* mtx = NULL);
-	Polihedron(Graphics& gfx, const Vector3f* vertexs, const unsigned short* triangles, UINT numT, const Color* colors = NULL, bool vertexColor = false, bool transparency = true, bool doubleSided = true, std::mutex* mtx = NULL);
+//	Polihedron(Graphics& gfx, const Vector3f* vertexs, const unsigned short* triangles, UINT numT, const Color* colors = NULL, bool vertexColor = false, bool transparency = true, bool doubleSided = true, std::mutex* mtx = NULL);
 
 	void create(Graphics& gfx, const Vector3f* vertexs, const Vector3i* triangles, UINT numT, const Color* colors = NULL, bool vertexColor = false, bool transparency = true, bool doubleSided = true, std::mutex* mtx = NULL);
-	void create(Graphics& gfx, const Vector3f* vertexs, const unsigned short* triangles, UINT numT, const Color* colors = NULL, bool vertexColor = false, bool transparency = true, bool doubleSided = true, std::mutex* mtx = NULL);
+//	void create(Graphics& gfx, const Vector3f* vertexs, const unsigned short* triangles, UINT numT, const Color* colors = NULL, bool vertexColor = false, bool transparency = true, bool doubleSided = true, std::mutex* mtx = NULL);
 
 
 	void updateShape(Graphics& gfx, const Vector3f* vertexs, const Vector3i* triangles, UINT numT, const Color* colors = NULL, bool vertexColor = false, std::mutex* mtx = NULL);
@@ -27,8 +27,15 @@ public:
 
 	Quaternion getRotation();
 	Vector3f getPosition();
+	const Vector3f* getVertexs();
+	const Vector3i* getTriangles();
+	unsigned int getNumTriangles();
 
 private:
+	Vector3f* Vertexs = NULL;
+	Vector3i* Triangles = NULL;
+	unsigned int numTriangles = 0u;
+
 	struct Vertex {
 		Vector3f vector;
 		Vector3f norm;

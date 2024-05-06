@@ -1,6 +1,14 @@
 #include "Polihedron.h"
 #include "Bindable/BindableBase.h"
 
+Polihedron::~Polihedron()
+{
+	if (Vertexs)
+		free(Vertexs);
+	if (Triangles)
+		free(Triangles);
+}
+
 Polihedron::Polihedron(Graphics& gfx, const Vector3f* vertexs, const Vector3i* triangles, UINT numT, const  Color* colors, bool vertexColor, bool transparency, bool doubleSided, std::mutex* mtx)
 {
 
@@ -8,12 +16,12 @@ Polihedron::Polihedron(Graphics& gfx, const Vector3f* vertexs, const Vector3i* t
 
 }
 
-Polihedron::Polihedron(Graphics& gfx, const Vector3f* vertexs, const unsigned short* triangles, UINT numT, const Color* colors, bool vertexColor, bool transparency, bool doubleSided, std::mutex* mtx)
-{
-
-	create(gfx, vertexs, triangles, numT, colors, vertexColor, transparency, doubleSided, mtx);
-
-}
+//Polihedron::Polihedron(Graphics& gfx, const Vector3f* vertexs, const unsigned short* triangles, UINT numT, const Color* colors, bool vertexColor, bool transparency, bool doubleSided, std::mutex* mtx)
+//{
+//
+//	create(gfx, vertexs, triangles, numT, colors, vertexColor, transparency, doubleSided, mtx);
+//
+//}
 
 void Polihedron::create(Graphics& gfx, const Vector3f* vertexs, const Vector3i* triangles, UINT numT, const Color* colors, bool vertexColor, bool transparency, bool doubleSided, std::mutex* mtx)
 {
@@ -21,6 +29,10 @@ void Polihedron::create(Graphics& gfx, const Vector3f* vertexs, const Vector3i* 
 		throw std::exception("You cannot create a polihedron over one that is already initialized");
 	else
 		isInit = true;
+
+	Vertexs = (Vector3f*)vertexs;
+	Triangles = (Vector3i*)triangles;
+	numTriangles = numT;
 
 	Vertex* V = (Vertex*)calloc(3 * numT, sizeof(Vertex));
 
@@ -108,102 +120,111 @@ void Polihedron::create(Graphics& gfx, const Vector3f* vertexs, const Vector3i* 
 		mtx->unlock();
 }
 
-void Polihedron::create(Graphics& gfx, const Vector3f* vertexs, const unsigned short* triangles, UINT numT, const Color* colors, bool vertexColor, bool transparency, bool doubleSided, std::mutex* mtx)
-{
-	if (isInit)
-		throw std::exception("You cannot create a polihedron over one that is already initialized");
-	else
-		isInit = true;
-
-	Vertex* V = (Vertex*)calloc(3 * numT, sizeof(Vertex));
-
-	for (UINT i = 0; i < numT; i++)
-	{
-
-		V[3 * i].vector = vertexs[triangles[3 * i]];
-		V[3 * i + 1].vector = vertexs[triangles[3 * i + 1]];
-		V[3 * i + 2].vector = vertexs[triangles[3 * i + 2]];
-
-		if (vertexColor && colors)
-		{
-			V[3 * i].color = colors[triangles[3 * i]];
-			V[3 * i + 1].color = colors[triangles[3 * i + 1]];
-			V[3 * i + 2].color = colors[triangles[3 * i + 2]];
-		}
-
-		else if (colors)
-		{
-			V[3 * i].color = colors[i];
-			V[3 * i + 1].color = colors[i];
-			V[3 * i + 2].color = colors[i];
-		}
-
-		else
-		{
-			V[3 * i].color = Color::White;
-			V[3 * i + 1].color = Color::White;
-			V[3 * i + 2].color = Color::White;
-		}
-
-		Vector3f norm = ((V[3 * i + 1].vector - V[3 * i].vector) * (V[3 * i + 2].vector - V[3 * i].vector)).normalize();
-		V[3 * i].norm = norm;
-		V[3 * i + 1].norm = norm;
-		V[3 * i + 2].norm = norm;
-	}
-
-	unsigned short* indexs = (unsigned short*)calloc(3 * numT, sizeof(unsigned short));
-
-	for (UINT i = 0; i < 3 * numT; i++)
-		indexs[i] = i;
-
-	if (mtx)
-		mtx->lock();
-
-	AddBind(std::make_unique<VertexBuffer>(gfx, V, 3 * numT));
-
-	AddBind(std::make_unique<IndexBuffer>(gfx, indexs, 3 * numT));
-
-	auto pvs = (VertexShader*)AddBind(std::move(std::make_unique<VertexShader>(gfx, SHADERS_DIR + std::wstring(L"PolihedronVS.cso"))));
-
-	AddBind(std::make_unique<PixelShader>(gfx, SHADERS_DIR + std::wstring(L"PolihedronPS.cso")));
-
-	std::vector<D3D11_INPUT_ELEMENT_DESC> ied =
-	{
-		{ "Position",0,DXGI_FORMAT_R32G32B32_FLOAT,0,0,D3D11_INPUT_PER_VERTEX_DATA,0 },
-		{ "Normal",0,DXGI_FORMAT_R32G32B32_FLOAT,0,D3D11_APPEND_ALIGNED_ELEMENT,D3D11_INPUT_PER_VERTEX_DATA,0 },
-		{ "Color",0,DXGI_FORMAT_B8G8R8A8_UNORM,0,D3D11_APPEND_ALIGNED_ELEMENT,D3D11_INPUT_PER_VERTEX_DATA,0 },
-	};
-
-	AddBind(std::make_unique<InputLayout>(gfx, ied, pvs->GetBytecode()));
-
-	AddBind(std::make_unique<Topology>(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST));
-
-	AddBind(std::make_unique<Rasterizer>(gfx, doubleSided));
-
-	AddBind(std::make_unique<Blender>(gfx, transparency));
-
-	pVSCB = (ConstantBuffer<VSconstBuffer>*)AddBind(std::make_unique<ConstantBuffer<VSconstBuffer>>(gfx, VERTEX_CONSTANT_BUFFER_TYPE));
-
-	float unused = 0.f;
-	pscBuff = {
-		60.f,10.f,unused,unused,1.0f, 0.2f, 0.2f, 1.f , 0.f, 8.f, 8.f,unused,
-		60.f,10.f,unused,unused,0.0f, 1.0f, 0.0f, 1.f , 0.f,-8.f, 8.f,unused,
-		60.f,10.f,unused,unused,0.5f, 0.0f, 1.0f, 1.f ,-8.f, 0.f,-8.f,unused,
-		60.f,10.f,unused,unused,1.0f, 1.0f, 0.0f, 1.f , 8.f, 0.f, 8.f,unused,
-	};
-
-	pPSCB = (ConstantBuffer<PSconstBuffer>*)AddBind(std::make_unique<ConstantBuffer<PSconstBuffer>>(gfx, pscBuff, PIXEL_CONSTANT_BUFFER_TYPE));
-
-	free(V);
-	free(indexs);
-
-	if (mtx)
-		mtx->lock();
-}
+//void Polihedron::create(Graphics& gfx, const Vector3f* vertexs, const unsigned short* triangles, UINT numT, const Color* colors, bool vertexColor, bool transparency, bool doubleSided, std::mutex* mtx)
+//{
+//	if (isInit)
+//		throw std::exception("You cannot create a polihedron over one that is already initialized");
+//	else
+//		isInit = true;
+//
+//	Vertex* V = (Vertex*)calloc(3 * numT, sizeof(Vertex));
+//
+//	for (UINT i = 0; i < numT; i++)
+//	{
+//
+//		V[3 * i].vector = vertexs[triangles[3 * i]];
+//		V[3 * i + 1].vector = vertexs[triangles[3 * i + 1]];
+//		V[3 * i + 2].vector = vertexs[triangles[3 * i + 2]];
+//
+//		if (vertexColor && colors)
+//		{
+//			V[3 * i].color = colors[triangles[3 * i]];
+//			V[3 * i + 1].color = colors[triangles[3 * i + 1]];
+//			V[3 * i + 2].color = colors[triangles[3 * i + 2]];
+//		}
+//
+//		else if (colors)
+//		{
+//			V[3 * i].color = colors[i];
+//			V[3 * i + 1].color = colors[i];
+//			V[3 * i + 2].color = colors[i];
+//		}
+//
+//		else
+//		{
+//			V[3 * i].color = Color::White;
+//			V[3 * i + 1].color = Color::White;
+//			V[3 * i + 2].color = Color::White;
+//		}
+//
+//		Vector3f norm = ((V[3 * i + 1].vector - V[3 * i].vector) * (V[3 * i + 2].vector - V[3 * i].vector)).normalize();
+//		V[3 * i].norm = norm;
+//		V[3 * i + 1].norm = norm;
+//		V[3 * i + 2].norm = norm;
+//	}
+//
+//	unsigned short* indexs = (unsigned short*)calloc(3 * numT, sizeof(unsigned short));
+//
+//	for (UINT i = 0; i < 3 * numT; i++)
+//		indexs[i] = i;
+//
+//	if (mtx)
+//		mtx->lock();
+//
+//	AddBind(std::make_unique<VertexBuffer>(gfx, V, 3 * numT));
+//
+//	AddBind(std::make_unique<IndexBuffer>(gfx, indexs, 3 * numT));
+//
+//	auto pvs = (VertexShader*)AddBind(std::move(std::make_unique<VertexShader>(gfx, SHADERS_DIR + std::wstring(L"PolihedronVS.cso"))));
+//
+//	AddBind(std::make_unique<PixelShader>(gfx, SHADERS_DIR + std::wstring(L"PolihedronPS.cso")));
+//
+//	std::vector<D3D11_INPUT_ELEMENT_DESC> ied =
+//	{
+//		{ "Position",0,DXGI_FORMAT_R32G32B32_FLOAT,0,0,D3D11_INPUT_PER_VERTEX_DATA,0 },
+//		{ "Normal",0,DXGI_FORMAT_R32G32B32_FLOAT,0,D3D11_APPEND_ALIGNED_ELEMENT,D3D11_INPUT_PER_VERTEX_DATA,0 },
+//		{ "Color",0,DXGI_FORMAT_B8G8R8A8_UNORM,0,D3D11_APPEND_ALIGNED_ELEMENT,D3D11_INPUT_PER_VERTEX_DATA,0 },
+//	};
+//
+//	AddBind(std::make_unique<InputLayout>(gfx, ied, pvs->GetBytecode()));
+//
+//	AddBind(std::make_unique<Topology>(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST));
+//
+//	AddBind(std::make_unique<Rasterizer>(gfx, doubleSided));
+//
+//	AddBind(std::make_unique<Blender>(gfx, transparency));
+//
+//	pVSCB = (ConstantBuffer<VSconstBuffer>*)AddBind(std::make_unique<ConstantBuffer<VSconstBuffer>>(gfx, VERTEX_CONSTANT_BUFFER_TYPE));
+//
+//	float unused = 0.f;
+//	pscBuff = {
+//		60.f,10.f,unused,unused,1.0f, 0.2f, 0.2f, 1.f , 0.f, 8.f, 8.f,unused,
+//		60.f,10.f,unused,unused,0.0f, 1.0f, 0.0f, 1.f , 0.f,-8.f, 8.f,unused,
+//		60.f,10.f,unused,unused,0.5f, 0.0f, 1.0f, 1.f ,-8.f, 0.f,-8.f,unused,
+//		60.f,10.f,unused,unused,1.0f, 1.0f, 0.0f, 1.f , 8.f, 0.f, 8.f,unused,
+//	};
+//
+//	pPSCB = (ConstantBuffer<PSconstBuffer>*)AddBind(std::make_unique<ConstantBuffer<PSconstBuffer>>(gfx, pscBuff, PIXEL_CONSTANT_BUFFER_TYPE));
+//
+//	free(V);
+//	free(indexs);
+//
+//	if (mtx)
+//		mtx->lock();
+//}
 
 void Polihedron::updateShape(Graphics& gfx, const Vector3f* vertexs, const Vector3i* triangles, UINT numT, const Color* colors, bool vertexColor, std::mutex* mtx)
 {
+	if (isInit)
+		throw std::exception("You cannot update the shape to an uninitialized polihedron");
+
 	Vertex* V = (Vertex*)calloc(3 * numT, sizeof(Vertex));
+
+	free(Vertexs);
+	free(Triangles);
+	Vertexs = (Vector3f*)vertexs;
+	Triangles = (Vector3i*)triangles;
+	numTriangles = numT;
 
 	for (UINT i = 0; i < numT; i++)
 	{
@@ -341,4 +362,19 @@ Quaternion Polihedron::getRotation()
 Vector3f Polihedron::getPosition()
 {
 	return Vector3f(vscBuff.translation.x, vscBuff.translation.y, vscBuff.translation.z);
+}
+
+const Vector3f* Polihedron::getVertexs()
+{
+	return Vertexs;
+}
+
+const Vector3i* Polihedron::getTriangles()
+{
+	return Triangles;
+}
+
+unsigned int Polihedron::getNumTriangles()
+{
+	return numTriangles;
 }

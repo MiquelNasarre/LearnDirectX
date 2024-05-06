@@ -48,6 +48,10 @@ struct IG {
 	static int ADD_FIGURE;
 	static int DELETE_FIGURE;
 
+	static bool COMPUTE_ERROR;
+	static bool ERROR_WINDOW;
+	static float* COMPUTED_ERRORS;
+
 	static Vector2i WindowDim;
 
 	static int UPDATE_LIGHT;
@@ -134,6 +138,7 @@ private:
 	static void createPlotAsync(Graphics* gfx, Polihedron* dataplot, const void** extractedFigure, bool* done, std::mutex* mtx);
 	static void createFigureAsync(Graphics* gfx, FourierSurface* figure, Coefficient** coef, unsigned int ncoef, bool* done, std::mutex* mtx, bool* begin);
 	static void calculateCoefficientsAsync(Coefficient** coef, const void** extractedFigure, unsigned int maxL, bool* done);
+	static void computeErrorsAsync(FourierSurface* surface, Polihedron* poli, float* result, bool* finished, bool* cancel);
 
 public:
 	Fourier();
@@ -144,7 +149,3 @@ public:
 	void eventManager();
 	void doFrame();
 };
-
-
-
-
