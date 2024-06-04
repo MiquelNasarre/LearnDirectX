@@ -168,6 +168,7 @@ private:
 };
 
 void createShape(const char* filename);
+Vector3f figureFunction(Vector3f s2vec);
 void formatFile(const char* srcFile, const char* newFile);
 
 template<typename C>

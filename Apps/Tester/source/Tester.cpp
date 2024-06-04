@@ -2,6 +2,7 @@
 #include "IG_Tester.h"
 #include "Keyboard.h"
 #include "Mouse.h"
+#include <string>
 
 float IG_DATA::THETA = pi / 2.f;
 float IG_DATA::PHI = 0.f;
@@ -48,6 +49,7 @@ Tester::Tester()
 		Vector3i(2, 5, 6),
 	};
 
+	torus.create(window.graphics, SURFACE_SHAPE(_PARAMETRIC, thorus, false, { 0.f,0.f }, { 2.f * pi,2.f * pi }));
 	poli.create(window.graphics, vertexs, triangles, 12);
 }
 
@@ -170,13 +172,13 @@ void Tester::doFrame()
 		surf.updateLight(window.graphics, 0, { 3 * rad, rad }, col, { 3.f , 0.f , 2.f });
 	}
 
-	//surf.updateRotation(window.graphics, -phi, 0.f, -theta);
-	//curve.updateRotation(window.graphics, -phi, 0.f, -theta);
-	//Klein.updateRotation(window.graphics, -phi, 0.f, -theta);
-	//impl.updateRotation(window.graphics, -phi, 0.f, -theta);
-	//test.updateRotation(window.graphics, -phi, 0.f, -theta);
-	//poli.updateRotation(window.graphics, -phi, 0.f, -theta);
-
+	surf.updateRotation(window.graphics, -phi, 0.f, -theta);
+	curve.updateRotation(window.graphics, -phi, 0.f, -theta);
+	Klein.updateRotation(window.graphics, -phi, 0.f, -theta);
+	impl.updateRotation(window.graphics, -phi, 0.f, -theta);
+	test.updateRotation(window.graphics, -phi, 0.f, -theta);
+	poli.updateRotation(window.graphics, -phi, 0.f, -theta);
+	torus.updateRotation(window.graphics, axis, dangle, true);
 	surf.updateRotation(window.graphics, axis, dangle, true);
 	curve.updateRotation(window.graphics, axis, dangle, true);
 	Klein.updateRotation(window.graphics, axis, dangle, true);
@@ -184,15 +186,16 @@ void Tester::doFrame()
 	test.updateRotation(window.graphics, axis, dangle, true);
 	poli.updateRotation(window.graphics, axis, dangle, true);
 
-	test.updateShape(window.graphics, shape);
-	test.Draw(window.graphics);
+	//test.updateShape(window.graphics, shape);
+	//test.Draw(window.graphics);
 	//surf.Draw(window.graphics);
-	light.Draw(window.graphics);
+	//light.Draw(window.graphics);
 	//curve.Draw(window.graphics);
 	//Klein.Draw(window.graphics);
 	//point.Draw(window.graphics);
 	//impl.Draw(window.graphics);
 	//poli.Draw(window.graphics);
+	torus.Draw(window.graphics);
 
 	var = 3.f * cosf(timer.check());
 	shape.param = var;
@@ -287,4 +290,11 @@ float sphere(float x, float y, float z)
 float weirdRadiusDynamic(float theta, float phi, const float& t)
 {
 	return 1.f + cosf(t * 3.f) * (sinf(theta + sinf(t)) * sinf(theta) * cosf(phi) + cosf(phi) * cosf(phi + sinf(t)) * sinf(phi)) * sinf(5 * theta) * cosf(3 * phi + sinf(t)) / 2.f;
+}
+
+Vector3f thorus(float phi, float theta)
+{
+	Vector3f big = Vector3f(sinf(theta), cosf(theta), 0.f);
+	Vector3f smal = big * cosf(phi) + Vector3f(0.f, 0.f, 1.f) * sinf(phi);
+	return 2.f * big + 0.8f * smal;
 }

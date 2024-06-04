@@ -1,20 +1,17 @@
 #pragma once
 
-#include <exception>
-#include <string>
-
-class ExceptionClass : public std::exception
+class ExceptionClass
 {
 public:
 	ExceptionClass( int line,const char* file ) noexcept;
-	const char* what() const noexcept override;
+	virtual const char* what() const noexcept;
 	virtual const char* GetType() const noexcept;
 	int GetLine() const noexcept;
-	const std::string& GetFile() const noexcept;
-	std::string GetOriginString() const noexcept;
+	const char* GetFile() const noexcept;
+	const char* GetOriginString() const noexcept;
 private:
 	int line;
-	std::string file;
+	const char* file;
 protected:
-	mutable std::string whatBuffer;
+	mutable char* whatBuffer;
 };

@@ -179,9 +179,9 @@ double Vector2d::abs() const
 	return sqrt(x * x + y * y);
 }
 
-std::string Vector2d::str() const
+const char* Vector2d::str() const
 {
-	return "( " + std::to_string(x) + " , " + std::to_string(y) + " )";
+	return ("( " + std::to_string(x) + " , " + std::to_string(y) + " )").c_str();
 }
 
 //	Vector2f
@@ -360,9 +360,9 @@ float Vector2f::abs() const
 	return sqrtf(x * x + y * y);
 }
 
-std::string Vector2f::str() const
+const char* Vector2f::str() const
 {
-	return "( " + std::to_string(x) + " , " + std::to_string(y) + " )";
+	return ("( " + std::to_string(x) + " , " + std::to_string(y) + " )").c_str();
 }
 
 _float4vector Vector2f::getVector4() const
@@ -512,9 +512,9 @@ float Vector2i::abs() const
 	return sqrtf(float(x * x + y * y));
 }
 
-std::string Vector2i::str() const
+const char* Vector2i::str() const
 {
-	return "( " + std::to_string(x) + " , " + std::to_string(y) + " )";
+	return ("( " + std::to_string(x) + " , " + std::to_string(y) + " )").c_str();
 }
 
 //	Rest of operators
@@ -757,9 +757,9 @@ double Vector3d::abs() const
 	return sqrt(x * x + y * y + z * z);
 }
 
-std::string Vector3d::str() const
+const char* Vector3d::str() const
 {
-	return "( " + std::to_string(x) + " , " + std::to_string(y) + " , " + std::to_string(z) + " )";
+	return ("( " + std::to_string(x) + " , " + std::to_string(y) + " , " + std::to_string(z) + " )").c_str();
 }
 
 //	Vector3f
@@ -954,9 +954,9 @@ float Vector3f::abs() const
 	return sqrtf(x * x + y * y + z * z);
 }
 
-std::string Vector3f::str() const
+const char* Vector3f::str() const
 {
-	return "( " + std::to_string(x) + " , " + std::to_string(y) + " , " + std::to_string(z) + " )";
+	return ("( " + std::to_string(x) + " , " + std::to_string(y) + " , " + std::to_string(z) + " )").c_str();
 }
 
 _float4vector Vector3f::getVector4() const
@@ -1119,9 +1119,9 @@ float Vector3i::abs() const
 	return sqrtf(float(x * x + y * y + z * z));
 }
 
-std::string Vector3i::str() const
+const char* Vector3i::str() const
 {
-	return "( " + std::to_string(x) + " , " + std::to_string(y) + " , " + std::to_string(z) + " )";
+	return ("( " + std::to_string(x) + " , " + std::to_string(y) + " , " + std::to_string(z) + " )").c_str();
 }
 
 //	Rest of operators

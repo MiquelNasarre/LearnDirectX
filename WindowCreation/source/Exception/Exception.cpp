@@ -13,8 +13,8 @@ const char* ExceptionClass::what() const noexcept
 	std::ostringstream oss;
 	oss << GetType() << std::endl
 		<< GetOriginString();
-	whatBuffer = oss.str();
-	return whatBuffer.c_str();
+	whatBuffer = (char*)oss.str().c_str();
+	return whatBuffer;
 }
 
 const char* ExceptionClass::GetType() const noexcept
@@ -27,15 +27,15 @@ int ExceptionClass::GetLine() const noexcept
 	return line;
 }
 
-const std::string& ExceptionClass::GetFile() const noexcept
+const char* ExceptionClass::GetFile() const noexcept
 {
 	return file;
 }
 
-std::string ExceptionClass::GetOriginString() const noexcept
+const char* ExceptionClass::GetOriginString() const noexcept
 {
 	std::ostringstream oss;
 	oss << "[File] " << file << std::endl
 		<< "[Line] " << line;
-	return oss.str();
+	return oss.str().c_str();
 }

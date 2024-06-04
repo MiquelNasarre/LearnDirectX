@@ -1,4 +1,5 @@
 #include "Matrix.h"
+#include <math.h>
 
 const Matrix Matrix::Identity = Matrix(1);
 

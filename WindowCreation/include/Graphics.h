@@ -1,10 +1,14 @@
 #pragma once
 
+#include "WinHeader.h"
 #include "Header.h"
+
 #include "Exception/Exception.h"
-#include <d3d11.h>
-#include <wrl.h>
 #include "Exception/DxgiInfoManager.h"
+
+#include <iostream>
+#include <vector>
+#include <queue>
 
 #define pCom Microsoft::WRL::ComPtr
 
@@ -15,7 +19,7 @@ public:
 	class HrException : public ExceptionClass
 	{
 	public:
-		HrException(int line, const char* file, HRESULT hr, std::vector<std::string> infoMsgs = {}) noexcept;
+		HrException(int line, const char* file, HRESULT hr, const char** infoMsgs = nullptr) noexcept;
 		const char* what() const noexcept override;
 		const char* GetType() const noexcept override;
 		HRESULT GetErrorCode() const noexcept;
@@ -29,7 +33,7 @@ public:
 	class InfoException : public ExceptionClass
 	{
 	public:
-		InfoException(int line, const char* file, std::vector<std::string> infoMsgs) noexcept;
+		InfoException(int line, const char* file, const char** infoMsgs = nullptr) noexcept;
 		const char* what() const noexcept override;
 		const char* GetType() const noexcept override;
 		std::string GetErrorInfo() const noexcept;

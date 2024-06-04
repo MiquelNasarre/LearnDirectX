@@ -1,18 +1,20 @@
 #include "Keyboard.h"
+#include <stdlib.h>
 
 // Definition of static variables
 
-std::bitset<Keyboard::nKeys>	Keyboard::keyStates;
-std::queue<char>				Keyboard::charBuffer;
-std::queue<Keyboard::event>		Keyboard::keyBuffer;
+bool*							Keyboard::keyStates = nullptr;
+char**							Keyboard::charBuffer = nullptr;
+Keyboard::event**				Keyboard::keyBuffer = nullptr;
 bool							Keyboard::autoRepeat = false;
 
 // Function implementations
 
 void Keyboard::init()
 {
-	clearKeyStates();
-	clearBuffers();
+	keyStates = (bool*)calloc(nKeys, sizeof(bool));
+	keyBuffer = (event**)calloc(maxBuffer, sizeof(void*));
+	charBuffer = (char**)calloc(maxBuffer, sizeof(void*));
 	setAutorepeat(true);
 }
 
@@ -28,21 +30,52 @@ void Keyboard::setKeyReleased(unsigned char keycode)
 
 void Keyboard::clearKeyStates()
 {
-	keyStates.reset();
+	for (unsigned int i = 0; i < nKeys; i++)
+		keyStates[i] = false;
 }
 
 void Keyboard::pushChar(char character)
 {
-	charBuffer.push(character);
-	if (charBuffer.size() > maxBuffer)
-		charBuffer.pop();
+	unsigned int n = maxBuffer - 1u;
+	for (unsigned int i = 0; i < maxBuffer; i++)
+	{
+		if (!charBuffer[i])
+		{
+			n = i;
+			break;
+		}
+	}
+
+	if (n == maxBuffer - 1u)
+	{
+		delete charBuffer[0];
+		for (unsigned int i = 0; i < maxBuffer - 1u; i++)
+			charBuffer[i] = charBuffer[i + 1];
+	}
+
+	charBuffer[n] = new char(character);
 }
 
 void Keyboard::pushEvent(event::Type type, unsigned char keyCode)
 {
-	keyBuffer.push(event(type, keyCode));
-	if (keyBuffer.size() > maxBuffer)
-		keyBuffer.pop();
+	unsigned int n = maxBuffer - 1u;
+	for (unsigned int i = 0; i < maxBuffer; i++)
+	{
+		if (!keyBuffer[i])
+		{
+			n = i;
+			break;
+		}
+	}
+
+	if (n == maxBuffer - 1u)
+	{
+		delete keyBuffer[0];
+		for (unsigned int i = 0; i < maxBuffer - 1u; i++)
+			keyBuffer[i] = keyBuffer[i + 1];
+	}
+
+	keyBuffer[n] = new event(type, keyCode);
 }
 
 void Keyboard::setAutorepeat(bool state)
@@ -57,26 +90,28 @@ bool Keyboard::getAutorepeat()
 
 void Keyboard::clearBuffers()
 {
-	while (charBuffer.size())
-		charBuffer.pop();
-	while (keyBuffer.size())
-		keyBuffer.pop();
+	for (unsigned int i = 0; i < maxBuffer; i++)
+	{
+		if (!charBuffer[i])
+			break;
+		delete charBuffer[i];
+		charBuffer[i] = nullptr;
+	}
+
+	for (unsigned int i = 0; i < maxBuffer; i++)
+	{
+		if (!keyBuffer[i])
+			break;
+		delete keyBuffer[i];
+		keyBuffer[i] = nullptr;
+	}
 }
 
 bool Keyboard::charIsEmpty()
 {
-	if (!charBuffer.size())
+	if (!charBuffer[0])
 		return true;
 	return false;
-}
-
-char Keyboard::popChar()
-{
-	if (!charBuffer.size())
-		return 0;
-	char character = charBuffer.front();
-	charBuffer.pop();
-	return character;
 }
 
 bool Keyboard::isKeyPressed(unsigned char keycode)
@@ -86,16 +121,37 @@ bool Keyboard::isKeyPressed(unsigned char keycode)
 
 bool Keyboard::eventIsEmpty()
 {
-	if (!keyBuffer.size())
+	if (!keyBuffer[0])
 		return true;
 	return false;
 }
 
+char Keyboard::popChar()
+{
+	if (!charBuffer[0])
+		return 0;
+
+	char ev = *charBuffer[0];
+	delete charBuffer[0];
+
+	for (unsigned int i = 0; i < maxBuffer - 1u; i++)
+		charBuffer[i] = charBuffer[i + 1];
+	charBuffer[maxBuffer - 1u] = nullptr;
+
+	return ev;
+}
+
 Keyboard::event Keyboard::popEvent()
 {
-	if (!keyBuffer.size())
+	if (!keyBuffer[0])
 		return event();
-	event ev = keyBuffer.front();
-	keyBuffer.pop();
+
+	event ev = *keyBuffer[0];
+	delete keyBuffer[0];
+
+	for (unsigned int i = 0; i < maxBuffer - 1u; i++)
+		keyBuffer[i] = keyBuffer[i + 1];
+	keyBuffer[maxBuffer - 1u] = nullptr;
+
 	return ev;
 }

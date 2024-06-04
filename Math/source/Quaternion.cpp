@@ -135,7 +135,7 @@ float Quaternion::abs() const
 	return sqrtf(r * r + i * i + j * j + k * k);
 }
 
-std::string Quaternion::str(int decimals) const
+const char* Quaternion::str(int decimals) const
 {
 	if (!decimals)decimals = -1;
 
@@ -156,7 +156,7 @@ std::string Quaternion::str(int decimals) const
 	else if (k < 0)
 		String = String + " - " + std::to_string(-k).erase(2 + decimals, 6 - decimals) + " k";
 
-	return String;
+	return String.c_str();
 }
 
 Vector3f Quaternion::getVector() const

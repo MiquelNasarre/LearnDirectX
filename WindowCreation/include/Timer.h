@@ -1,16 +1,12 @@
 #pragma once
 
-#include <chrono>
-#include <queue>
-
 class Timer {
 private:
 	unsigned int MaxMarkers = 60u;
-	std::chrono::steady_clock::time_point last;
-	std::deque<std::chrono::steady_clock::time_point> Markers;
+	void* last;
+	void** Markers;
 
-	void push(std::chrono::steady_clock::time_point last);
-	void pop();
+	void push(void* last);
 
 public:
 	Timer(bool precise = true);

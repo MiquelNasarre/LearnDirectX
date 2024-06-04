@@ -4,6 +4,7 @@
 #include "Mouse.h"
 #include <windowsx.h>
 #include <dwmapi.h>
+#include <chrono>
 
 #include "iGManager.h"
 

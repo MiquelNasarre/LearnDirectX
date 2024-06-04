@@ -2,12 +2,15 @@
 #include "Window.h"
 #include "Graphics.h"
 #include <dxgidebug.h>
-#include <memory>
 
 #include "Exception/ExceptionMacros.h"
 
 DxgiInfoManager::DxgiInfoManager()
 {
+	// create the COM pointer
+
+	pDxgiInfoQueue = (void*)Microsoft::WRL::ComPtr<IDXGIInfoQueue>().Detach();
+
 	// define function signature of DXGIGetDebugInterface
 	typedef HRESULT(WINAPI* DXGIGetDebugInterface)(REFIID, void**);
 
@@ -26,28 +29,34 @@ DxgiInfoManager::DxgiInfoManager()
 	GFX_THROW_NOINFO(DxgiGetDebugInterface(__uuidof(IDXGIInfoQueue), &pDxgiInfoQueue));
 }
 
+DxgiInfoManager::~DxgiInfoManager()
+{
+	((IDXGIInfoQueue*)pDxgiInfoQueue)->Release();
+}
+
 void DxgiInfoManager::Set() noexcept
 {
 	// set the index (next) so that the next all to GetMessages()
 	// will only get errors generated after this call
-	next = pDxgiInfoQueue->GetNumStoredMessages(DXGI_DEBUG_ALL);
+	next = ((IDXGIInfoQueue*)pDxgiInfoQueue)->GetNumStoredMessages(DXGI_DEBUG_ALL);
 }
 
-std::vector<std::string> DxgiInfoManager::GetMessages() const
+const char** DxgiInfoManager::GetMessages() const
 {
-	std::vector<std::string> messages;
-	const auto end = pDxgiInfoQueue->GetNumStoredMessages(DXGI_DEBUG_ALL);
-	for (auto i = next; i < end; i++)
+	
+	const auto end = ((IDXGIInfoQueue*)pDxgiInfoQueue)->GetNumStoredMessages(DXGI_DEBUG_ALL);
+	const char** messages = (const char**)calloc(end+1,sizeof(void*));
+	for (unsigned long long i = next; i < end; i++)
 	{
 		SIZE_T messageLength;
 		// get the size of message i in bytes
-		GFX_THROW_NOINFO(pDxgiInfoQueue->GetMessage(DXGI_DEBUG_ALL, i, nullptr, &messageLength));
+		GFX_THROW_NOINFO(((IDXGIInfoQueue*)pDxgiInfoQueue)->GetMessage(DXGI_DEBUG_ALL, i, nullptr, &messageLength));
 		// allocate memory for message
 		auto bytes = std::make_unique<byte[]>(messageLength);
 		auto pMessage = reinterpret_cast<DXGI_INFO_QUEUE_MESSAGE*>(bytes.get());
 		// get the message and push its description into the vector
-		GFX_THROW_NOINFO(pDxgiInfoQueue->GetMessage(DXGI_DEBUG_ALL, i, pMessage, &messageLength));
-		messages.push_back(pMessage->pDescription);
+		GFX_THROW_NOINFO(((IDXGIInfoQueue*)pDxgiInfoQueue)->GetMessage(DXGI_DEBUG_ALL, i, pMessage, &messageLength));
+		messages[i] = std::string(pMessage->pDescription).c_str();
 	}
 	return messages;
 }

@@ -251,6 +251,7 @@
     <ClInclude Include="include\Mouse.h" />
     <ClInclude Include="include\Timer.h" />
     <ClInclude Include="include\Window.h" />
+    <ClInclude Include="include\WinHeader.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shaders\BackgroundPS.hlsl">

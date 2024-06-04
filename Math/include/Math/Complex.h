@@ -1,7 +1,5 @@
 #pragma once
 
-#include <iostream>
-
 #define _COMPLEX_ADDED
 
 struct Complex {
@@ -30,7 +28,7 @@ struct Complex {
 	static Complex exp(const Complex& exponent);
 
 	float		abs() const;
-	std::string str() const;
+	const char* str() const;
 };
 
 Complex operator*(const int& lhs, const Complex& rhs);

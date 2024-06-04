@@ -96,6 +96,8 @@ Fourier::Fourier()
 	IG::LIGHTS[0].position = { 30.f, 10.f, 20.f, 0.f };
 
 	harmonics.create(window.graphics, &C, 1u);
+	
+	//createShape("test");
 }
 
 int Fourier::Run()

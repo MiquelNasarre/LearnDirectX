@@ -1,5 +1,4 @@
 #pragma once
-#include <iostream>
 #include "Vectors.h"
 
 #define QUATERNION_ADDED
@@ -34,7 +33,7 @@ struct Quaternion
 	Quaternion	normalize();
 	Quaternion	inv() const;
 	float		abs() const;
-	std::string str(int decimals = 2u) const;
+	const char* str(int decimals = 2u) const;
 	Vector3f	getVector() const;
 	_float4vector getVector4() const;
 };

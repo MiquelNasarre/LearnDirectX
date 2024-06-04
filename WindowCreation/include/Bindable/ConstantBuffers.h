@@ -35,7 +35,7 @@ void ConstantBuffer<C>::Update(Graphics& gfx, const C& consts)
 	infoManager.Set();
 	GetContext(gfx)->UpdateSubresource(pConstantBuffer.Get(), 0u, NULL, &consts, 0u, 0u);
 	auto v = infoManager.GetMessages();
-	if (!v.empty())
+	if (v[0])
 		throw Graphics::InfoException(__LINE__, __FILE__, v);
 #else
 	GetContext(gfx)->UpdateSubresource(pConstantBuffer.Get(), 0u, NULL, &consts, 0u, 0u);
@@ -50,7 +50,7 @@ void ConstantBuffer<C>::Update(Graphics& gfx, const C* consts)
 	infoManager.Set();
 	GetContext(gfx)->UpdateSubresource(pConstantBuffer.Get(), 0u, NULL, consts, 0u, 0u);
 	auto v = infoManager.GetMessages();
-	if (!v.empty())
+	if (v[0])
 		throw Graphics::InfoException(__LINE__, __FILE__, v);
 #else
 	GetContext(gfx)->UpdateSubresource(pConstantBuffer.Get(), 0u, NULL, consts, 0u, 0u);
@@ -86,7 +86,7 @@ ConstantBuffer<C>::ConstantBuffer(Graphics& gfx, const C& consts, TYPE_ConstBuff
 	infoManager.Set();
 	GetDevice(gfx)->CreateBuffer(&cbd, &csd, &pConstantBuffer);
 	auto v = infoManager.GetMessages();
-	if (!v.empty())
+	if (v[0])
 		throw Graphics::InfoException(__LINE__, __FILE__, v);
 #else
 	GetDevice(gfx)->CreateBuffer(&cbd, &csd, &pConstantBuffer);
@@ -119,7 +119,7 @@ ConstantBuffer<C>::ConstantBuffer(Graphics& gfx, TYPE_ConstBuffer type, const in
 	infoManager.Set();
 	GetDevice(gfx)->CreateBuffer(&cbd, NULL, &pConstantBuffer);
 	auto v = infoManager.GetMessages();
-	if (!v.empty())
+	if (v[0])
 		throw Graphics::InfoException(__LINE__, __FILE__, v);
 #else
 	GetDevice(gfx)->CreateBuffer(&cbd, NULL, &pConstantBuffer);
@@ -139,7 +139,7 @@ void ConstantBuffer<C>::Bind(Graphics& gfx)
 		GetContext(gfx)->PSSetConstantBuffers(Slot, 1u, pConstantBuffer.GetAddressOf());
 
 	auto v = infoManager.GetMessages();
-	if (!v.empty())
+	if (v[0])
 		throw Graphics::InfoException(__LINE__, __FILE__, v);
 #else
 	if (Type == VERTEX_CONSTANT_BUFFER_TYPE)

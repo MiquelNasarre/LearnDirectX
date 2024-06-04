@@ -34,6 +34,8 @@ private:
 
 	Triangle poli;
 
+	Surface torus;
+
 	//	...
 
 	Vector3f axis = Vector3f(1.f,-1.f,1.f);
@@ -89,3 +91,5 @@ float returnY(float, float);
 float sphere(float, float, float);
 
 float weirdRadiusDynamic(float, float, const float&);
+
+Vector3f thorus(float phi, float theta);

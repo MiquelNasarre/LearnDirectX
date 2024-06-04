@@ -1,7 +1,5 @@
 #pragma once
 
-#include <iostream>
-
 struct Vector2i;
 struct Vector2f;
 struct Vector2d;
@@ -51,7 +49,7 @@ struct Vector2d {
 	bool operator==(const Vector2d& other) const;
 
 	double		abs() const;
-	std::string str() const;
+	const char* str() const;
 };
 
 struct Vector2f {
@@ -92,7 +90,7 @@ struct Vector2f {
 	bool operator==(const Vector2f& other) const;
 
 	float		abs() const;
-	std::string str() const;
+	const char* str() const;
 	_float4vector getVector4() const;
 };
 
@@ -129,7 +127,7 @@ struct Vector2i {
 	bool operator==(const Vector2i& other) const;
 
 	float		abs() const;
-	std::string str() const;
+	const char* str() const;
 };
 
 Vector2i operator*(const int& lhs, const Vector2i& rhs);
@@ -188,7 +186,7 @@ struct Vector3d {
 	bool operator==(const Vector3d& other) const;
 
 	double		abs() const;
-	std::string str() const;
+	const char* str() const;
 };
 
 struct Vector3f {
@@ -231,7 +229,7 @@ struct Vector3f {
 	bool operator==(const Vector3f& other) const;
 
 	float		abs() const;
-	std::string str() const;
+	const char* str() const;
 	_float4vector getVector4() const;
 };
 
@@ -270,7 +268,7 @@ struct Vector3i {
 	bool operator==(const Vector3i& other) const;
 
 	float		abs() const;
-	std::string str() const;
+	const char* str() const;
 };
 
 Vector3i operator*(const int& lhs, const Vector3i& rhs);

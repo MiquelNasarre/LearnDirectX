@@ -9,8 +9,8 @@ Complex::Complex(float x, float y, bool type)
 		b = y;
 	}
 	else {
-		a = x * cos(y);
-		b = x * sin(y);
+		a = x * cosf(y);
+		b = x * sinf(y);
 	}
 }
 
@@ -86,15 +86,15 @@ Complex& Complex::operator+=(const Complex& other)
 Complex Complex::exp(const Complex& exponent)
 {
 	float r = (float)pow(en, exponent.a);
-	return Complex(r * cos(exponent.b), r * sin(exponent.b));
+	return Complex(r * cosf(exponent.b), r * sinf(exponent.b));
 }
 
 float Complex::abs() const
 {
-	return sqrt(a * a + b * b);
+	return sqrtf(a * a + b * b);
 }
 
-std::string Complex::str() const
+const char* Complex::str() const
 {
 	std::string String;
 		String = std::to_string(a);
@@ -102,7 +102,7 @@ std::string Complex::str() const
 		String = String + " + " + std::to_string(b) + " i";
 	else if (b < 0)
 		String = String + " - " + std::to_string(-b) + " i";
-	return String;
+	return String.c_str();
 }
 
 Complex operator*(const int& lhs, const Complex& rhs)

@@ -221,6 +221,9 @@
     <ClInclude Include="include\Bindable\Blender.h">
       <Filter>Sources\Public\Bindable</Filter>
     </ClInclude>
+    <ClInclude Include="include\WinHeader.h">
+      <Filter>Sources\Public</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shaders\TriangleVS.hlsl">

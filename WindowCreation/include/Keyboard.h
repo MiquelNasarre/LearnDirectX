@@ -1,9 +1,5 @@
 #pragma once
 
-#include "Header.h"
-#include <bitset>
-#include <queue>
-
 class Keyboard {
 	friend class Window;
 	
@@ -27,9 +23,9 @@ private:
 	static constexpr unsigned int nKeys = 256u;
 	static bool autoRepeat;
 
-	static std::bitset<nKeys> keyStates;
-	static std::queue<char> charBuffer;
-	static std::queue<event> keyBuffer;
+	static bool* keyStates;
+	static char** charBuffer;
+	static event** keyBuffer;
 
 	static void init();
 	static void setKeyPressed(unsigned char keycode);

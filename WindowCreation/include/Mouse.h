@@ -1,8 +1,6 @@
 #pragma once
 
-#include "Header.h"
-#include <bitset>
-#include <queue>
+#include "Math/Vectors.h"
 
 class Mouse {
 	friend class Window;
@@ -28,10 +26,10 @@ public:
 private:
 
 	static constexpr unsigned int maxBuffer = 16u;
-	static constexpr unsigned int nKeys = 3u;
+	static constexpr unsigned int nKeys = 4u;
 
-	static std::bitset<nKeys> buttonStates;
-	static std::queue<event> buttonBuffer;
+	static bool* buttonStates;
+	static event** buttonBuffer;
 	static Vector2i Position;
 	static Vector2i ScPosition;
 	static int deltaWheel;

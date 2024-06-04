@@ -2,26 +2,28 @@
 #include <Windows.h>
 #include <timeapi.h>
 #include "Timer.h"
+#include <chrono>
+#include <queue>
 
 using namespace std::chrono;
 
-void Timer::push(steady_clock::time_point last)
+void Timer::push(void* last)
 {
-	Markers.push_back(last);
-	if (Markers.size() > MaxMarkers)
-		Markers.pop_front();
-}
+	if (Markers[MaxMarkers - 1u])
+		delete (std::chrono::steady_clock::time_point*)Markers[MaxMarkers - 1u];
 
-void Timer::pop()
-{
-	if (Markers.size())
-		Markers.pop_front();
+	for (unsigned int i = MaxMarkers - 1u; i > 0; i--)
+		Markers[i] = Markers[i - 1];
+
+	Markers[0] = new std::chrono::steady_clock::time_point(*(std::chrono::steady_clock::time_point*)last);
 }
 
 //	Public
 
-Timer::Timer(bool precise) :last{ std::chrono::steady_clock::now() }
+Timer::Timer(bool precise) :last{ new std::chrono::steady_clock::time_point }
 {
+	Markers = (void**)calloc(MaxMarkers, sizeof(void*));
+	*(std::chrono::steady_clock::time_point*)last = std::chrono::steady_clock::now();
 	if (precise)
 		timeBeginPeriod(1);
 }
@@ -33,44 +35,73 @@ Timer::~Timer()
 
 void Timer::reset()
 {
-	last = high_resolution_clock::now();
-	while (Markers.size())
-		Markers.pop_front();
+	*(std::chrono::steady_clock::time_point*)last = high_resolution_clock::now();
+	for (unsigned int i = 0; i < MaxMarkers; i++)
+	{
+		if (!Markers[i])
+			break;
+		delete (std::chrono::steady_clock::time_point*)Markers[i];
+		Markers[i] = nullptr;
+	}
 	push(last);
 }
 
 float Timer::mark()
 {
-	const auto old = last;
-	last = steady_clock::now();
+	const auto old = *(std::chrono::steady_clock::time_point*)last;
+	*(std::chrono::steady_clock::time_point*)last = steady_clock::now();
 	push(last);
-	return duration<float>(last - old).count();
+	return duration<float>(*(std::chrono::steady_clock::time_point*)last - old).count();
 }
 
 float Timer::check()
 {
-	return duration<float>(steady_clock::now() - last).count();
+	return duration<float>(steady_clock::now() - *(std::chrono::steady_clock::time_point*)last).count();
 }
 
 float Timer::skip()
 {
-	const auto old = last;
-	last = steady_clock::now();
-	for (unsigned int i = 0; i < Markers.size(); i++)
-		Markers[i] += last - old;
-	return duration<float>(last - old).count();
+	unsigned int m = 0;
+	for (unsigned int i = 0; i < MaxMarkers; i++)
+	{
+		if (Markers[i])
+			m = i;
+		else break;
+	}
+
+	const auto old = *(std::chrono::steady_clock::time_point*)last;
+	*(std::chrono::steady_clock::time_point*)last = steady_clock::now();
+	for (unsigned int i = 0; i < m; i++)
+		*(std::chrono::steady_clock::time_point*)Markers[i] += *(std::chrono::steady_clock::time_point*)last - old;
+	return duration<float>(*(std::chrono::steady_clock::time_point*)last - old).count();
 }
 
 float Timer::average()
 {
-	if(Markers.size()<2)
+	if(!Markers[1])
 		return 0.0f;
-	return duration<float>(Markers.back() - Markers.front()).count() / float(Markers.size() - 1);
+	
+	unsigned int m = 0;
+	for (unsigned int i = 0; i < MaxMarkers; i++)
+	{
+		if (Markers[i])
+			m = i;
+		else break;
+	}
+
+	return duration<float>(*(std::chrono::steady_clock::time_point*)Markers[0] - *(std::chrono::steady_clock::time_point*)Markers[m]).count() / float(m);
 }
 
 int Timer::getSize()
 {
-	return (int)Markers.size();
+	unsigned int m = 0;
+	for (unsigned int i = 0; i < MaxMarkers; i++)
+	{
+		if (Markers[i])
+			m = i;
+		else return m;
+	}
+	return m;
 }
 
 void Timer::setMax(unsigned int max)

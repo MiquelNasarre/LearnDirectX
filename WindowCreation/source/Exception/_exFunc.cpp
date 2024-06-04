@@ -1,24 +1,33 @@
-#include "Header.h"
+#include "WinHeader.h"
 #include "Mouse.h"
 #include "Keyboard.h"
 #include "Window.h"
 #include "Exception/Exception.h"
 #include "Exception/DxgiInfoManager.h"
 #include "dxerr.h"
+#include <sstream>
 
 //	GRAPHICS exception functions
 
-Graphics::HrException::HrException(int line, const char* file, HRESULT hr, std::vector<std::string> infoMsgs) noexcept
+Graphics::HrException::HrException(int line, const char* file, HRESULT hr, const char** infoMsgs) noexcept
 	:ExceptionClass(line, file),
 	hr(hr)
 {
 	// join all info messages with newlines into single string
-	for (const auto& m : infoMsgs)
+
+	if (!infoMsgs)
+		return;
+
+	unsigned int i = 0;
+	while(infoMsgs[i])
 	{
-		info += m;
+		info += infoMsgs[i];
 		info.push_back('\n');
+		i++;
 	}
+
 	// remove final newline if exists
+
 	if (!info.empty())
 	{
 		info.pop_back();
@@ -38,8 +47,8 @@ const char* Graphics::HrException::what() const noexcept
 		oss << "\n[Error Info]\n" << GetErrorInfo() << std::endl << std::endl;
 	}
 	oss << GetOriginString();
-	whatBuffer = oss.str();
-	return whatBuffer.c_str();
+	whatBuffer = (char*)oss.str().c_str();
+	return whatBuffer;
 }
 
 const char* Graphics::HrException::GetType() const noexcept
@@ -74,16 +83,24 @@ const char* Graphics::DeviceRemovedException::GetType() const noexcept
 	return "Graphics Exception [Device Removed] (DXGI_ERROR_DEVICE_REMOVED)";
 }
 
-Graphics::InfoException::InfoException(int line, const char* file, std::vector<std::string> infoMsgs) noexcept
+Graphics::InfoException::InfoException(int line, const char* file, const char** infoMsgs) noexcept
 	:ExceptionClass(line, file)
 {
 	// join all info messages with newlines into single string
-	for (const auto& m : infoMsgs)
+
+	if (!infoMsgs)
+		return;
+
+	unsigned int i = 0;
+	while (infoMsgs[i])
 	{
-		info += m;
+		info += infoMsgs[i];
 		info.push_back('\n');
+		i++;
 	}
+
 	// remove final newline if exists
+
 	if (!info.empty())
 	{
 		info.pop_back();
@@ -96,8 +113,8 @@ const char* Graphics::InfoException::what() const noexcept
 	oss << GetType() << std::endl
 		<< "\n[Error Info]\n" << GetErrorInfo() << std::endl << std::endl;
 	oss << GetOriginString();
-	whatBuffer = oss.str();
-	return whatBuffer.c_str();
+	whatBuffer = (char*)oss.str().c_str();
+	return whatBuffer;
 }
 
 const char* Graphics::InfoException::GetType() const noexcept
@@ -125,8 +142,8 @@ const char* Window::Exception::what() const noexcept
 		<< "[Error Code] " << GetErrorCode() << std::endl
 		<< "[Description] " << GetErrorString() << std::endl
 		<< GetOriginString();
-	whatBuffer = oss.str();
-	return whatBuffer.c_str();
+	whatBuffer = (char*)oss.str().c_str();
+	return whatBuffer;
 }
 
 const char* Window::Exception::GetType() const noexcept
