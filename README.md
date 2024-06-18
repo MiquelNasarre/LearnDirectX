@@ -17,7 +17,7 @@ The project currently contains 5 different lybraries, they all have some functio
 They are the following:
 
 - **ImGui**: These are some external dependencies used only for the widgets. For more information on what imGui is and
-  how to use refer to its [repository](https://github.com/ocornut/imgui).
+  how to use it refer to its [repository](https://github.com/ocornut/imgui).
 - **dxerr**: This is just a library that includes some functions for error detection in our program.
 - **Math**: This library contains a bunch of math constructions that will be used by the rest of dependencies to do
   their calculations. It includes 2D and 3D vectors, 3x3 matrices, complex numbers and quaternions.
