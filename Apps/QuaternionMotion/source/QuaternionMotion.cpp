@@ -2,6 +2,7 @@
 #include "Keyboard.h"
 #include "Mouse.h"
 #include "IG_QuaternionMotion.h"
+#include <string>
 
 #define DO(call) shape_0.call;shape_1.call;shape_2.call;shape_3.call
 

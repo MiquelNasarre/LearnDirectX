@@ -3,9 +3,39 @@
 #include "Mouse.h"
 #include "IG_$safeprojectname$.h"
 
-float IG_DATA::THETA = 0.f;
-float IG_DATA::PHI   = 0.f;
-float IG_DATA::SPEED = 0.f;
+float IG_DATA::THETA = pi / 2.f;
+float IG_DATA::PHI	 = 0.f;
+
+//  Private
+
+void $safeprojectname$::drag_motion()
+{
+	Vector3f obs = window.graphics.getObserver();
+	Vector3f ex = -(obs * Vector3f(0.f, 0.f, 1.f)).normalize();
+	Vector3f ey = ex * obs;
+
+	Vector3f lastMouse = (-obs + (ex * (lastPos.x - window.getDimensions().x / 2) + ey * (lastPos.y - window.getDimensions().y / 2)) / scale).normalize();
+	lastPos = Mouse::getPosition();
+	Vector3f newMouse = (-obs + (ex * (lastPos.x - window.getDimensions().x / 2) + ey * (lastPos.y - window.getDimensions().y / 2)) / scale).normalize();
+
+	Vector3f axis0 = lastMouse * newMouse;
+	if (!axis0) axis0 = newMouse;
+	axis0.normalize();
+	float dangle0 = -acosf(lastMouse ^ newMouse);
+	if ((lastMouse ^ newMouse) > 1.f)dangle0 = 0.f;
+	if (lastMouse == newMouse) dangle0 = 0.f;
+
+	constexpr float s = 1.f / 1.5f;
+
+	Quaternion newRot = rotationQuaternion(newMouse, Mouse::getWheel() / 18000.f) * rotationQuaternion(axis0, dangle0) * rotationQuaternion(axis, (dangle * (1 - s + fabs(axis ^ newMouse) * s)));
+
+	dangle = 2 * acosf(newRot.r);
+	axis = newRot.getVector();
+	if (!axis)axis = newMouse;
+	axis.normalize();
+}
+
+//  Public
 
 $safeprojectname$::$safeprojectname$()
 	: window(640, 480, "$safeprojectname$", "", true),
@@ -24,9 +54,7 @@ int $safeprojectname$::Run()
 
 void $safeprojectname$::eventManager()
 {
-	//	Keyboard and Mouse events
-
-	scale *= powf(1.1f, Mouse::getWheel() / 120.f);
+	//  Keyboard events
 
 	if (Keyboard::isKeyPressed('W'))
 		center.y += 0.02f;
@@ -41,43 +69,24 @@ void $safeprojectname$::eventManager()
 	if (Keyboard::isKeyPressed('F'))
 		center.z -= 0.02f;
 
-	if (Mouse::isButtonPressed(Mouse::Left) && !dragging) {
+	//	Mouse events
+
+	if (Mouse::isButtonPressed(Mouse::Left) && !dragging)
+	{
 		dragging = true;
-		initialDrag = Mouse::getPosition();
-		initialDragAngles = { IG_DATA::THETA,IG_DATA::PHI };
+		lastPos = Mouse::getPosition();
 	}
 	if (dragging && !Mouse::isButtonPressed(Mouse::Left))
 		dragging = false;
 
-	if (dragging) {
-		Vector2i movement = Mouse::getPosition() - initialDrag;
-		float temp = initialDragAngles.x - 2.f * (float)movement.x / scale;
-		IG_DATA::SPEED = -10.f * (temp - IG_DATA::THETA);
-		IG_DATA::THETA = temp;
-		IG_DATA::PHI = initialDragAngles.y + 2.f * (float)movement.y / scale;
-		if (IG_DATA::PHI > pi / 2.f) {
-			IG_DATA::PHI = pi / 2.f - 0.0001f;
-			initialDrag.y = Mouse::getPosition().y - int((pi / 2.f - initialDragAngles.y) * scale / 2.f);
-		}
-		if (IG_DATA::PHI < -pi / 2.f) {
-			IG_DATA::PHI = -pi / 2.f + 0.0001f;
-			initialDrag.y = Mouse::getPosition().y - int((-pi / 2.f - initialDragAngles.y) * scale / 2.f);
-		}
-	}
-	else {
-		if (IG_DATA::SPEED > 1.f) {
-			IG_DATA::SPEED *= 0.99f;
-			if (IG_DATA::SPEED < 1.f)
-				IG_DATA::SPEED = 1.f;
-		}
-		if (IG_DATA::SPEED < -1.f) {
-			IG_DATA::SPEED *= 0.99f;
-			if (IG_DATA::SPEED > -1.f)
-				IG_DATA::SPEED = -1.f;
-		}
+	if (dragging)
+		drag_motion();
+	else
+		scale *= powf(1.1f, Mouse::getWheel() / 120.f);
 
-		IG_DATA::THETA += -IG_DATA::SPEED / 10.f;
-	}
+	//  Update observer
+
+	observer = { -cosf(IG_DATA::PHI) * cosf(IG_DATA::THETA), -cosf(IG_DATA::PHI) * sinf(IG_DATA::THETA), -sinf(IG_DATA::PHI) };
 }
 
 void $safeprojectname$::doFrame()
@@ -88,7 +97,7 @@ void $safeprojectname$::doFrame()
 
 	window.graphics.updatePerspective(observer, center, scale);
 
-	example.updateRotation(window.graphics, -IG_DATA::PHI, 0.f, -IG_DATA::THETA);
+	example.updateRotation(window.graphics, axis, dangle, true);
 
 	window.setTitle("$safeprojectname$  -  " + std::to_string(int(std::round(window.getFramerate()))) + "fps");
 

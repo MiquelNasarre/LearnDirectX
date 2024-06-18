@@ -1,6 +1,7 @@
 #include "IG_QuaternionMotion.h"
 #include "QuaternionMotion.h"
 #include "imgui/imgui.h"
+#include <string>
 
 DRAG_TYPE	IG_DATA::TYPE			= DYNAMIC_SPACE;
 SHAPE		IG_DATA::FIGURE			= SQUARE;
