@@ -364,6 +364,7 @@ public:
 
 private:
 
+	void** generateIcosphere(unsigned int depth);
 	void addOtherBinds(Graphics& gfx);
 
 	struct VSconstBuffer {
@@ -659,80 +660,14 @@ void Surface::create(Graphics& gfx, PARAM_SURFACE_SHAPE<C> ss, SURFACE_COLORING*
 			auto depth = ss.ICOSPHERE_DEPHT;
 			auto r = ss.Explicit;
 
-			std::vector<Vertex> vertexs;
+			void** icosphere = generateIcosphere(ss.ICOSPHERE_DEPHT);
+			unsigned int nV = ((unsigned int*)icosphere[2])[0];
 
-			struct triangle {
-				unsigned short v0;
-				unsigned short v1;
-				unsigned short v2;
-			};
+			Vertex* vertexs = (Vertex*)calloc(nV, sizeof(Vertex));
+			Vector2f* texCoord = (Vector2f*)calloc(nV, sizeof(Vector2f));
 
-			float gold = (1.f + sqrtf(5) / 2.f);
-
-			vertexs.push_back(Vertex({ 0.f, 1.f, gold })); //0
-			vertexs.push_back(Vertex({ 0.f, 1.f,-gold })); //1
-			vertexs.push_back(Vertex({ 0.f,-1.f, gold })); //2
-			vertexs.push_back(Vertex({ 0.f,-1.f,-gold })); //3
-			vertexs.push_back(Vertex({ 1.f, gold, 0.f })); //4
-			vertexs.push_back(Vertex({ 1.f,-gold, 0.f })); //5
-			vertexs.push_back(Vertex({ -1.f, gold, 0.f })); //6
-			vertexs.push_back(Vertex({ -1.f,-gold, 0.f })); //7
-			vertexs.push_back(Vertex({ gold, 0.f, 1.f })); //8
-			vertexs.push_back(Vertex({ -gold, 0.f, 1.f })); //9
-			vertexs.push_back(Vertex({ gold, 0.f,-1.f })); //10
-			vertexs.push_back(Vertex({ -gold, 0.f,-1.f })); //11
-
-			std::vector<triangle> triangles;
-			std::vector<triangle> newTriangles;
-
-			triangles.push_back({ 0,6,4 });
-			triangles.push_back({ 1,4,6 });
-			triangles.push_back({ 2,5,7 });
-			triangles.push_back({ 3,7,5 });
-			triangles.push_back({ 4,10,8 });
-			triangles.push_back({ 5,8,10 });
-			triangles.push_back({ 6,9,11 });
-			triangles.push_back({ 7,11,9 });
-			triangles.push_back({ 8,2,0 });
-			triangles.push_back({ 9,0,2 });
-			triangles.push_back({ 10,1,3 });
-			triangles.push_back({ 11,3,1 });
-			triangles.push_back({ 0,4,8 });
-			triangles.push_back({ 0,9,6 });
-			triangles.push_back({ 4,1,10 });
-			triangles.push_back({ 6,11,1 });
-			triangles.push_back({ 3,11,7 });
-			triangles.push_back({ 3,5,10 });
-			triangles.push_back({ 7,9,2 });
-			triangles.push_back({ 5,2,8 });
-
-			for (UINT i = 0; i < depth; i++) {
-				newTriangles.clear();
-				for (triangle& t : triangles) {
-					vertexs.push_back({ (vertexs[t.v0].vector + vertexs[t.v1].vector) / 2.f });
-					vertexs.push_back({ (vertexs[t.v1].vector + vertexs[t.v2].vector) / 2.f });
-					vertexs.push_back({ (vertexs[t.v2].vector + vertexs[t.v0].vector) / 2.f });
-					unsigned short s0 = (unsigned short)vertexs.size() - 3;
-					unsigned short s1 = s0 + 1;
-					unsigned short s2 = s0 + 2;
-					newTriangles.push_back({ t.v0 , s0 , s2 });
-					newTriangles.push_back({ t.v1 , s1 , s0 });
-					newTriangles.push_back({ t.v2 , s2 , s1 });
-					newTriangles.push_back({ s0 , s1 , s2 });
-				}
-				triangles = newTriangles;
-			}
-
-
-			std::vector<unsigned short> indexs;
-			for (triangle& t : triangles) {
-				indexs.push_back(t.v0);
-				indexs.push_back(t.v1);
-				indexs.push_back(t.v2);
-			}
-			std::vector<Vector2f> texCoord;
-			for (Vertex& v : vertexs) {
-				v.vector.normalize();
+			for (unsigned int i = 0; i < nV; i++) {
+				Vertex& v = vertexs[i];
 				float phi = asinf(v.vector.z);
 				float theta = 0.f;
 				if (v.vector.x || v.vector.y) {
@@ -745,23 +680,29 @@ void Surface::create(Graphics& gfx, PARAM_SURFACE_SHAPE<C> ss, SURFACE_COLORING*
 					v.norm = v.vector;
 				else
 					v.norm =
-					((makePolar({ theta + epsilon, phi, r(theta + epsilon, phi, ss.param) }) - makePolar({ theta - epsilon, phi, r(theta - epsilon, phi, ss.param) })) *
-					(makePolar({ theta, phi + epsilon, r(theta, phi + epsilon, ss.param) }) - makePolar({ theta, phi - epsilon, r(theta, phi - epsilon, ss.param) }))).normalize();
+					((makePolar({ theta + epsilon, phi, r(theta + epsilon, phi) }) - makePolar({ theta - epsilon, phi, r(theta - epsilon, phi) })) *
+						(makePolar({ theta, phi + epsilon, r(theta, phi + epsilon) }) - makePolar({ theta, phi - epsilon, r(theta, phi - epsilon) })))
+					.normalize();
 
 				v.vector *= r(theta, phi, ss.param);
-				texCoord.push_back({ theta / 2.f / pi,(pi / 2.f - phi) / pi });
+				texCoord[i] = { theta / 2.f / pi,(pi / 2.f - phi) / pi };
 			}
 
 			if (sc.Textured) {
-				std::vector<TexVertex> texvertexs;
-				for (UINT i = 0; i < vertexs.size(); i++)
-					texvertexs.push_back({ vertexs[i].vector,vertexs[i].norm,texCoord[i] });
-				AddBind(std::make_unique<VertexBuffer>(gfx, texvertexs));
+				TexVertex* texvertexs = (TexVertex*)calloc(nV, sizeof(TexVertex));
+				for (UINT i = 0; i < nV; i++)
+					texvertexs[i] = { vertexs[i].vector,vertexs[i].norm,texCoord[i] };
+				AddBind(std::make_unique<VertexBuffer>(gfx, texvertexs, nV));
 			}
 			else
-				AddBind(std::make_unique<VertexBuffer>(gfx, vertexs));
+				AddBind(std::make_unique<VertexBuffer>(gfx, vertexs, nV));
 
-			AddBind(std::make_unique<IndexBuffer>(gfx, indexs));
+			AddBind(std::make_unique<IndexBuffer>(gfx, (unsigned short*)icosphere[1], ((unsigned int*)icosphere[2])[1]));
+
+			free(icosphere[0]);
+			free(icosphere[1]);
+			free(icosphere[2]);
+			free(icosphere);
 		}
 
 		else throw std::exception("Found nullptr while trying to read Explicit function");
@@ -1322,80 +1263,14 @@ void Surface::updateShape(Graphics& gfx, PARAM_SURFACE_SHAPE<C> ss)
 			auto depth = ss.ICOSPHERE_DEPHT;
 			auto r = ss.Explicit;
 
-			std::vector<Vertex> vertexs;
+			void** icosphere = generateIcosphere(ss.ICOSPHERE_DEPHT);
+			unsigned int nV = ((unsigned int*)icosphere[2])[0];
 
-			struct triangle {
-				unsigned short v0;
-				unsigned short v1;
-				unsigned short v2;
-			};
+			Vertex* vertexs = (Vertex*)calloc(nV, sizeof(Vertex));
+			Vector2f* texCoord = (Vector2f*)calloc(nV, sizeof(Vector2f));
 
-			float gold = (1.f + sqrtf(5) / 2.f);
-
-			vertexs.push_back(Vertex({ 0.f, 1.f, gold })); //0
-			vertexs.push_back(Vertex({ 0.f, 1.f,-gold })); //1
-			vertexs.push_back(Vertex({ 0.f,-1.f, gold })); //2
-			vertexs.push_back(Vertex({ 0.f,-1.f,-gold })); //3
-			vertexs.push_back(Vertex({ 1.f, gold, 0.f })); //4
-			vertexs.push_back(Vertex({ 1.f,-gold, 0.f })); //5
-			vertexs.push_back(Vertex({ -1.f, gold, 0.f })); //6
-			vertexs.push_back(Vertex({ -1.f,-gold, 0.f })); //7
-			vertexs.push_back(Vertex({ gold, 0.f, 1.f })); //8
-			vertexs.push_back(Vertex({ -gold, 0.f, 1.f })); //9
-			vertexs.push_back(Vertex({ gold, 0.f,-1.f })); //10
-			vertexs.push_back(Vertex({ -gold, 0.f,-1.f })); //11
-
-			std::vector<triangle> triangles;
-			std::vector<triangle> newTriangles;
-
-			triangles.push_back({ 0,6,4 });
-			triangles.push_back({ 1,4,6 });
-			triangles.push_back({ 2,5,7 });
-			triangles.push_back({ 3,7,5 });
-			triangles.push_back({ 4,10,8 });
-			triangles.push_back({ 5,8,10 });
-			triangles.push_back({ 6,9,11 });
-			triangles.push_back({ 7,11,9 });
-			triangles.push_back({ 8,2,0 });
-			triangles.push_back({ 9,0,2 });
-			triangles.push_back({ 10,1,3 });
-			triangles.push_back({ 11,3,1 });
-			triangles.push_back({ 0,4,8 });
-			triangles.push_back({ 0,9,6 });
-			triangles.push_back({ 4,1,10 });
-			triangles.push_back({ 6,11,1 });
-			triangles.push_back({ 3,11,7 });
-			triangles.push_back({ 3,5,10 });
-			triangles.push_back({ 7,9,2 });
-			triangles.push_back({ 5,2,8 });
-
-			for (UINT i = 0; i < depth; i++) {
-				newTriangles.clear();
-				for (triangle& t : triangles) {
-					vertexs.push_back({ (vertexs[t.v0].vector + vertexs[t.v1].vector) / 2.f });
-					vertexs.push_back({ (vertexs[t.v1].vector + vertexs[t.v2].vector) / 2.f });
-					vertexs.push_back({ (vertexs[t.v2].vector + vertexs[t.v0].vector) / 2.f });
-					unsigned short s0 = (unsigned short)vertexs.size() - 3;
-					unsigned short s1 = s0 + 1;
-					unsigned short s2 = s0 + 2;
-					newTriangles.push_back({ t.v0 , s0 , s2 });
-					newTriangles.push_back({ t.v1 , s1 , s0 });
-					newTriangles.push_back({ t.v2 , s2 , s1 });
-					newTriangles.push_back({ s0 , s1 , s2 });
-				}
-				triangles = newTriangles;
-			}
-
-
-			std::vector<unsigned short> indexs;
-			for (triangle& t : triangles) {
-				indexs.push_back(t.v0);
-				indexs.push_back(t.v1);
-				indexs.push_back(t.v2);
-			}
-			std::vector<Vector2f> texCoord;
-			for (Vertex& v : vertexs) {
-				v.vector.normalize();
+			for (unsigned int i = 0; i < nV; i++) {
+				Vertex& v = vertexs[i];
 				float phi = asinf(v.vector.z);
 				float theta = 0.f;
 				if (v.vector.x || v.vector.y) {
@@ -1408,24 +1283,29 @@ void Surface::updateShape(Graphics& gfx, PARAM_SURFACE_SHAPE<C> ss)
 					v.norm = v.vector;
 				else
 					v.norm =
-					((makePolar({ theta + epsilon, phi, r(theta + epsilon, phi, ss.param) }) - makePolar({ theta - epsilon, phi, r(theta - epsilon, phi, ss.param) })) *
-						(makePolar({ theta, phi + epsilon, r(theta, phi + epsilon, ss.param) }) - makePolar({ theta, phi - epsilon, r(theta, phi - epsilon, ss.param) })))
+					((makePolar({ theta + epsilon, phi, r(theta + epsilon, phi) }) - makePolar({ theta - epsilon, phi, r(theta - epsilon, phi) })) *
+						(makePolar({ theta, phi + epsilon, r(theta, phi + epsilon) }) - makePolar({ theta, phi - epsilon, r(theta, phi - epsilon) })))
 					.normalize();
 
 				v.vector *= r(theta, phi, ss.param);
-				texCoord.push_back({ theta / 2.f / pi,(pi / 2.f - phi) / pi });
+				texCoord[i] = { theta / 2.f / pi,(pi / 2.f - phi) / pi };
 			}
 
 			if (sc.Textured) {
-				std::vector<TexVertex> texvertexs;
-				for (UINT i = 0; i < vertexs.size(); i++)
-					texvertexs.push_back({ vertexs[i].vector,vertexs[i].norm,texCoord[i] });
-				changeBind(std::make_unique<VertexBuffer>(gfx, texvertexs), 0u);
+				TexVertex* texvertexs = (TexVertex*)calloc(nV, sizeof(TexVertex));
+				for (UINT i = 0; i < nV; i++)
+					texvertexs[i] = { vertexs[i].vector,vertexs[i].norm,texCoord[i] };
+				changeBind(std::make_unique<VertexBuffer>(gfx, texvertexs, nV), 0u);
 			}
 			else
-				changeBind(std::make_unique<VertexBuffer>(gfx, vertexs), 0u);
+				changeBind(std::make_unique<VertexBuffer>(gfx, vertexs, nV), 0u);
 
-			changeBind(std::make_unique<IndexBuffer>(gfx, indexs), 1u);
+			changeBind(std::make_unique<IndexBuffer>(gfx, (unsigned short*)icosphere[1], ((unsigned int*)icosphere[2])[1]), 1u);
+
+			free(icosphere[0]);
+			free(icosphere[1]);
+			free(icosphere[2]);
+			free(icosphere);
 		}
 
 		else throw std::exception("Found nullptr while trying to read Explicit function");
